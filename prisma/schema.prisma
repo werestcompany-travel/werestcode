@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum VehicleType {
+  SEDAN
+  SUV
+  MINIVAN
+}
+
+enum BookingStatus {
+  PENDING
+  DRIVER_CONFIRMED
+  DRIVER_STANDBY
+  DRIVER_PICKED_UP
+  COMPLETED
+  CANCELLED
+}
+
+enum AttractionBookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  USED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wishlist           WishlistItem[]
+  attractionBookings AttractionBooking[]
+
+  @@index([email])
+}
+
+model WishlistItem {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attractionId   String   // slug, e.g. "sanctuary-of-truth"
+  attractionName String
+  attractionUrl  String?
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, attractionId])
+  @@index([userId])
+}
+
+model AttractionBooking {
+  id         String @id @default(cuid())
+  bookingRef String @unique // e.g. AT-20250001
+
+  // Attraction
+  attractionId   String
+  attractionName String
+  packageName    String
+  packageId      String
+
+  // Schedule
+  visitDate DateTime @db.Date
+
+  // Tickets
+  adultQty   Int   @default(0)
+  childQty   Int   @default(0)
+  infantQty  Int   @default(0)
+  adultPrice Float @default(0)
+  childPrice Float @default(0)
+  totalPrice Float
+
+  // Customer
+  customerName  String
+  customerEmail String
+  customerPhone String
+  notes          String?
+  paymentMethod  String?   // "card" | "cash" | "swift" | "crypto"
+
+  // Linked user (optional — guest or logged-in)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Status & audit
+  status    AttractionBookingStatus @default(PENDING)
+  createdBy String                  @default("user") // "user" | "admin:<name>"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerEmail])
+  @@index([userId])
+  @@index([visitDate])
+  @@index([status])
+}
+
+model Booking {
+  id         String @id @default(cuid())
+  bookingRef String @unique // e.g. WR-20240001
+
+  // Route
+  pickupAddress  String
+  pickupLat      Float
+  pickupLng      Float
+  dropoffAddress String
+  dropoffLat     Float
+  dropoffLng     Float
+  distanceKm     Float
+  durationMin    Int
+
+  // Schedule
+  pickupDate DateTime @db.Date
+  pickupTime String   // "14:30"
+
+  // Passengers
+  passengers Int
+  luggage    Int
+
+  // Vehicle
+  vehicleType VehicleType
+
+  // Customer
+  customerName  String
+  customerEmail String
+  customerPhone String
+  specialNotes  String?
+
+  // Pricing
+  basePrice   Float
+  addOnsTotal Float @default(0)
+  totalPrice  Float
+
+  // Status
+  currentStatus BookingStatus @default(PENDING)
+
+  // Relations
+  statusHistory BookingStatusHistory[]
+  bookingAddOns BookingAddOn[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([currentStatus])
+  @@index([pickupDate])
+  @@index([customerEmail])
+}
+
+model BookingStatusHistory {
+  id        String        @id @default(cuid())
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status    BookingStatus
+  note      String?
+  updatedBy String?       // admin name or "system"
+  createdAt DateTime      @default(now())
+
+  @@index([bookingId])
+}
+
+model PricingRule {
+  id            String      @id @default(cuid())
+  vehicleType   VehicleType @unique
+  name          String
+  description   String
+  maxPassengers Int
+  maxLuggage    Int
+  baseFare      Float
+  pricePerKm    Float
+  imageUrl      String?
+  isActive      Boolean     @default(true)
+  updatedAt     DateTime    @updatedAt
+}
+
+model AddOn {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  icon        String?
+  isActive    Boolean      @default(true)
+  bookings    BookingAddOn[]
+}
+
+model BookingAddOn {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOnId   String
+  addOn     AddOn   @relation(fields: [addOnId], references: [id])
+  quantity  Int     @default(1)
+  unitPrice Float
+
+  @@unique([bookingId, addOnId])
+  @@index([bookingId])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+}
+
+model DiscountCode {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  type           DiscountType
+  value          Float
+  description    String?
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int          @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model AttractionListing {
+  id            String              @id @default(cuid())
+  slug          String              @unique
+  name          String
+  location      String
+  category      String
+  rating        Float               @default(4.5)
+  reviewCount   String              @default("0")
+  price         Float
+  originalPrice Float?
+  badge         String?
+  gradient      String              @default("from-brand-600 to-brand-400")
+  emoji         String              @default("🎫")
+  href          String              @default("#")
+  isActive      Boolean             @default(true)
+  sortOrder     Int                 @default(0)
+  // Rich content fields
+  overview      String?
+  highlights    Json?
+  included      Json?
+  excluded      Json?
+  infoItems     Json?
+  expectSteps   Json?
+  faqs          Json?
+  gallery       Json?
+  packages      AttractionPackage[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model AttractionPackage {
+  id            String            @id @default(cuid())
+  attractionId  String
+  attraction    AttractionListing @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  adultPrice    Float
+  adultOriginal Float?
+  childPrice    Float             @default(0)
+  childOriginal Float?
+  infantPrice   Float             @default(0)
+  popular       Boolean           @default(false)
+  badge         String?
+  includes      Json?
+  isActive      Boolean           @default(true)
+  sortOrder     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([attractionId])
+}
