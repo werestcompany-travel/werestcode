@@ -4,43 +4,44 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { Menu, X, User, Heart, LogOut, ChevronDown, BookOpen, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocale, type Lang, type Currency } from '@/context/LocaleContext';
 
-const LANGUAGES  = [{ code: 'EN', label: 'English' }, { code: 'TH', label: 'ภาษาไทย' }];
-const CURRENCIES = [
-  { code: 'USD', symbol: '$' }, { code: 'THB', symbol: '฿' },
-  { code: 'EUR', symbol: '€' }, { code: 'GBP', symbol: '£' },
+const LANGUAGES: { code: Lang; label: string; flagSrc: string; native: string }[] = [
+  { code: 'EN', flagSrc: 'https://flagcdn.com/w40/gb.png',  label: 'English', native: 'English'  },
+  { code: 'TH', flagSrc: 'https://flagcdn.com/w40/th.png',  label: 'Thai',    native: 'ภาษาไทย' },
+  { code: 'ZH', flagSrc: 'https://flagcdn.com/w40/cn.png',  label: 'Chinese', native: '中文'     },
+];
+
+const CURRENCIES: { code: Currency; name: string }[] = [
+  { code: 'USD', name: 'US Dollar'     },
+  { code: 'EUR', name: 'Euro'          },
+  { code: 'GBP', name: 'British Pound' },
+  { code: 'THB', name: 'Thai Baht'     },
 ];
 
 export default function Navbar({ transparent = false }: { transparent?: boolean }) {
+  const { lang, currency, setLang, setCurrency, t } = useLocale();
+
   const [open,         setOpen]         = useState(false);
   const [user,         setUser]         = useState<{ id: string; name: string; email: string } | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [localeOpen,   setLocaleOpen]   = useState(false);
-  const [lang,         setLang]         = useState('EN');
-  const [currency,     setCurrency]     = useState('USD');
   const [scrolled,     setScrolled]     = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const localeRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Auth
     fetch('/api/user/me')
       .then(r => r.json())
       .then(d => setUser(d.user ?? null))
       .catch(() => setUser(null));
 
-    // Locale prefs
-    setLang(localStorage.getItem('werest_lang') ?? 'EN');
-    setCurrency(localStorage.getItem('werest_currency') ?? 'USD');
-
-    // Scroll detection
     const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll(); // run once on mount
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menus on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
@@ -57,12 +58,12 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
     window.location.href = '/';
   };
 
-  // true = transparent background + white text (only on transparent-prop pages before scroll)
   const isDark = transparent && !scrolled;
+  const activeLang = LANGUAGES.find(l => l.code === lang) ?? LANGUAGES[0];
+  const activeCurr = CURRENCIES.find(c => c.code === currency) ?? CURRENCIES[0];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* White background layer: always shown on non-transparent pages, fades in on scroll for transparent pages */}
       <div className={cn(
         'absolute inset-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm transition-opacity duration-500 ease-in-out pointer-events-none',
         isDark ? 'opacity-0' : 'opacity-100',
@@ -83,49 +84,83 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
           {[
-            { href: '/',            label: 'Home'                },
-            { href: '/attractions', label: 'Attractions Tickets' },
-            { href: '/tracking',    label: 'Track Booking'       },
+            { href: '/',            key: 'nav.home'        },
+            { href: '/attractions', key: 'nav.attractions' },
+            { href: '/blog',        key: 'nav.blog'        },
+            { href: '/tracking',    key: 'nav.tracking'    },
           ].map(item => (
             <Link key={item.href} href={item.href}
               className={`text-sm font-medium transition-colors duration-300 ${isDark ? 'text-white/90 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
 
-          {/* Language / Currency */}
+          {/* ── Language / Currency dropdown ── */}
           <div className="relative" ref={localeRef}>
             <button
               onClick={() => setLocaleOpen(!localeOpen)}
-              className={`flex items-center gap-1.5 text-sm font-medium border rounded-full px-3 py-1 transition-colors duration-300 ${
-                isDark ? 'border-white/30 text-white/90 hover:text-white hover:border-white/60' : 'border-gray-200 text-gray-600 hover:text-brand-600 hover:border-brand-300'
+              className={`flex items-center gap-1.5 text-sm font-medium border rounded-full px-3 py-1.5 transition-colors duration-300 ${
+                isDark
+                  ? 'border-white/30 text-white/90 hover:border-white/60 hover:text-white'
+                  : 'border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-600'
               }`}
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span>{lang}</span>
+              <img src={activeLang.flagSrc} alt={activeLang.label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+              <span className="font-semibold">{lang}</span>
               <span className={isDark ? 'text-white/40' : 'text-gray-300'}>|</span>
-              <span>{currency}</span>
+              <span className="font-semibold">{currency}</span>
+              <ChevronDown className={`w-3 h-3 transition-transform ${localeOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {localeOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl border border-gray-100 shadow-xl p-4 z-50">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Language</p>
-                <div className="grid grid-cols-2 gap-1.5 mb-4">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-gray-100 shadow-2xl p-4 z-50">
+
+                {/* Language */}
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  {t('locale.language')}
+                </p>
+                <div className="flex flex-col gap-1 mb-4">
                   {LANGUAGES.map(l => (
-                    <button key={l.code}
-                      onClick={() => { setLang(l.code); localStorage.setItem('werest_lang', l.code); }}
-                      className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${lang === l.code ? 'bg-brand-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
-                      {l.label}
+                    <button
+                      key={l.code}
+                      onClick={() => { setLang(l.code); setLocaleOpen(false); }}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
+                        lang === l.code
+                          ? 'bg-[#2534ff] text-white'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <img src={l.flagSrc} alt={l.label} className="w-7 h-5 object-cover rounded shrink-0" />
+                      <div>
+                        <p className="font-semibold leading-tight">{l.native}</p>
+                        <p className={`text-xs leading-tight ${lang === l.code ? 'text-white/70' : 'text-gray-400'}`}>{l.label}</p>
+                      </div>
+                      {lang === l.code && (
+                        <svg className="w-4 h-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Currency</p>
+
+                {/* Currency */}
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  {t('locale.currency')}
+                </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {CURRENCIES.map(c => (
-                    <button key={c.code}
-                      onClick={() => { setCurrency(c.code); localStorage.setItem('werest_currency', c.code); }}
-                      className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${currency === c.code ? 'bg-brand-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
-                      {c.symbol} {c.code}
+                    <button
+                      key={c.code}
+                      onClick={() => { setCurrency(c.code); setLocaleOpen(false); }}
+                      className={`flex flex-col items-start px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                        currency === c.code
+                          ? 'bg-[#2534ff] text-white'
+                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="font-bold">{c.code}</span>
+                      <span className={`text-[11px] ${currency === c.code ? 'text-white/70' : 'text-gray-400'}`}>{c.name}</span>
                     </button>
                   ))}
                 </div>
@@ -155,20 +190,20 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
                   </div>
                   <Link href="/account" onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
-                    <User className="w-4 h-4" /> My Account
+                    <User className="w-4 h-4" /> {t('nav.account')}
                   </Link>
                   <Link href="/account?tab=wishlist" onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
-                    <Heart className="w-4 h-4" /> Wishlist
+                    <Heart className="w-4 h-4" /> {t('nav.wishlist')}
                   </Link>
                   <Link href="/account?tab=bookings" onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
-                    <BookOpen className="w-4 h-4" /> My Bookings
+                    <BookOpen className="w-4 h-4" /> {t('nav.bookings')}
                   </Link>
                   <div className="border-t border-gray-100 mt-1 pt-1">
                     <button onClick={handleLogout}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                      <LogOut className="w-4 h-4" /> Sign out
+                      <LogOut className="w-4 h-4" /> {t('nav.logout')}
                     </button>
                   </div>
                 </div>
@@ -178,17 +213,17 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
             <div className="flex items-center gap-2">
               <Link href="/auth/register"
                 className={`text-sm font-medium transition-colors duration-300 ${isDark ? 'text-white/90 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
-                Register
+                {t('nav.register')}
               </Link>
               <Link href="/auth/login"
                 className="text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-full transition-colors duration-200">
-                Log in
+                {t('nav.login')}
               </Link>
             </div>
           )}
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
           className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-white/90' : 'text-gray-600'}`}
@@ -197,12 +232,43 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
         </button>
       </nav>
 
-      {/* Mobile menu */}
+      {/* ── Mobile menu ── */}
       {open && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-1 shadow-lg">
-          <Link href="/"            onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">Home</Link>
-          <Link href="/attractions" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">Attractions Tickets</Link>
-          <Link href="/tracking"    onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">Track Booking</Link>
+          <Link href="/"            onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">{t('nav.home')}</Link>
+          <Link href="/attractions" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">{t('nav.attractions')}</Link>
+          <Link href="/blog"        onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">{t('nav.blog')}</Link>
+          <Link href="/tracking"    onClick={() => setOpen(false)} className="text-sm font-medium text-gray-700 py-2.5 border-b border-gray-50">{t('nav.tracking')}</Link>
+
+          {/* Language picker (mobile) */}
+          <div className="py-3 border-b border-gray-50">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('locale.language')}</p>
+            <div className="flex gap-2">
+              {LANGUAGES.map(l => (
+                <button key={l.code} onClick={() => setLang(l.code)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                    lang === l.code ? 'bg-[#2534ff] text-white border-[#2534ff]' : 'border-gray-200 text-gray-600'
+                  }`}>
+                  <img src={l.flagSrc} alt={l.label} className="w-5 h-3.5 object-cover rounded-sm" /> {l.code}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Currency picker (mobile) */}
+          <div className="py-3 border-b border-gray-50">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('locale.currency')}</p>
+            <div className="flex gap-2 flex-wrap">
+              {CURRENCIES.map(c => (
+                <button key={c.code} onClick={() => setCurrency(c.code)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                    currency === c.code ? 'bg-[#2534ff] text-white border-[#2534ff]' : 'border-gray-200 text-gray-600'
+                  }`}>
+                  {c.code}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {user ? (
             <>
@@ -215,22 +281,22 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
                   <p className="text-xs text-gray-400">{user.email}</p>
                 </div>
               </div>
-              <Link href="/account"          onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><User     className="w-4 h-4 text-brand-500" /> My Account</Link>
-              <Link href="/account?tab=wishlist"  onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><Heart    className="w-4 h-4 text-brand-500" /> Wishlist</Link>
-              <Link href="/account?tab=bookings"  onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><BookOpen className="w-4 h-4 text-brand-500" /> My Bookings</Link>
+              <Link href="/account"             onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><User     className="w-4 h-4 text-brand-500" /> {t('nav.account')}</Link>
+              <Link href="/account?tab=wishlist" onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><Heart    className="w-4 h-4 text-brand-500" /> {t('nav.wishlist')}</Link>
+              <Link href="/account?tab=bookings" onClick={() => setOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 py-2.5"><BookOpen className="w-4 h-4 text-brand-500" /> {t('nav.bookings')}</Link>
               <button onClick={handleLogout} className="flex items-center gap-2 text-sm font-medium text-red-600 py-2.5 mt-1">
-                <LogOut className="w-4 h-4" /> Sign out
+                <LogOut className="w-4 h-4" /> {t('nav.logout')}
               </button>
             </>
           ) : (
             <div className="flex gap-3 pt-2">
               <Link href="/auth/register" onClick={() => setOpen(false)}
                 className="flex-1 text-center text-sm font-semibold border border-brand-600 text-brand-600 py-2.5 rounded-xl">
-                Register
+                {t('nav.register')}
               </Link>
               <Link href="/auth/login" onClick={() => setOpen(false)}
                 className="flex-1 text-center text-sm font-bold bg-brand-600 text-white py-2.5 rounded-xl">
-                Log in
+                {t('nav.login')}
               </Link>
             </div>
           )}

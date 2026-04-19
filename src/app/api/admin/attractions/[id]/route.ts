@@ -45,6 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(b.faqs          !== undefined && { faqs: b.faqs }),
       ...(b.gallery       !== undefined && { gallery: b.gallery }),
       ...(b.infoItems     !== undefined && { infoItems: b.infoItems }),
+      ...(b.featureImage  !== undefined && { featureImage: b.featureImage || null }),
     },
     include: { packages: { orderBy: { sortOrder: 'asc' } } },
   });

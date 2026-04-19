@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { slug, name, location, category, rating, reviewCount, price, originalPrice, badge, gradient, emoji, href, isActive, sortOrder } = body;
+  const { slug, name, location, category, rating, reviewCount, price, originalPrice, badge, gradient, emoji, href, isActive, sortOrder, featureImage } = body;
 
   if (!slug || !name || !location || !category || price == null)
     return NextResponse.json({ error: 'slug, name, location, category and price are required' }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         href: href ?? '#',
         isActive: isActive !== false,
         sortOrder: sortOrder ? Number(sortOrder) : 0,
+        featureImage: featureImage || null,
       },
       include: { packages: true },
     });

@@ -20,7 +20,7 @@ interface AttractionListing {
   id: string; slug: string; name: string; location: string; category: string;
   rating: number; reviewCount: string; price: number; originalPrice: number | null;
   badge: string | null; gradient: string; emoji: string; href: string;
-  isActive: boolean; sortOrder: number;
+  isActive: boolean; sortOrder: number; featureImage: string | null;
   overview: string | null; highlights: string[] | null; included: string[] | null;
   excluded: string[] | null; infoItems: string[] | null;
   expectSteps: { time: string; title: string; icon: string; desc: string }[] | null;
@@ -60,6 +60,7 @@ const EMPTY_FORM = {
   rating: '4.5', reviewCount: '0', price: '', originalPrice: '',
   badge: '', gradient: GRADIENT_PRESETS[0].value, emoji: '🎫',
   href: '#', isActive: true, sortOrder: '0',
+  featureImage: '',
   overview: '', highlights: '', included: '', excluded: '', infoItems: '',
   gallery: [{ src: '', alt: '' }] as { src: string; alt: string }[],
   expectSteps: [{ time: '', title: '', icon: '⭐', desc: '' }] as { time: string; title: string; icon: string; desc: string }[],
@@ -108,7 +109,17 @@ export default function AdminAttractionsPage() {
     setLoading(true);
     const r = await fetch('/api/admin/attractions');
     const d = await r.json();
-    setAttractions(d.attractions ?? []);
+    const list: AttractionListing[] = d.attractions ?? [];
+
+    // Auto-seed Sanctuary of Truth if DB has no attractions yet
+    if (list.length === 0) {
+      await fetch('/api/admin/attractions/seed-defaults', { method: 'POST' });
+      const r2 = await fetch('/api/admin/attractions');
+      const d2 = await r2.json();
+      setAttractions(d2.attractions ?? []);
+    } else {
+      setAttractions(list);
+    }
     setLoading(false);
   }, []);
 
@@ -131,6 +142,7 @@ export default function AdminAttractionsPage() {
       price: String(a.price), originalPrice: a.originalPrice ? String(a.originalPrice) : '',
       badge: a.badge ?? '', gradient: a.gradient, emoji: a.emoji,
       href: a.href, isActive: a.isActive, sortOrder: String(a.sortOrder),
+      featureImage: (a as AttractionListing & { featureImage?: string | null }).featureImage ?? '',
       overview: a.overview ?? '',
       highlights: (a.highlights ?? []).join('\n'),
       included:   (a.included   ?? []).join('\n'),
@@ -359,8 +371,10 @@ export default function AdminAttractionsPage() {
                   return (
                     <div key={a.id}>
                       <div className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50/60 transition-colors">
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${a.gradient} flex items-center justify-center shrink-0 text-xl`}>
-                          {a.emoji}
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${a.gradient} flex items-center justify-center shrink-0 text-xl overflow-hidden relative`}>
+                          {a.featureImage
+                            ? <img src={a.featureImage} alt={a.name} className="absolute inset-0 w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            : a.emoji}
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -565,8 +579,28 @@ export default function AdminAttractionsPage() {
                     </div>
                   </div>
 
+                  {/* Feature image */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card gradient</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                      Feature image URL <span className="font-normal text-gray-400 normal-case">(shown on the attractions list card)</span>
+                    </label>
+                    <input value={form.featureImage} onChange={e => setForm(f => ({ ...f, featureImage: e.target.value }))}
+                      placeholder="https://images.unsplash.com/... or leave blank to use gradient"
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                    {form.featureImage && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 h-28 relative bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={form.featureImage} alt="Feature preview" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <button type="button" onClick={() => setForm(f => ({ ...f, featureImage: '' }))}
+                          className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card gradient <span className="font-normal text-gray-400 normal-case">(fallback when no image)</span></label>
                     <div className="flex gap-2 flex-wrap">
                       {GRADIENT_PRESETS.map(g => (
                         <button key={g.value} type="button" onClick={() => setForm(f => ({ ...f, gradient: g.value }))}

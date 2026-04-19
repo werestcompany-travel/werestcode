@@ -9,8 +9,9 @@ import VehicleSelector from '@/components/booking/VehicleSelector';
 import AddOnsSelector from '@/components/booking/AddOnsSelector';
 import PriceSummary from '@/components/booking/PriceSummary';
 import { VehicleType, PricingRule, AddOn, SelectedAddOn } from '@/types';
-import { ArrowLeft, Loader2, Calendar, Clock, Users, Briefcase } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Clock, Users, Briefcase, ArrowRight, Pencil } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import TripEditPanel from '@/components/booking/TripEditPanel';
 
 const MiniRouteMap = dynamic(() => import('@/components/booking/MiniRouteMap'), { ssr: false });
 
@@ -25,10 +26,13 @@ function ResultsPageInner() {
   const dropoffAddress = params.get('dropoff_address') ?? '';
   const dropoffLat     = parseFloat(params.get('dropoff_lat') ?? '13.8');
   const dropoffLng     = parseFloat(params.get('dropoff_lng') ?? '100.55');
-  const date       = params.get('date')       ?? '';
-  const time       = params.get('time')       ?? '';
-  const passengers = parseInt(params.get('passengers') ?? '2');
-  const luggage    = parseInt(params.get('luggage')    ?? '1');
+  const date        = params.get('date')        ?? '';
+  const time        = params.get('time')        ?? '';
+  const passengers  = parseInt(params.get('passengers') ?? '2');
+  const luggage     = parseInt(params.get('luggage')    ?? '1');
+  const returnDate  = params.get('return_date') ?? '';
+  const returnTime  = params.get('return_time') ?? '';
+  const isRoundTrip = params.get('is_round_trip') === 'true' && !!returnDate;
 
   const [vehicles, setVehicles]               = useState<PricingRule[]>([]);
   const [addOns, setAddOns]                   = useState<AddOn[]>([]);
@@ -36,6 +40,13 @@ function ResultsPageInner() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType | null>(null);
   const [selectedAddOns, setSelectedAddOns]   = useState<SelectedAddOn[]>([]);
   const [mapsReady, setMapsReady]             = useState(false);
+
+  // Editable trip dates — initialised from URL, updated when user applies edits
+  const [tripDate,       setTripDate]       = useState(date);
+  const [tripTime,       setTripTime]       = useState(time);
+  const [tripReturnDate, setTripReturnDate] = useState(returnDate);
+  const [tripReturnTime, setTripReturnTime] = useState(returnTime);
+  const [isEditing,      setIsEditing]      = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.google?.maps) setMapsReady(true);
@@ -60,7 +71,26 @@ function ResultsPageInner() {
   const selectedVehicleData = vehicles.find(v => v.vehicleType === selectedVehicle);
   const basePrice   = selectedVehicleData?.baseFare ?? 0;
   const addOnsTotal = selectedAddOns.reduce((s, a) => s + a.unitPrice * a.quantity, 0);
-  const totalPrice  = basePrice + addOnsTotal;
+  // Round trip doubles the base transport cost
+  const totalPrice  = basePrice * (isRoundTrip ? 2 : 1) + addOnsTotal;
+
+  const handleApplyEdit = (d: string, t: string, rd: string, rt: string) => {
+    setTripDate(d);
+    setTripTime(t);
+    setTripReturnDate(rd);
+    setTripReturnTime(rt);
+    setIsEditing(false);
+
+    // Keep URL in sync so refresh / share preserves edits
+    const current = new URLSearchParams(window.location.search);
+    current.set('date', d);
+    current.set('time', t);
+    if (isRoundTrip) {
+      current.set('return_date', rd);
+      current.set('return_time', rt);
+    }
+    router.replace(`/results?${current.toString()}`);
+  };
 
   const handleContinue = () => {
     if (!selectedVehicle) return;
@@ -69,11 +99,13 @@ function ResultsPageInner() {
       pickup_address: pickupAddress,   pickup_lat: String(pickupLat),   pickup_lng: String(pickupLng),
       dropoff_address: dropoffAddress, dropoff_lat: String(dropoffLat), dropoff_lng: String(dropoffLng),
       distance_km: '0', duration_min: '0',
-      date, time, passengers: String(passengers), luggage: String(luggage),
+      date: tripDate, time: tripTime, passengers: String(passengers), luggage: String(luggage),
       vehicle: selectedVehicle, addons: addOnParam,
       base_price: String(basePrice), addons_total: String(addOnsTotal), total_price: String(totalPrice),
+      is_round_trip: String(isRoundTrip),
+      ...(isRoundTrip ? { return_date: tripReturnDate, return_time: tripReturnTime } : {}),
     });
-    router.push(`/booking?${p.toString()}`);
+    router.push(`/add-experiences?${p.toString()}`);
   };
 
   return (
@@ -88,12 +120,14 @@ function ResultsPageInner() {
       <main className="min-h-screen bg-gray-50 pt-16">
         {/* Step bar */}
         <div className="bg-white border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center">
             <button onClick={() => router.back()}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 shrink-0">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <StepBar current={1} />
+            <div className="ml-auto">
+              <StepBar current={1} />
+            </div>
           </div>
         </div>
 
@@ -137,18 +171,79 @@ function ResultsPageInner() {
               {/* Trip info chips */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-card px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold bg-brand-600 text-white px-3 py-1 rounded-full">One way</span>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    isRoundTrip ? 'bg-[#2534ff] text-white' : 'bg-brand-600 text-white'
+                  }`}>
+                    {isRoundTrip ? 'Round trip' : 'One way'}
+                  </span>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" />{passengers}</span>
                     <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{luggage}</span>
+                    {/* Edit button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(e => !e)}
+                      className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                        isEditing
+                          ? 'bg-[#1420cc] text-white'
+                          : 'bg-[#2534ff] text-white hover:bg-[#1420cc]'
+                      }`}
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit
+                    </button>
                   </div>
                 </div>
-                {date && (
-                  <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(date)}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{time}</span>
-                  </div>
+
+                {/* Date / time rows */}
+                <div className="space-y-2 mb-1">
+
+                  {/* Departure */}
+                  {tripDate && (
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-1">Departure</p>
+                        <p className="text-sm font-bold text-gray-900 leading-none">{formatDate(tripDate)}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 shrink-0">
+                        <Clock className="w-3.5 h-3.5 text-brand-500" />
+                        <span className="text-sm font-bold text-gray-900">{tripTime}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Return */}
+                  {isRoundTrip && tripReturnDate && (
+                    <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-3 py-2.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#2534ff] shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold text-[#2534ff] uppercase tracking-wide leading-none mb-1">Return</p>
+                        <p className="text-sm font-bold text-gray-900 leading-none">{formatDate(tripReturnDate)}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-white border border-blue-200 rounded-lg px-2.5 py-1.5 shrink-0">
+                        <Clock className="w-3.5 h-3.5 text-[#2534ff]" />
+                        <span className="text-sm font-bold text-gray-900">{tripReturnTime}</span>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Inline edit panel */}
+                {isEditing && (
+                  <TripEditPanel
+                    isRoundTrip={isRoundTrip}
+                    initialDate={tripDate}
+                    initialTime={tripTime}
+                    initialReturnDate={tripReturnDate}
+                    initialReturnTime={tripReturnTime}
+                    onApply={handleApplyEdit}
+                    onCancel={() => setIsEditing(false)}
+                  />
                 )}
+
+                {!isEditing && <div className="mb-3" />}
 
                 {/* Interactive Google Maps route */}
                 {mapsReady && (
@@ -162,12 +257,14 @@ function ResultsPageInner() {
               {/* Price summary */}
               <PriceSummary
                 vehicleType={selectedVehicle}
+                vehicleData={selectedVehicleData}
                 basePrice={basePrice}
                 selectedAddOns={selectedAddOns}
                 addOnsTotal={addOnsTotal}
                 totalPrice={totalPrice}
                 onContinue={handleContinue}
                 disabled={!selectedVehicle}
+                isRoundTrip={isRoundTrip}
               />
             </div>
 
@@ -179,7 +276,7 @@ function ResultsPageInner() {
 }
 
 function StepBar({ current }: { current: number }) {
-  const steps = ['Select your ride', 'Add stops', 'Details & Payment'];
+  const steps = ['Select your ride', 'Add Experiences', 'Details & Payment'];
   return (
     <div className="flex items-center gap-2 overflow-x-auto">
       {steps.map((s, i) => (

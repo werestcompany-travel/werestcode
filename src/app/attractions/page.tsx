@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import RecentlyViewed from '@/components/RecentlyViewed';
@@ -13,24 +14,23 @@ import { Search, Star, ChevronRight, Zap, Smartphone, Heart } from 'lucide-react
 type Badge = 'Sale' | 'Hot deal' | 'Likely to sell out' | 'Exclusive' | 'New' | 'Limited';
 
 interface Attraction {
-  id: number;
+  id: string;
   slug: string;
   name: string;
   location: string;
   rating: number;
-  reviews: string;
+  reviewCount: string;
   price: number;
-  originalPrice?: number;
-  badge?: Badge;
-  tags: string[];
+  originalPrice?: number | null;
+  badge?: string | null;
   gradient: string;
   emoji: string;
   category: string;
   href: string;
+  featureImage?: string | null;
 }
 
-/* ─── Data ──────────────────────────────────────────────────────────────── */
-
+/* ─── Static data ────────────────────────────────────────────────────────── */
 const CATEGORIES = [
   { label: 'Theme Parks',       emoji: '🎢', color: 'bg-orange-50  text-orange-600'  },
   { label: 'Water Parks',       emoji: '💦', color: 'bg-blue-50    text-blue-600'    },
@@ -46,10 +46,6 @@ const CATEGORIES = [
   { label: 'Events & Shows',    emoji: '🎭', color: 'bg-rose-50    text-rose-600'    },
 ];
 
-const THAILAND_ATTRACTIONS: Attraction[] = [
-  { id: 2, slug: 'sanctuary-of-truth', href: '/attractions/sanctuary-of-truth', name: 'Sanctuary of Truth, Pattaya', location: 'Pattaya', rating: 4.7, reviews: '15K+', price: 479, originalPrice: 531, badge: 'Hot deal', tags: ['Instant confirmation', 'Mobile voucher'], gradient: 'from-amber-700 to-yellow-500', emoji: '🏯', category: 'Historical Sites' },
-];
-
 const POPULAR_DESTINATIONS = [
   { name: 'Bangkok',     emoji: '🏙️', count: '320+ activities', gradient: 'from-orange-500 to-rose-500'   },
   { name: 'Phuket',      emoji: '🏝️', count: '180+ activities', gradient: 'from-cyan-500 to-blue-600'     },
@@ -59,7 +55,7 @@ const POPULAR_DESTINATIONS = [
   { name: 'Koh Samui',   emoji: '🌴', count: '75+ activities',  gradient: 'from-amber-500 to-orange-600'  },
 ];
 
-const BADGE_STYLES: Record<Badge, string> = {
+const BADGE_STYLES: Record<string, string> = {
   'Sale':               'bg-red-500 text-white',
   'Hot deal':           'bg-orange-500 text-white',
   'Likely to sell out': 'bg-amber-500 text-white',
@@ -81,24 +77,41 @@ function AttractionCard({
   onView: (a: Attraction) => void;
 }) {
   const discount = a.originalPrice ? Math.round((1 - a.price / a.originalPrice) * 100) : 0;
+  const [imgError, setImgError] = useState(false);
+  const showImage = a.featureImage && !imgError;
 
   return (
     <Link href={a.href} onClick={() => a.href !== '#' && onView(a)}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer flex flex-col">
 
-      {/* Image / gradient area */}
+      {/* Image area */}
       <div className="relative overflow-hidden" style={{ height: 180 }}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${a.gradient}`} />
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-        <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-40 select-none group-hover:opacity-55 transition-opacity">
-          {a.emoji}
-        </div>
+        {showImage ? (
+          <Image
+            src={a.featureImage!}
+            alt={a.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={() => setImgError(true)}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${a.gradient}`} />
+            <div className="absolute inset-0 opacity-10"
+              style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-40 select-none group-hover:opacity-55 transition-opacity">
+              {a.emoji}
+            </div>
+          </>
+        )}
+        {/* Overlay gradient for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
           {a.location}
         </div>
         {a.badge && (
-          <div className={`absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_STYLES[a.badge]}`}>
+          <div className={`absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_STYLES[a.badge] ?? 'bg-gray-700 text-white'}`}>
             {a.badge}
           </div>
         )}
@@ -131,10 +144,10 @@ function AttractionCard({
             ))}
           </div>
           <span className="text-xs font-semibold text-gray-700">{a.rating}</span>
-          <span className="text-xs text-gray-400">({a.reviews})</span>
+          <span className="text-xs text-gray-400">({a.reviewCount})</span>
         </div>
         <div className="flex flex-wrap gap-1">
-          {a.tags.slice(0, 2).map(t => (
+          {['Instant confirmation', 'Mobile voucher'].map(t => (
             <span key={t} className="flex items-center gap-0.5 text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
               {t === 'Instant confirmation' ? <Zap className="w-2.5 h-2.5 text-brand-500" /> : <Smartphone className="w-2.5 h-2.5 text-brand-500" />}
               {t}
@@ -157,10 +170,12 @@ function AttractionCard({
 export default function AttractionsPage() {
   const router = useRouter();
   const { addItem: addRecentlyViewed } = useRecentlyViewed();
-  const [search,          setSearch]          = useState('');
-  const [activeCategory,  setActiveCategory]  = useState<string | null>(null);
-  const [wishlistSlugs,   setWishlistSlugs]   = useState<Set<string>>(new Set());
-  const [userId,          setUserId]          = useState<string | null>(null);
+  const [search,         setSearch]         = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [wishlistSlugs,  setWishlistSlugs]  = useState<Set<string>>(new Set());
+  const [userId,         setUserId]         = useState<string | null>(null);
+  const [attractions,    setAttractions]    = useState<Attraction[]>([]);
+  const [loadingList,    setLoadingList]    = useState(true);
 
   function handleView(a: Attraction) {
     addRecentlyViewed({
@@ -175,8 +190,14 @@ export default function AttractionsPage() {
     });
   }
 
-  // Load user + wishlist on mount
   useEffect(() => {
+    // Load attractions from DB
+    fetch('/api/attractions')
+      .then(r => r.json())
+      .then(d => setAttractions(d.attractions ?? []))
+      .finally(() => setLoadingList(false));
+
+    // Load user + wishlist
     Promise.all([
       fetch('/api/user/me').then(r => r.json()),
       fetch('/api/user/wishlist').then(r => r.json()),
@@ -188,12 +209,8 @@ export default function AttractionsPage() {
   }, []);
 
   async function handleToggleWishlist(a: Attraction) {
-    if (!userId) {
-      router.push(`/auth/login?redirect=/attractions`);
-      return;
-    }
+    if (!userId) { router.push(`/auth/login?redirect=/attractions`); return; }
     const wasWishlisted = wishlistSlugs.has(a.slug);
-    // Optimistic update
     setWishlistSlugs(prev => {
       const next = new Set(prev);
       wasWishlisted ? next.delete(a.slug) : next.add(a.slug);
@@ -205,16 +222,12 @@ export default function AttractionsPage() {
       await fetch('/api/user/wishlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          attractionId: a.slug,
-          attractionName: a.name,
-          attractionUrl: a.href !== '#' ? a.href : `/attractions`,
-        }),
+        body: JSON.stringify({ attractionId: a.slug, attractionName: a.name, attractionUrl: a.href }),
       });
     }
   }
 
-  const filtered = THAILAND_ATTRACTIONS.filter(a => {
+  const filtered = attractions.filter(a => {
     const matchSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
     const matchCat = !activeCategory || a.category === activeCategory;
     return matchSearch && matchCat;
@@ -272,7 +285,7 @@ export default function AttractionsPage() {
             </div>
           </section>
 
-          {/* ── THAILAND ATTRACTIONS ── */}
+          {/* ── ATTRACTIONS LIST ── */}
           <section>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
@@ -287,7 +300,22 @@ export default function AttractionsPage() {
                 Explore all <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            {filtered.length === 0 ? (
+
+            {loadingList ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
+                    <div className="h-44 bg-gray-200" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-3 bg-gray-200 rounded w-1/3" />
+                      <div className="h-4 bg-gray-200 rounded w-4/5" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-5 bg-gray-200 rounded w-1/4 mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-gray-400">
                 <p className="text-4xl mb-3">🔍</p>
                 <p className="font-semibold">No attractions found</p>
@@ -332,9 +360,9 @@ export default function AttractionsPage() {
             <h2 className="text-xl font-extrabold text-gray-900 mb-6 text-center">Why book with Werest Travel?</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { emoji: '⚡', title: 'Instant confirmation', desc: 'Get your voucher immediately after booking — no waiting.'    },
-                { emoji: '📱', title: 'Mobile vouchers',      desc: 'Show your phone at the entrance — no printing needed.'      },
-                { emoji: '🔒', title: 'Secure & trusted',     desc: 'SSL-encrypted payments. Trusted by 10,000+ travellers.'    },
+                { emoji: '⚡', title: 'Instant confirmation', desc: 'Get your voucher immediately after booking — no waiting.'  },
+                { emoji: '📱', title: 'Mobile vouchers',      desc: 'Show your phone at the entrance — no printing needed.'    },
+                { emoji: '🔒', title: 'Secure & trusted',     desc: 'SSL-encrypted payments. Trusted by 10,000+ travellers.'  },
               ].map(item => (
                 <div key={item.title} className="flex flex-col items-center text-center gap-3">
                   <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-3xl">{item.emoji}</div>

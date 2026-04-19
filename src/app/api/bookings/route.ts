@@ -48,9 +48,18 @@ export async function POST(req: NextRequest) {
       (sum: number, a: { unitPrice: number; quantity: number }) => sum + a.unitPrice * a.quantity, 0,
     );
 
-    // Server-validate pricing rule
+    // Server-validate pricing rule and capacity
     const rule = await prisma.pricingRule.findUnique({ where: { vehicleType: vehicleType as VehicleType } });
     if (!rule) return NextResponse.json({ success: false, error: 'Pricing not found' }, { status: 400 });
+
+    const pax  = parseInt(passengers)  || 0;
+    const bags = parseInt(luggage)     || 0;
+    if (pax > rule.maxPassengers || bags > rule.maxLuggage) {
+      return NextResponse.json(
+        { success: false, error: `${rule.name} capacity exceeded (max ${rule.maxPassengers} passengers, ${rule.maxLuggage} bags)` },
+        { status: 400 },
+      );
+    }
 
     const serverBase  = Math.round(rule.baseFare + rule.pricePerKm * distanceKm);
     const serverTotal = serverBase + resolvedAddOnsTotal;

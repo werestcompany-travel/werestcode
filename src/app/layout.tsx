@@ -1,38 +1,84 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import { LocaleProvider } from '@/context/LocaleContext';
 
+/* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.werest.com'),
   title: {
-    default: 'Werest Travel – Premium Private Transfers in Thailand',
+    default:  'Werest Travel — Private Transfers & Day Trips in Thailand',
     template: '%s | Werest Travel',
   },
   description:
-    'Book premium private transfers, tours, and attraction tickets across Thailand. Fast, reliable, and comfortable.',
-  keywords: ['Thailand transfer', 'private car hire', 'Bangkok transfer', 'Phuket transfer', 'Thailand taxi'],
-  openGraph: {
-    title: 'Werest Travel',
-    description: 'Your premium travel partner in Thailand',
-    type: 'website',
+    'Book fixed-price private airport transfers, day trips, and attraction tickets across Thailand. Verified drivers, instant confirmation, free cancellation. Bangkok, Phuket, Chiang Mai & more.',
+  keywords: [
+    'Thailand transfer', 'private car hire Thailand', 'Bangkok airport transfer',
+    'Phuket private transfer', 'Chiang Mai day trip', 'Thailand tour booking',
+  ],
+  applicationName: 'Werest Travel',
+  authors: [{ name: 'Werest Travel', url: 'https://www.werest.com' }],
+  creator: 'Werest Travel',
+  publisher: 'Werest Travel',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
+  openGraph: {
+    siteName:    'Werest Travel',
+    type:        'website',
+    locale:      'en_US',
+    title:       'Werest Travel — Private Transfers & Day Trips in Thailand',
+    description: 'Fixed-price private transfers and curated day trips across Thailand. Verified drivers, instant confirmation.',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Werest Travel — Private Transfers & Day Trips in Thailand' }],
+  },
+  twitter: {
+    card:  'summary_large_image',
+    title: 'Werest Travel — Private Transfers & Day Trips in Thailand',
+    description: 'Fixed-price private transfers and curated day trips across Thailand.',
+    images: ['/og-image.jpg'],
+  },
+  icons: {
+    icon:        '/favicon.ico',
+    shortcut:    '/favicon.ico',
+    apple:       '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 };
 
+/* ── Root layout ──────────────────────────────────────────────────────────── */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#2534ff" />
+
+        {/* DNS prefetch for external assets */}
+        <link rel="dns-prefetch" href="//images.unsplash.com" />
+        <link rel="dns-prefetch" href="//maps.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+        {/* Google Fonts — Thai & Simplified Chinese support */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body>
-        {children}
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 4000,
-            style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-          }}
-        />
+        <LocaleProvider>
+          {children}
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+            }}
+          />
+        </LocaleProvider>
       </body>
     </html>
   );

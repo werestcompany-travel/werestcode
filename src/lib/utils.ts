@@ -58,11 +58,8 @@ export const STATUS_COLORS: Record<BookingStatus, string> = {
   CANCELLED: 'bg-red-100 text-red-800',
 };
 
-export const VEHICLE_LABELS: Record<VehicleType, string> = {
-  SEDAN: 'Sedan',
-  SUV: 'SUV',
-  MINIVAN: 'Minivan',
-};
+// Re-exported from vehicles.ts — single source of truth for all vehicle metadata
+export { VEHICLE_LABELS } from '@/lib/vehicles';
 
 export const STATUS_FLOW: BookingStatus[] = [
   'PENDING',

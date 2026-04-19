@@ -36,6 +36,20 @@ enum DiscountType {
   FIXED
 }
 
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BlogCategory {
+  BANGKOK
+  PATTAYA
+  THAILAND
+  PHUKET
+  KRABI
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -254,6 +268,7 @@ model AttractionListing {
   href          String              @default("#")
   isActive      Boolean             @default(true)
   sortOrder     Int                 @default(0)
+  featureImage  String?
   // Rich content fields
   overview      String?
   highlights    Json?
@@ -269,6 +284,46 @@ model AttractionListing {
 
   @@index([category])
   @@index([isActive])
+}
+
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+
+model BlogPost {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  title          String
+  excerpt        String       @db.Text
+  content        String       @db.Text
+  featuredImage  String?
+
+  category       BlogCategory
+  tags           String[]
+
+  status         BlogStatus   @default(DRAFT)
+  publishedAt    DateTime?
+
+  // SEO
+  seoTitle       String?
+  seoDescription String?
+
+  // Author
+  authorName     String       @default("Werest Travel")
+  authorTitle    String?
+
+  // Structured content blocks (JSON arrays)
+  faqs           Json?        // [{ q: string; a: string }]
+  ctaBlocks      Json?        // [{ title: string; description: string; href: string; buttonLabel: string }]
+  relatedServices Json?       // [{ title: string; href: string; description?: string }]
+  relatedSlugs   String[]     // slugs of related BlogPost records
+
+  readingTimeMin Int          @default(5)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
 }
 
 model AttractionPackage {

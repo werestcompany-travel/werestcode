@@ -1,82 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Car, Map, Ticket } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { TabType } from '@/types';
 import PrivateRideForm from './PrivateRideForm';
 import ToursForm from './ToursForm';
 import TicketsForm from './TicketsForm';
+import { useLocale } from '@/context/LocaleContext';
 
-interface Tab {
-  id: TabType;
-  label: string;
-  icon: React.ReactNode;
-  active: boolean;
-}
+interface PrefillRoute { from: string; to: string; }
 
-const TABS: Tab[] = [
-  { id: 'private-ride', label: 'Private Ride',        icon: <Car className="w-4 h-4" />,    active: true  },
-  { id: 'tours',        label: 'Tours',               icon: <Map className="w-4 h-4" />,    active: false },
-  { id: 'tickets',      label: 'Attraction Tickets',  icon: <Ticket className="w-4 h-4" />, active: false },
-];
-
-export default function SearchTabs() {
+export default function SearchTabs({ prefillRoute }: { prefillRoute?: PrefillRoute | null }) {
   const [activeTab, setActiveTab] = useState<TabType>('private-ride');
+  const { t } = useLocale();
+
+  // Auto-switch to Private Transfers tab when a route is prefilled
+  useEffect(() => {
+    if (prefillRoute) setActiveTab('private-ride');
+  }, [prefillRoute]);
+
+  const TABS: { id: TabType; label: string; icon: React.ReactNode; soon?: boolean }[] = [
+    { id: 'private-ride', label: t('tab.transfers'), icon: <Car    className="w-4 h-4" /> },
+    { id: 'tours',        label: t('tab.tours'),     icon: <Map    className="w-4 h-4" />, soon: true },
+    { id: 'tickets',      label: t('tab.tickets'),   icon: <Ticket className="w-4 h-4" /> },
+  ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.18)] overflow-hidden w-full max-w-3xl mx-auto">
-      {/* Tab Bar */}
-      <div className="flex border-b border-gray-100">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'relative flex-1 flex items-center justify-center gap-2 py-4 px-3 text-sm font-semibold transition-all duration-200 select-none',
-              activeTab === tab.id
-                ? 'text-brand-700 bg-brand-50/60'
-                : tab.active
-                ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                : 'text-gray-400 cursor-pointer hover:bg-gray-50',
-            )}
-          >
-            {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
-            <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+    <div className="w-full max-w-5xl mx-auto">
 
-            {/* Coming soon pill */}
-            {!tab.active && (
-              <span className="absolute top-2 right-2 text-[9px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full leading-none">
-                SOON
-              </span>
-            )}
-
-            {/* Active underline */}
-            {activeTab === tab.id && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 rounded-full" />
-            )}
-          </button>
-        ))}
+      {/* ── GoTher-style pill tab bar: rounded-left pill, diagonal-cut right edge ── */}
+      <div className="flex items-stretch">
+        <div
+          className="inline-flex items-center gap-0.5 px-1 py-1.5"
+          style={{
+            background: 'linear-gradient(to right, #2534ff 0%, #1420cc 100%)',
+            /* left side fully rounded, right side open (no radius) */
+            borderRadius: '5px',
+            /* diagonal cut: top-right is 44px shorter than bottom-right */
+            clipPath: 'polygon(0 0, calc(100% - 44px) 0, 100% 100%, 0 100%)',
+            /* extra right padding so last tab content clears the diagonal */
+            paddingRight: '60px',
+          }}
+        >
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-150 select-none whitespace-nowrap ${
+                  isActive
+                    ? 'bg-white text-[#2534ff] shadow-md'
+                    : 'text-white/90 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+                {tab.soon && (
+                  <span className="text-[9px] font-black bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full leading-none ml-0.5">
+                    SOON
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Form Panel – animated swap */}
-      <div className="p-5 sm:p-6">
-        {activeTab === 'private-ride' && (
-          <div className="animate-fade-in">
-            <PrivateRideForm />
-          </div>
-        )}
-        {activeTab === 'tours' && (
-          <div className="animate-fade-in">
-            <ToursForm />
-          </div>
-        )}
-        {activeTab === 'tickets' && (
-          <div className="animate-fade-in">
-            <TicketsForm />
-          </div>
-        )}
+      {/* ── Search form card ── */}
+      <div className="mt-2">
+        {activeTab === 'private-ride' && <PrivateRideForm prefillRoute={prefillRoute} />}
+        {activeTab === 'tours'        && <ToursForm />}
+        {activeTab === 'tickets'      && <TicketsForm />}
       </div>
     </div>
   );
