@@ -19,9 +19,9 @@ export default function SearchTabs({ prefillRoute }: { prefillRoute?: PrefillRou
     if (prefillRoute) setActiveTab('private-ride');
   }, [prefillRoute]);
 
-  const TABS: { id: TabType; label: string; icon: React.ReactNode; soon?: boolean }[] = [
+  const TABS: { id: TabType; label: string; icon: React.ReactNode }[] = [
     { id: 'private-ride', label: t('tab.transfers'), icon: <Car    className="w-4 h-4" /> },
-    { id: 'tours',        label: t('tab.tours'),     icon: <Map    className="w-4 h-4" />, soon: true },
+    { id: 'tours',        label: t('tab.tours'),     icon: <Map    className="w-4 h-4" /> },
     { id: 'tickets',      label: t('tab.tickets'),   icon: <Ticket className="w-4 h-4" /> },
   ];
 
@@ -56,11 +56,6 @@ export default function SearchTabs({ prefillRoute }: { prefillRoute?: PrefillRou
               >
                 {tab.icon}
                 {tab.label}
-                {tab.soon && (
-                  <span className="text-[9px] font-black bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full leading-none ml-0.5">
-                    SOON
-                  </span>
-                )}
               </button>
             );
           })}

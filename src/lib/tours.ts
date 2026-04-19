@@ -98,7 +98,7 @@ export const TOURS: Tour[] = [
       { step: '08:30', title: 'Damnoen Saduak Floating Market', desc: 'Board a longtail boat and explore the colourful floating market, browsing fresh produce, tropical fruits and handmade souvenirs from local vendors.' },
       { step: '10:30', title: 'Free time & snacks', desc: 'Enjoy an hour of free exploration. Try freshly made Pad Thai or coconut ice cream from floating vendors.' },
       { step: '11:30', title: 'Drive to Maeklong', desc: 'Short 30-minute air-conditioned drive to the Maeklong Railway Market.' },
-      { step: '12:00', title: 'Maeklong Railway Market', desc: 'Walk through the incredible market that spills onto the train tracks. If you're lucky, you'll witness the folding-umbrella routine when the train passes.' },
+      { step: '12:00', title: 'Maeklong Railway Market', desc: "Walk through the incredible market that spills onto the train tracks. If you're lucky, you'll witness the folding-umbrella routine when the train passes." },
       { step: '13:30', title: 'Return to Bangkok', desc: 'Comfortable minivan journey back to your hotel, arriving approximately 15:00–16:00.' },
     ],
     options: [

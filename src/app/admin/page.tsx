@@ -2,261 +2,279 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import BookingTable from '@/components/admin/BookingTable';
-import StatusTimeline from '@/components/tracking/StatusTimeline';
-import { StatusBadge } from '@/components/ui/Badge';
-import { AdminBookingRow, BookingDetail, BookingStatus } from '@/types';
-import { formatCurrency, formatDate, VEHICLE_LABELS, STATUS_LABELS } from '@/lib/utils';
-import toast from 'react-hot-toast';
-import Link from 'next/link';
+import AdminShell from '@/components/admin/AdminShell';
+import { formatCurrency } from '@/lib/utils';
 import {
-  LayoutDashboard, LogOut, RefreshCw, X,
-  TrendingUp, Clock, CheckCircle2, XCircle, Ticket, Package, Tag,
+  Car, Ticket, MapPin, TrendingUp, Clock,
+  CheckCircle2, AlertCircle, ArrowRight, RefreshCw,
 } from 'lucide-react';
+import Link from 'next/link';
 
-interface Stats {
-  total: number;
-  pending: number;
-  active: number;
-  completed: number;
-  revenue: number;
-}
+interface TransferStats { total: number; pending: number; active: number; completed: number; revenue: number }
+interface AttractionStats { total: number; pending: number; confirmed: number; revenue: number }
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [bookings, setBookings] = useState<AdminBookingRow[]>([]);
-  const [stats, setStats]       = useState<Stats | null>(null);
-  const [detail, setDetail]     = useState<BookingDetail | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [transferStats,   setTransferStats]   = useState<TransferStats | null>(null);
+  const [attractionStats, setAttractionStats] = useState<AttractionStats | null>(null);
+  const [recentTransfers,   setRecentTransfers]   = useState<any[]>([]);
+  const [recentAttractions, setRecentAttractions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchBookings = useCallback(async () => {
+  const load = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/admin/bookings');
-      if (res.status === 401) { router.push('/admin/login'); return; }
-      const json = await res.json();
-      setBookings(json.data?.bookings ?? []);
-      setStats(json.data?.stats ?? null);
-    } catch {
-      toast.error('Failed to load bookings');
+      const [tRes, aRes] = await Promise.all([
+        fetch('/api/admin/bookings'),
+        fetch('/api/admin/attraction-bookings'),
+      ]);
+      if (tRes.status === 401 || aRes.status === 401) { router.push('/admin/login'); return; }
+      const tJson = await tRes.json();
+      const aJson = await aRes.json();
+      setTransferStats(tJson.data?.stats ?? null);
+      setRecentTransfers((tJson.data?.bookings ?? []).slice(0, 5));
+      setAttractionStats(aJson.stats ?? null);
+      setRecentAttractions((aJson.bookings ?? []).slice(0, 5));
     } finally {
       setLoading(false);
     }
   }, [router]);
 
-  useEffect(() => { fetchBookings(); }, [fetchBookings]);
+  useEffect(() => { load(); }, [load]);
 
-  const handleStatusChange = async (bookingId: string, status: BookingStatus) => {
-    try {
-      const res = await fetch(`/api/bookings/${bookingId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, updatedBy: 'Admin' }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      toast.success(`Status updated to ${STATUS_LABELS[status]}`);
-      await fetchBookings();
-      if (detail?.id === bookingId) {
-        const detailRes = await fetch(`/api/bookings/${bookingId}`);
-        const detailJson = await detailRes.json();
-        setDetail(detailJson.data);
-      }
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Update failed');
-    }
-  };
-
-  const handleViewDetail = async (bookingId: string) => {
-    const res = await fetch(`/api/bookings/${bookingId}`);
-    const json = await res.json();
-    setDetail(json.data);
-  };
-
-  const handleLogout = async () => {
-    await fetch('/api/admin/auth', { method: 'DELETE' });
-    router.push('/admin/login');
-  };
+  const totalRevenue = (transferStats?.revenue ?? 0) + (attractionStats?.revenue ?? 0);
+  const totalBookings = (transferStats?.total ?? 0) + (attractionStats?.total ?? 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sidebar / Top bar */}
-      <div className="bg-brand-800 text-white">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-              <span className="font-bold text-sm">W</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4 text-brand-300" />
-              <span className="font-semibold">Admin Dashboard</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/admin/attraction-bookings"
-              className="flex items-center gap-1.5 text-xs text-brand-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
-              <Ticket className="w-3.5 h-3.5" /> Attraction Bookings
-            </Link>
-            <Link href="/admin/attractions"
-              className="flex items-center gap-1.5 text-xs text-brand-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
-              <Package className="w-3.5 h-3.5" /> Attractions
-            </Link>
-            <Link href="/admin/discount-codes"
-              className="flex items-center gap-1.5 text-xs text-brand-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
-              <Tag className="w-3.5 h-3.5" /> Discount Codes
-            </Link>
-            <button
-              onClick={fetchBookings}
-              className="flex items-center gap-1.5 text-xs text-brand-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs text-brand-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Logout
-            </button>
-          </div>
-        </div>
+    <AdminShell title="Dashboard" subtitle="Welcome back! Here's what's happening today.">
+
+      {/* ── Top stat cards ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+        <StatCard
+          color="bg-brand-600"
+          icon={<TrendingUp className="w-5 h-5 text-white" />}
+          label="Total Bookings"
+          value={loading ? '—' : String(totalBookings)}
+        />
+        <StatCard
+          color="bg-emerald-500"
+          icon={<CheckCircle2 className="w-5 h-5 text-white" />}
+          label="Total Revenue"
+          value={loading ? '—' : formatCurrency(totalRevenue)}
+        />
+        <StatCard
+          color="bg-amber-500"
+          icon={<Clock className="w-5 h-5 text-white" />}
+          label="Pending Transfers"
+          value={loading ? '—' : String(transferStats?.pending ?? 0)}
+        />
+        <StatCard
+          color="bg-violet-500"
+          icon={<AlertCircle className="w-5 h-5 text-white" />}
+          label="Pending Tickets"
+          value={loading ? '—' : String(attractionStats?.pending ?? 0)}
+        />
       </div>
 
-      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Stats */}
-        {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard icon={<TrendingUp className="w-5 h-5 text-brand-600" />} label="Total Bookings" value={stats.total} />
-            <StatCard icon={<Clock className="w-5 h-5 text-amber-500" />}       label="Pending"        value={stats.pending} />
-            <StatCard icon={<Clock className="w-5 h-5 text-blue-500" />}        label="Active"         value={stats.active} />
-            <StatCard icon={<CheckCircle2 className="w-5 h-5 text-green-500" />} label="Completed"     value={stats.completed} />
-            <StatCard
-              icon={<XCircle className="w-5 h-5 text-brand-600" />}
-              label="Total Revenue"
-              value={formatCurrency(stats.revenue)}
-              isText
-            />
-          </div>
-        )}
+      {/* ── Section cards ──────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
+        <SectionCard
+          icon={<Car className="w-5 h-5 text-brand-600" />}
+          iconBg="bg-brand-50"
+          title="Private Transfers"
+          stats={[
+            { label: 'Total',     value: transferStats?.total     ?? 0 },
+            { label: 'Active',    value: transferStats?.active    ?? 0 },
+            { label: 'Completed', value: transferStats?.completed ?? 0 },
+          ]}
+          revenue={transferStats?.revenue}
+          href="/admin/transfers"
+          loading={loading}
+        />
+        <SectionCard
+          icon={<MapPin className="w-5 h-5 text-emerald-600" />}
+          iconBg="bg-emerald-50"
+          title="Tours"
+          stats={[
+            { label: 'Listed',   value: 8 },
+            { label: 'Active',   value: 8 },
+            { label: 'Bookings', value: 0 },
+          ]}
+          href="/admin/tours"
+          loading={false}
+        />
+        <SectionCard
+          icon={<Ticket className="w-5 h-5 text-violet-600" />}
+          iconBg="bg-violet-50"
+          title="Attraction Tickets"
+          stats={[
+            { label: 'Total',     value: attractionStats?.total     ?? 0 },
+            { label: 'Confirmed', value: attractionStats?.confirmed ?? 0 },
+            { label: 'Pending',   value: attractionStats?.pending   ?? 0 },
+          ]}
+          revenue={attractionStats?.revenue}
+          href="/admin/attraction-tickets"
+          loading={loading}
+        />
+      </div>
 
-        {/* Table */}
-        {loading ? (
-          <div className="bg-white rounded-2xl p-8 text-center text-gray-400">Loading bookings…</div>
-        ) : (
-          <BookingTable
-            bookings={bookings}
-            onStatusChange={handleStatusChange}
-            onViewDetail={handleViewDetail}
-          />
-        )}
-      </main>
+      {/* ── Recent bookings ────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-      {/* Detail drawer */}
-      {detail && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40" onClick={() => setDetail(null)} />
-          <div className="w-full max-w-md bg-white shadow-2xl overflow-y-auto animate-slide-up">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
-              <div>
-                <p className="font-mono font-bold text-brand-700">{detail.bookingRef}</p>
-                <StatusBadge status={detail.currentStatus} />
-              </div>
-              <button onClick={() => setDetail(null)} className="p-2 rounded-lg hover:bg-gray-100">
-                <X className="w-4 h-4" />
-              </button>
+        {/* Recent transfers */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <div className="flex items-center gap-2">
+              <Car className="w-4 h-4 text-brand-600" />
+              <h2 className="text-sm font-bold text-gray-900">Recent Transfers</h2>
             </div>
-
-            <div className="p-5 space-y-5">
-              {/* Customer */}
-              <Section title="Customer">
-                <Info label="Name"  value={detail.customerName} />
-                <Info label="Phone" value={detail.customerPhone} />
-                <Info label="Email" value={detail.customerEmail} />
-                {detail.specialNotes && <Info label="Notes" value={detail.specialNotes} />}
-              </Section>
-
-              {/* Trip */}
-              <Section title="Trip">
-                <Info label="Pickup"   value={detail.pickupAddress} />
-                <Info label="Drop-off" value={detail.dropoffAddress} />
-                <Info label="Date"     value={formatDate(detail.pickupDate)} />
-                <Info label="Time"     value={detail.pickupTime} />
-                <Info label="Distance" value={`${detail.distanceKm.toFixed(1)} km`} />
-                <Info label="Vehicle"  value={VEHICLE_LABELS[detail.vehicleType]} />
-                <Info label="Pax / Bags" value={`${detail.passengers} / ${detail.luggage}`} />
-              </Section>
-
-              {/* Pricing */}
-              <Section title="Pricing">
-                <Info label="Base fare"  value={formatCurrency(detail.basePrice)} />
-                {detail.bookingAddOns.map((ba) => (
-                  <Info key={ba.addOn.name} label={`${ba.addOn.icon ?? ''} ${ba.addOn.name} × ${ba.quantity}`} value={formatCurrency(ba.unitPrice * ba.quantity)} />
-                ))}
-                <Info label="TOTAL" value={formatCurrency(detail.totalPrice)} bold />
-              </Section>
-
-              {/* Timeline */}
-              <Section title="Status Timeline">
-                <StatusTimeline currentStatus={detail.currentStatus} history={detail.statusHistory} />
-              </Section>
-
-              {/* Quick status update */}
-              <Section title="Update Status">
-                <div className="grid grid-cols-2 gap-2">
-                  {(['DRIVER_CONFIRMED', 'DRIVER_STANDBY', 'DRIVER_PICKED_UP', 'COMPLETED', 'CANCELLED'] as BookingStatus[]).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => handleStatusChange(detail.id, s)}
-                      className="text-xs rounded-lg border border-gray-200 py-2 px-3 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 transition-colors text-gray-600 font-medium"
-                    >
-                      {STATUS_LABELS[s]}
-                    </button>
-                  ))}
+            <Link href="/admin/transfers" className="flex items-center gap-1 text-xs text-brand-600 font-semibold hover:text-brand-800">
+              View all <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {loading ? (
+              <p className="text-xs text-gray-400 text-center py-8">Loading…</p>
+            ) : recentTransfers.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">No bookings yet</p>
+            ) : recentTransfers.map((b) => (
+              <div key={b.id} className="flex items-center justify-between px-5 py-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-900 truncate">{b.customerName}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{b.pickupAddress} → {b.dropoffAddress}</p>
                 </div>
-              </Section>
-            </div>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="text-xs font-bold text-gray-900">{formatCurrency(b.totalPrice)}</p>
+                  <StatusPill status={b.currentStatus} />
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
+
+        {/* Recent attraction bookings */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <div className="flex items-center gap-2">
+              <Ticket className="w-4 h-4 text-violet-600" />
+              <h2 className="text-sm font-bold text-gray-900">Recent Ticket Bookings</h2>
+            </div>
+            <Link href="/admin/attraction-tickets" className="flex items-center gap-1 text-xs text-brand-600 font-semibold hover:text-brand-800">
+              View all <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {loading ? (
+              <p className="text-xs text-gray-400 text-center py-8">Loading…</p>
+            ) : recentAttractions.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">No bookings yet</p>
+            ) : recentAttractions.map((b) => (
+              <div key={b.id} className="flex items-center justify-between px-5 py-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-900 truncate">{b.customerName}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{b.attractionName}</p>
+                </div>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="text-xs font-bold text-gray-900">{formatCurrency(b.totalPrice)}</p>
+                  <AttractionStatusPill status={b.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Refresh */}
+      <div className="mt-5 flex justify-end">
+        <button onClick={load} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors">
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh data
+        </button>
+      </div>
+    </AdminShell>
+  );
+}
+
+/* ── Sub-components ──────────────────────────────────────────────────────────── */
+
+function StatCard({ color, icon, label, value }: { color: string; icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+      <div className={`w-11 h-11 ${color} rounded-xl flex items-center justify-center shrink-0 shadow-sm`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs text-gray-400 font-medium">{label}</p>
+        <p className="text-xl font-extrabold text-gray-900 leading-tight mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({
+  icon, iconBg, title, stats, revenue, href, loading,
+}: {
+  icon: React.ReactNode; iconBg: string; title: string;
+  stats: { label: string; value: number }[];
+  revenue?: number; href: string; loading: boolean;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-9 h-9 ${iconBg} rounded-xl flex items-center justify-center`}>{icon}</div>
+          <p className="text-sm font-bold text-gray-900">{title}</p>
+        </div>
+        <Link href={href} className="text-[11px] text-brand-600 font-semibold hover:text-brand-800 flex items-center gap-0.5">
+          Manage <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-gray-50 rounded-xl p-2.5 text-center">
+            <p className="text-base font-extrabold text-gray-900">{loading ? '—' : s.value}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+      {revenue !== undefined && (
+        <div className="border-t border-gray-50 pt-3">
+          <p className="text-[10px] text-gray-400">Total Revenue</p>
+          <p className="text-sm font-extrabold text-brand-700">{loading ? '—' : formatCurrency(revenue)}</p>
         </div>
       )}
     </div>
   );
 }
 
-function StatCard({
-  icon, label, value, isText,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number | string;
-  isText?: boolean;
-}) {
+const STATUS_COLORS: Record<string, string> = {
+  PENDING:           'bg-amber-100 text-amber-700',
+  DRIVER_CONFIRMED:  'bg-blue-100 text-blue-700',
+  DRIVER_STANDBY:    'bg-indigo-100 text-indigo-700',
+  DRIVER_PICKED_UP:  'bg-violet-100 text-violet-700',
+  COMPLETED:         'bg-green-100 text-green-700',
+  CANCELLED:         'bg-red-100 text-red-700',
+};
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pending', DRIVER_CONFIRMED: 'Confirmed', DRIVER_STANDBY: 'Standby',
+  DRIVER_PICKED_UP: 'En Route', COMPLETED: 'Done', CANCELLED: 'Cancelled',
+};
+function StatusPill({ status }: { status: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-card p-4 flex items-center gap-3">
-      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className={`font-extrabold ${isText ? 'text-base text-brand-700' : 'text-xl text-gray-900'}`}>
-          {value}
-        </p>
-      </div>
-    </div>
+    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-500'}`}>
+      {STATUS_LABELS[status] ?? status}
+    </span>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+const ATTR_COLORS: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700', CONFIRMED: 'bg-green-100 text-green-700',
+  CANCELLED: 'bg-red-100 text-red-700', USED: 'bg-gray-100 text-gray-500',
+};
+function AttractionStatusPill({ status }: { status: string }) {
   return (
-    <div>
-      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{title}</h3>
-      <div className="space-y-2">{children}</div>
-    </div>
-  );
-}
-
-function Info({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex items-start gap-2 text-sm">
-      <span className="text-gray-400 w-28 shrink-0">{label}</span>
-      <span className={`text-gray-800 flex-1 ${bold ? 'font-bold text-brand-700' : ''}`}>{value}</span>
-    </div>
+    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${ATTR_COLORS[status] ?? 'bg-gray-100 text-gray-500'}`}>
+      {status}
+    </span>
   );
 }

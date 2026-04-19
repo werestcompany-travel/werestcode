@@ -9,7 +9,7 @@ import VehicleSelector from '@/components/booking/VehicleSelector';
 import AddOnsSelector from '@/components/booking/AddOnsSelector';
 import PriceSummary from '@/components/booking/PriceSummary';
 import { VehicleType, PricingRule, AddOn, SelectedAddOn } from '@/types';
-import { ArrowLeft, Loader2, Calendar, Clock, Users, Briefcase, ArrowRight, Pencil } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Clock, Users, Briefcase, ArrowRight, Pencil, MapPin } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import TripEditPanel from '@/components/booking/TripEditPanel';
 
@@ -245,12 +245,26 @@ function ResultsPageInner() {
 
                 {!isEditing && <div className="mb-3" />}
 
-                {/* Interactive Google Maps route */}
-                {mapsReady && (
+                {/* Route — map when Google Maps ready, address fallback otherwise */}
+                {mapsReady ? (
                   <MiniRouteMap
                     pickupAddress={pickupAddress}   pickupLat={pickupLat}   pickupLng={pickupLng}
                     dropoffAddress={dropoffAddress} dropoffLat={dropoffLat} dropoffLng={dropoffLng}
                   />
+                ) : (
+                  <div className="space-y-2 text-xs pt-1">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-brand-600 mt-0.5 shrink-0" />
+                      <p className="text-gray-600 leading-snug">{pickupAddress || 'Pickup location'}</p>
+                    </div>
+                    <div className="w-px h-4 bg-gray-200 ml-[6px]" />
+                    <div className="flex items-start gap-2">
+                      <div className="w-3.5 h-3.5 flex items-center justify-center mt-0.5 shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-100" />
+                      </div>
+                      <p className="text-gray-600 leading-snug">{dropoffAddress || 'Drop-off location'}</p>
+                    </div>
+                  </div>
                 )}
               </div>
 

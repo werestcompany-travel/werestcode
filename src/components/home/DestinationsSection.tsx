@@ -29,7 +29,7 @@ type DestTabKey = typeof DEST_TAB_KEYS[number];
 const DEST_ROUTES: Record<DestTabKey, DestRoute[]> = {
   'dest.tab.bkk': [
     { fromCode: 'BKK', fromCity: 'Bangkok', toCode: 'PTY', toCity: 'Pattaya',    price: '฿1,800', image: 'photo-1544551763-77ef2d0cfc6c' },
-    { fromCode: 'BKK', fromCity: 'Bangkok', toCode: 'HHN', toCity: 'Hua Hin',    price: '฿1,800', image: 'photo-1559592413-7cbb3aa3b08e' },
+    { fromCode: 'BKK', fromCity: 'Bangkok', toCode: 'HHN', toCity: 'Hua Hin',    price: '฿1,800', image: 'photo-1552465011-b4e21bf6e79a' },
     { fromCode: 'BKK', fromCity: 'Bangkok', toCode: 'CNX', toCity: 'Chiang Mai', price: '฿5,500', image: 'photo-1558618666-fcd25c85cd64' },
     { fromCode: 'BKK', fromCity: 'Bangkok', toCode: 'KBI', toCity: 'Krabi',      price: '฿3,200', image: 'photo-1467003909585-2f8a72700288' },
   ],
