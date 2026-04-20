@@ -34,3 +34,4 @@ prisma/migrations/
 .DS_Store
 *.pem
 Thumbs.db
+.claude/
