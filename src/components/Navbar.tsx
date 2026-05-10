@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, User, Heart, LogOut, ChevronDown, BookOpen, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocale, type Lang, type Currency } from '@/context/LocaleContext';
+import SignInModal from '@/components/auth/SignInModal';
 
 const LANGUAGES: { code: Lang; label: string; flagSrc: string; native: string }[] = [
   { code: 'EN', flagSrc: 'https://flagcdn.com/w40/gb.png',  label: 'English', native: 'English'  },
@@ -19,7 +20,7 @@ const CURRENCIES: { code: Currency; name: string }[] = [
   { code: 'THB', name: 'Thai Baht'     },
 ];
 
-export default function Navbar({ transparent = false }: { transparent?: boolean }) {
+export default function Navbar({ transparent = false, onMenuToggle }: { transparent?: boolean; onMenuToggle?: () => void }) {
   const { lang, currency, setLang, setCurrency, t } = useLocale();
 
   const [open,         setOpen]         = useState(false);
@@ -27,6 +28,7 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [localeOpen,   setLocaleOpen]   = useState(false);
   const [scrolled,     setScrolled]     = useState(false);
+  const [authModal,    setAuthModal]    = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const localeRef   = useRef<HTMLDivElement>(null);
 
@@ -69,20 +71,31 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
         isDark ? 'opacity-0' : 'opacity-100',
       )} />
 
-      <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="relative z-10 w-full px-4 sm:px-6 lg:pl-3 lg:pr-8 h-16 flex items-center gap-4">
 
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-            <span className="font-bold text-sm text-white">W</span>
-          </div>
-          <span className={`font-bold text-xl tracking-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Werest<span className={`font-light transition-colors duration-500 ${isDark ? 'text-white/80' : 'text-brand-500'}`}> Travel</span>
-          </span>
-        </Link>
+        {/* Hamburger + Logo — grouped so they align as one unit */}
+        <div className="flex items-center gap-2 shrink-0">
+          {onMenuToggle && (
+            <button
+              onClick={onMenuToggle}
+              className="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg transition-colors shrink-0"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className={`w-5 h-5 ${isDark ? 'text-white/80' : 'text-gray-600'}`} />
+            </button>
+          )}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+              <span className="font-bold text-sm text-white">W</span>
+            </div>
+            <span className={`font-bold text-xl tracking-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Werest<span className={`font-light transition-colors duration-500 ${isDark ? 'text-white/80' : 'text-brand-500'}`}> Travel</span>
+            </span>
+          </Link>
+        </div>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6 ml-auto">
           {[
             { href: '/',            key: 'nav.home'        },
             { href: '/attractions', key: 'nav.attractions' },
@@ -210,27 +223,30 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/auth/register"
-                className={`text-sm font-medium transition-colors duration-300 ${isDark ? 'text-white/90 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
-                {t('nav.register')}
-              </Link>
-              <Link href="/auth/login"
-                className="text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-full transition-colors duration-200">
-                {t('nav.login')}
-              </Link>
-            </div>
+            <button
+              onClick={() => setAuthModal(true)}
+              className={`text-sm font-bold px-5 py-2 rounded-full transition-colors duration-200 ${
+                isDark
+                  ? 'bg-white text-[#2534ff] hover:bg-white/90'
+                  : 'bg-[#2534ff] hover:bg-[#1a27d9] text-white'
+              }`}
+            >
+              Sign in/register
+            </button>
           )}
         </div>
 
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-white/90' : 'text-gray-600'}`}
+          className={`md:hidden ml-auto p-2 rounded-lg transition-colors ${isDark ? 'text-white/90' : 'text-gray-600'}`}
         >
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </nav>
+
+      {/* ── Sign in/register modal ── */}
+      <SignInModal open={authModal} onClose={() => setAuthModal(false)} />
 
       {/* ── Mobile menu ── */}
       {open && (
@@ -290,14 +306,12 @@ export default function Navbar({ transparent = false }: { transparent?: boolean 
             </>
           ) : (
             <div className="flex gap-3 pt-2">
-              <Link href="/auth/register" onClick={() => setOpen(false)}
-                className="flex-1 text-center text-sm font-semibold border border-brand-600 text-brand-600 py-2.5 rounded-xl">
-                {t('nav.register')}
-              </Link>
-              <Link href="/auth/login" onClick={() => setOpen(false)}
-                className="flex-1 text-center text-sm font-bold bg-brand-600 text-white py-2.5 rounded-xl">
-                {t('nav.login')}
-              </Link>
+              <button
+                onClick={() => { setOpen(false); setAuthModal(true); }}
+                className="flex-1 text-center text-sm font-bold bg-[#2534ff] text-white py-2.5 rounded-xl"
+              >
+                Sign in/register
+              </button>
             </div>
           )}
         </div>
