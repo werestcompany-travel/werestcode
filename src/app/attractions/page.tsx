@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/context/AuthModalContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
@@ -169,6 +170,7 @@ function AttractionCard({
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function AttractionsPage() {
   const router = useRouter();
+  const { openModal } = useAuthModal();
   const { addItem: addRecentlyViewed } = useRecentlyViewed();
   const [search,         setSearch]         = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -209,7 +211,7 @@ export default function AttractionsPage() {
   }, []);
 
   async function handleToggleWishlist(a: Attraction) {
-    if (!userId) { router.push(`/auth/login?redirect=/attractions`); return; }
+    if (!userId) { openModal('email'); return; }
     const wasWishlisted = wishlistSlugs.has(a.slug);
     setWishlistSlugs(prev => {
       const next = new Set(prev);

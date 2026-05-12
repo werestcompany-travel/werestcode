@@ -3,9 +3,11 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import TourCard from '@/components/tours/TourCard'
+import TourGrid from '@/components/tours/TourGrid'
 import TourSearchInput from '@/components/tours/TourSearchInput'
-import { searchTours } from '@/lib/tours'
+import TourSortSelect from '@/components/tours/TourSortSelect'
+import { searchTours, TOURS, type Tour } from '@/lib/tours'
+import { prisma } from '@/lib/db'
 import { Sparkles, X } from 'lucide-react'
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -36,19 +38,60 @@ const POPULAR_DESTINATIONS = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface ToursPageProps {
-  searchParams: { q?: string; destination?: string; category?: string; date?: string; type?: string }
+  searchParams: { q?: string; destination?: string; category?: string; date?: string; type?: string; sort?: string }
 }
 
-export default function ToursPage({ searchParams }: ToursPageProps) {
-  const { q = '', destination = '', category = '', date = '', type = '' } = searchParams
+async function getAllTours(): Promise<Tour[]> {
+  try {
+    const dbTours = await prisma.tour.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    })
+    if (dbTours.length > 0) {
+      // Map DB Tour fields to the Tour interface shape
+      return dbTours.map(t => ({
+        slug:          t.slug,
+        title:         t.title,
+        subtitle:      t.subtitle ?? '',
+        location:      t.location,
+        cities:        t.cities,
+        duration:      t.duration,
+        maxGroupSize:  t.maxGroupSize,
+        languages:     t.languages,
+        rating:        t.rating,
+        reviewCount:   t.reviewCount,
+        category:      t.category as Tour['category'],
+        badge:         t.badge as Tour['badge'] ?? undefined,
+        images:        t.images,
+        highlights:    t.highlights,
+        description:   t.description,
+        includes:      t.includes,
+        excludes:      t.excludes,
+        itinerary:     (t.itinerary as unknown as Tour['itinerary']) ?? [],
+        options:       (t.options as unknown as Tour['options']) ?? [],
+        meetingPoint:  t.meetingPoint ?? '',
+        importantInfo: t.importantInfo,
+        reviews:       (t.reviews as unknown as Tour['reviews']) ?? [],
+      }))
+    }
+  } catch (err) {
+    console.warn('[tours/page] DB fetch failed, falling back to static data:', err)
+  }
+  // Fall back to hardcoded seed data
+  return TOURS
+}
 
-  const tours = searchTours({ q, destination, category, type })
+export default async function ToursPage({ searchParams }: ToursPageProps) {
+  const { q = '', destination = '', category = '', date = '', type = '', sort = '' } = searchParams
+
+  const allTours = await getAllTours()
+  const tours = searchTours({ q, destination, category, type, sort }, allTours)
   const hasFilters = !!(q || destination || category)
 
   // Build a URL with the current params except what you want to change
   const buildUrl = (overrides: Record<string, string>) => {
     const p = new URLSearchParams()
-    const base = { q, destination, category, date, type }
+    const base = { q, destination, category, date, type, sort }
     const merged = { ...base, ...overrides }
     Object.entries(merged).forEach(([k, v]) => { if (v) p.set(k, v) })
     const s = p.toString()
@@ -117,6 +160,14 @@ export default function ToursPage({ searchParams }: ToursPageProps) {
         {/* ── Results ──────────────────────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+          {/* Sort dropdown */}
+          <div className="flex items-center justify-end mb-4">
+            <label className="text-xs text-gray-500 mr-2 shrink-0">Sort by</label>
+            <Suspense>
+              <TourSortSelect />
+            </Suspense>
+          </div>
+
           {/* Active filter chips + result summary */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div className="flex flex-wrap items-center gap-2">
@@ -165,6 +216,7 @@ export default function ToursPage({ searchParams }: ToursPageProps) {
 
           {/* Tour grid */}
           {tours.length === 0 ? (
+
             <div className="text-center py-20">
               <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
               <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
@@ -195,11 +247,7 @@ export default function ToursPage({ searchParams }: ToursPageProps) {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              {tours.map(tour => (
-                <TourCard key={tour.slug} tour={tour} />
-              ))}
-            </div>
+            <TourGrid tours={tours} />
           )}
 
           {/* Popular destination shortcuts — only when no filters active */}

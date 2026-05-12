@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { db } from '@/lib/db';
+import { ROUTES, ALL_ROUTES } from '@/lib/routes';
 
 const SITE_URL = 'https://www.werest.com';
 
@@ -57,5 +58,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // skip
   }
 
-  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes];
+  // Programmatic SEO route pages — legacy [route] pages
+  const routePages: MetadataRoute.Sitemap = ROUTES.map(r => ({
+    url: `${SITE_URL}/routes/${r.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.75,
+  }));
+
+  // Programmatic SEO route pages — new [slug] TransferRoute pages
+  const transferRoutePages: MetadataRoute.Sitemap = ALL_ROUTES.map(r => ({
+    url: `${SITE_URL}/routes/${r.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes, ...routePages, ...transferRoutePages];
 }

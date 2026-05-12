@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import JsonLd from '@/components/seo/JsonLd';
+import { bookingReservationSchema } from '@/lib/seo/schema';
 import { StatusBadge } from '@/components/ui/Badge';
 import { formatCurrency, formatDate, VEHICLE_LABELS } from '@/lib/utils';
-import { CheckCircle2, MapPin, Calendar, Clock, Users, Briefcase, ArrowRight } from 'lucide-react';
+import { CheckCircle2, MapPin, Calendar, Clock, Users, Briefcase, ArrowRight, CalendarPlus } from 'lucide-react';
 
 interface Props {
   params: { bookingId: string };
@@ -23,6 +25,7 @@ export default async function ConfirmationPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd data={bookingReservationSchema(booking)} />
       <Navbar />
       <main className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
@@ -69,6 +72,25 @@ export default async function ConfirmationPage({ params }: Props) {
                   <span className="font-semibold">{formatCurrency(ba.unitPrice * ba.quantity)}</span>
                 </div>
               ))}
+              {/* Surcharge row — derived from addOnsTotal minus the sum of individual add-ons */}
+              {(() => {
+                const addOnSum = booking.bookingAddOns.reduce((s, ba) => s + ba.unitPrice * ba.quantity, 0);
+                const surcharge = Math.round(booking.addOnsTotal - addOnSum);
+                return surcharge > 0 ? (
+                  <div className="flex justify-between text-gray-600">
+                    <span>Service surcharge</span>
+                    <span className="font-semibold">{formatCurrency(surcharge)}</span>
+                  </div>
+                ) : null;
+              })()}
+              {booking.discountAmount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>
+                    Discount{booking.discountCode ? ` (${booking.discountCode})` : ''}
+                  </span>
+                  <span>−{formatCurrency(booking.discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-gray-900 border-t border-gray-100 pt-2 text-base">
                 <span>Total</span>
                 <span className="text-brand-700">{formatCurrency(booking.totalPrice)}</span>
@@ -97,6 +119,17 @@ export default async function ConfirmationPage({ params }: Props) {
             >
               Back to Home
             </Link>
+          </div>
+
+          {/* Calendar download */}
+          <div className="text-center pt-1">
+            <a
+              href={`/api/ics/${booking.id}`}
+              className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+            >
+              <CalendarPlus className="w-4 h-4" />
+              Add to Google Calendar / Apple Calendar
+            </a>
           </div>
         </div>
       </main>

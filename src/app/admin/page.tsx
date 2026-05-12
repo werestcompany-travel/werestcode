@@ -12,13 +12,34 @@ import Link from 'next/link';
 
 interface TransferStats { total: number; pending: number; active: number; completed: number; revenue: number }
 interface AttractionStats { total: number; pending: number; confirmed: number; revenue: number }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Booking = any;
+
+function getLast7Days(): { label: string; dateStr: string }[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return {
+      label:   d.toLocaleDateString('en', { weekday: 'short' }),
+      dateStr: d.toISOString().split('T')[0],
+    };
+  });
+}
+
+function revenueForDay(bookings: Booking[], dateStr: string): number {
+  return bookings
+    .filter(b => b.currentStatus !== 'CANCELLED')
+    .filter(b => (b.pickupDate ?? b.createdAt ?? '').startsWith(dateStr))
+    .reduce((s: number, b: Booking) => s + (b.totalPrice ?? 0), 0);
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [transferStats,   setTransferStats]   = useState<TransferStats | null>(null);
   const [attractionStats, setAttractionStats] = useState<AttractionStats | null>(null);
-  const [recentTransfers,   setRecentTransfers]   = useState<any[]>([]);
-  const [recentAttractions, setRecentAttractions] = useState<any[]>([]);
+  const [allTransfers,      setAllTransfers]      = useState<Booking[]>([]);
+  const [recentTransfers,   setRecentTransfers]   = useState<Booking[]>([]);
+  const [recentAttractions, setRecentAttractions] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -31,8 +52,10 @@ export default function AdminDashboard() {
       if (tRes.status === 401 || aRes.status === 401) { router.push('/admin/login'); return; }
       const tJson = await tRes.json();
       const aJson = await aRes.json();
+      const allB  = tJson.data?.bookings ?? [];
       setTransferStats(tJson.data?.stats ?? null);
-      setRecentTransfers((tJson.data?.bookings ?? []).slice(0, 5));
+      setAllTransfers(allB);
+      setRecentTransfers(allB.slice(0, 5));
       setAttractionStats(aJson.stats ?? null);
       setRecentAttractions((aJson.bookings ?? []).slice(0, 5));
     } finally {
@@ -118,6 +141,58 @@ export default function AdminDashboard() {
         />
       </div>
 
+      {/* ── Revenue chart + Today's pickups ───────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
+
+        {/* 7-day revenue bar chart */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <p className="text-sm font-bold text-gray-900 mb-4">Revenue — Last 7 Days</p>
+          {loading ? (
+            <div className="h-28 flex items-end gap-2">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="flex-1 bg-gray-100 rounded-t animate-pulse" style={{ height: `${40 + i * 10}%` }} />
+              ))}
+            </div>
+          ) : (
+            <RevenueChart bookings={allTransfers} />
+          )}
+        </div>
+
+        {/* Today's pickups */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <p className="text-sm font-bold text-gray-900">Today&apos;s Pickups</p>
+            <span className="text-[10px] font-semibold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+              {loading ? '—' : allTransfers.filter(b =>
+                (b.pickupDate ?? '').startsWith(new Date().toISOString().split('T')[0]) &&
+                b.currentStatus !== 'CANCELLED'
+              ).length}
+            </span>
+          </div>
+          <div className="divide-y divide-gray-50 max-h-[180px] overflow-y-auto">
+            {loading ? (
+              <p className="text-xs text-gray-400 text-center py-6">Loading…</p>
+            ) : (() => {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const todayPickups = allTransfers.filter(b =>
+                (b.pickupDate ?? '').startsWith(todayStr) && b.currentStatus !== 'CANCELLED'
+              );
+              return todayPickups.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-6">No pickups today</p>
+              ) : todayPickups.map((b) => (
+                <div key={b.id} className="flex items-center justify-between px-4 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-gray-900 truncate">{b.customerName}</p>
+                    <p className="text-[10px] text-gray-400">{b.pickupTime ?? '—'}</p>
+                  </div>
+                  <StatusPill status={b.currentStatus} />
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      </div>
+
       {/* ── Recent bookings ────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
@@ -196,6 +271,37 @@ export default function AdminDashboard() {
 }
 
 /* ── Sub-components ──────────────────────────────────────────────────────────── */
+
+function RevenueChart({ bookings }: { bookings: Booking[] }) {
+  const days = getLast7Days();
+  const values = days.map(d => revenueForDay(bookings, d.dateStr));
+  const max = Math.max(...values, 1);
+
+  return (
+    <div className="flex items-end gap-1.5 h-28">
+      {days.map((d, i) => {
+        const pct = (values[i] / max) * 100;
+        const isToday = i === 6;
+        return (
+          <div key={d.dateStr} className="flex-1 flex flex-col items-center gap-1 group">
+            <div className="relative flex-1 w-full flex items-end">
+              <div
+                className={`w-full rounded-t-lg transition-all ${isToday ? 'bg-brand-600' : 'bg-brand-100 group-hover:bg-brand-300'}`}
+                style={{ height: `${Math.max(pct, 4)}%` }}
+              />
+              {values[i] > 0 && (
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {formatCurrency(values[i])}
+                </div>
+              )}
+            </div>
+            <span className={`text-[9px] font-semibold ${isToday ? 'text-brand-600' : 'text-gray-400'}`}>{d.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function StatCard({ color, icon, label, value }: { color: string; icon: React.ReactNode; label: string; value: string }) {
   return (

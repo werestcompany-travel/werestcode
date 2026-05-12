@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { Fragment, useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftRight, Calendar, ChevronDown, Users, Luggage, MapPin, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -254,10 +254,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   const Divider = () => <div className="w-px self-stretch bg-gray-200 shrink-0 my-3" />;
 
   return (
-    <div className="space-y-3">
-
-      {/* ── White card ── */}
-      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-visible">
+    <Fragment>
 
         {/* ── Sub-tabs ── */}
         <div className="flex items-center px-6 pt-4 pb-0 border-b border-gray-100">
@@ -436,19 +433,8 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
             </p>
           </div>
         )}
-      </div>
 
-      {/* ── Quick routes ── */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs text-white/60 font-medium">{t('form.popular')}</span>
-        {QUICK_ROUTES.map(r => (
-          <button key={r.label} type="button" onClick={() => applyQuick(r)}
-            className="text-xs bg-white/15 hover:bg-white/25 text-white border border-white/20 px-3 py-1.5 rounded-full font-medium transition-colors backdrop-blur-sm">
-            {r.label}
-          </button>
-        ))}
-      </div>
-    </div>
+    </Fragment>
   );
 }
 

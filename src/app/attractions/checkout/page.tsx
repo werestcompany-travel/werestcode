@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import {
   ArrowLeft, User, Mail, Phone, Calendar, MessageSquare,
   CreditCard, Banknote, Building2, Bitcoin, CheckCircle2,
-  ChevronRight, Minus, Plus, Trash2, Shield, Zap, Smartphone,
+  ChevronRight, Minus, Plus, Trash2, Shield, Zap, Smartphone, CalendarPlus,
 } from 'lucide-react';
 
 export default function AttractionCheckoutPage() { return <Suspense><CheckoutInner /></Suspense>; }
@@ -264,6 +264,15 @@ function CheckoutInner() {
                       className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl text-sm transition-colors">
                       Back to attraction
                     </Link>
+                  </div>
+                  <div className="text-center pt-3">
+                    <a
+                      href={`/api/ics/attraction/${bookingRef}`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+                    >
+                      <CalendarPlus className="w-4 h-4" />
+                      Add to Google Calendar / Apple Calendar
+                    </a>
                   </div>
                 </div>
               )}

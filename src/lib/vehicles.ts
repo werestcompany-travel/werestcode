@@ -46,19 +46,28 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     emoji:         '🚐',
     imageUrl:      '/images/minivan.png',
   },
+  LUXURY_MPV: {
+    maxPassengers: 6,
+    maxLuggage:    6,
+    name:          'Luxury MPV',
+    description:   'Toyota Alphard or similar – premium comfort for VIP transfers',
+    emoji:         '🚘',
+    imageUrl:      '/images/minivan.png', // replace with Alphard image when available
+  },
 };
 
 /* ── Convenience helpers ─────────────────────────────────────────────────── */
 
 /** Map of vehicle type → display label (e.g. SEDAN → 'Sedan') */
 export const VEHICLE_LABELS: Record<VehicleType, string> = {
-  SEDAN:   VEHICLE_CONFIGS.SEDAN.name,
-  SUV:     VEHICLE_CONFIGS.SUV.name,
-  MINIVAN: VEHICLE_CONFIGS.MINIVAN.name,
+  SEDAN:      VEHICLE_CONFIGS.SEDAN.name,
+  SUV:        VEHICLE_CONFIGS.SUV.name,
+  MINIVAN:    VEHICLE_CONFIGS.MINIVAN.name,
+  LUXURY_MPV: VEHICLE_CONFIGS.LUXURY_MPV.name,
 };
 
 /** All valid vehicle type keys, in display order */
-export const VEHICLE_TYPES: VehicleType[] = ['SEDAN', 'SUV', 'MINIVAN'];
+export const VEHICLE_TYPES: VehicleType[] = ['SEDAN', 'SUV', 'MINIVAN', 'LUXURY_MPV'];
 
 /**
  * Returns true when the requested passengers/luggage fit inside the vehicle.

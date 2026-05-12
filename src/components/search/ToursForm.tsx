@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Calendar, Tag, Search, ChevronDown } from 'lucide-react';
 import CalendarPicker from './CalendarPicker';
@@ -68,8 +68,7 @@ export default function ToursForm() {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-visible">
+    <Fragment>
 
         {/* Sub-tabs */}
         <div className="flex items-center px-6 pt-4 pb-0 border-b border-gray-100">
@@ -167,22 +166,7 @@ export default function ToursForm() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Quick suggestions */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs text-white/60 font-medium">{t('form.popular')}</span>
-        {['Bangkok', 'Chiang Mai', 'Phuket', 'Floating market', 'Elephant sanctuary'].map(s => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => handleChipClick(s)}
-            className="text-xs bg-white/15 hover:bg-white/25 text-white border border-white/20 px-3 py-1.5 rounded-full font-medium transition-colors backdrop-blur-sm"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-    </div>
+    </Fragment>
   );
 }

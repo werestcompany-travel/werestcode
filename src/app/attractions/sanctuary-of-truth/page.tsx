@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/context/AuthModalContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ReviewSection from '@/components/reviews/ReviewSection';
 import {
   Star, ChevronRight, MapPin, Clock, Users, Check, X,
   ChevronDown, Heart, Zap, Smartphone, Info,
@@ -137,6 +139,7 @@ type FaqItem       = { q: string; a: string };
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function SanctuaryDetailPage() {
   const router = useRouter();
+  const { openModal } = useAuthModal();
 
   // Dynamic data (DB-driven with fallbacks)
   const [gallery,      setGallery]      = useState<GalleryImage[]>(DEFAULT_GALLERY);
@@ -221,7 +224,7 @@ export default function SanctuaryDetailPage() {
   async function handleToggleWishlist() {
     const meRes = await fetch('/api/user/me');
     const meData = await meRes.json();
-    if (!meData.user) { router.push('/auth/login?redirect=/attractions/sanctuary-of-truth'); return; }
+    if (!meData.user) { openModal('email'); return; }
     if (wishlisted) {
       await fetch('/api/user/wishlist?attractionId=sanctuary-of-truth', { method: 'DELETE' });
     } else {
@@ -767,6 +770,13 @@ export default function SanctuaryDetailPage() {
 
           </div>
         </div>
+      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-12">
+        <ReviewSection
+          entityType="ATTRACTION"
+          entityId="sanctuary-of-truth"
+          entityName="Sanctuary of Truth"
+        />
       </div>
       <Footer />
     </>

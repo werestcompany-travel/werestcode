@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -8,13 +9,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">W</span>
-              </div>
-              <span className="font-bold text-xl text-white">
-                Werest<span className="text-brand-400 font-light"> Travel</span>
-              </span>
+            <div className="mb-4">
+              <Image
+                src="/images/logo.png"
+                alt="Werest Travel"
+                height={36}
+                width={119}
+                className="object-contain brightness-0 invert"
+              />
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
               Your premium travel partner in Thailand. Reliable private transfers across the country.
@@ -39,6 +41,8 @@ export default function Footer() {
               <li><Link href="/blog" className="hover:text-white transition-colors">Travel Blog</Link></li>
               <li><Link href="/attractions" className="hover:text-white transition-colors">Attractions</Link></li>
               <li><Link href="/tracking" className="hover:text-white transition-colors">Track Booking</Link></li>
+              <li><Link href="/deals" className="hover:text-white transition-colors">Deals &amp; Offers</Link></li>
+              <li><Link href="/partners" className="hover:text-white transition-colors">Partner Program</Link></li>
             </ul>
           </div>
 

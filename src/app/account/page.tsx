@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
   Heart, BookOpen, User, MapPin, Calendar, Ticket,
-  ExternalLink, Trash2, ChevronRight, Star, Package,
+  ExternalLink, Trash2, ChevronRight, Star, Package, Compass,
 } from 'lucide-react';
 
 interface UserInfo { id: string; name: string; email: string; phone?: string; createdAt: string; }
@@ -56,8 +56,38 @@ function AccountContent() {
   }, [router]);
 
   async function removeWishlist(attractionId: string) {
-    await fetch(`/api/user/wishlist?attractionId=${attractionId}`, { method: 'DELETE' });
+    await fetch(`/api/user/wishlist?attractionId=${encodeURIComponent(attractionId)}`, { method: 'DELETE' });
     setWishlist(prev => prev.filter(w => w.attractionId !== attractionId));
+  }
+
+  /** Derive display metadata from the attractionId prefix convention */
+  function getWishlistItemMeta(item: WishlistItem): {
+    icon: React.ReactNode
+    href: string
+    linkLabel: string
+  } {
+    const id = item.attractionId
+    if (id.startsWith('tour:')) {
+      const slug = id.slice('tour:'.length)
+      return {
+        icon: <MapPin className="w-5 h-5 text-brand-600" />,
+        href: `/tours/${slug}`,
+        linkLabel: 'View tour',
+      }
+    }
+    if (id.startsWith('place:')) {
+      return {
+        icon: <Compass className="w-5 h-5 text-brand-600" />,
+        href: '/attractions',
+        linkLabel: 'Browse experiences',
+      }
+    }
+    // Plain slug → attraction
+    return {
+      icon: <Star className="w-5 h-5 text-brand-600" />,
+      href: item.attractionUrl ?? '/attractions',
+      linkLabel: item.attractionUrl ? 'View attraction' : 'Browse tickets',
+    }
   }
 
   if (loading) {
@@ -142,41 +172,43 @@ function AccountContent() {
                 <div className="text-center py-20">
                   <Heart className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                   <p className="font-semibold text-gray-700 mb-1">Your wishlist is empty</p>
-                  <p className="text-sm text-gray-400 mb-6">Tap the heart icon on any attraction to save it here</p>
-                  <Link href="/attractions" className="inline-flex items-center gap-2 bg-brand-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-700 transition-colors">
-                    Browse attractions <ChevronRight className="w-4 h-4" />
-                  </Link>
+                  <p className="text-sm text-gray-400 mb-6">Tap the heart icon on any tour or attraction to save it here</p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <Link href="/tours" className="inline-flex items-center gap-2 bg-brand-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-700 transition-colors">
+                      Browse tours <ChevronRight className="w-4 h-4" />
+                    </Link>
+                    <Link href="/attractions" className="inline-flex items-center gap-2 border border-brand-600 text-brand-600 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-50 transition-colors">
+                      Browse attractions <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {wishlist.map(item => (
-                    <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow group">
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
-                          <Star className="w-5 h-5 text-brand-600" />
+                  {wishlist.map(item => {
+                    const meta = getWishlistItemMeta(item)
+                    return (
+                      <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow group">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
+                            {meta.icon}
+                          </div>
+                          <button onClick={() => removeWishlist(item.attractionId)}
+                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                            aria-label="Remove from wishlist">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button onClick={() => removeWishlist(item.attractionId)}
-                          className="text-gray-300 hover:text-red-500 transition-colors p-1">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <h3 className="font-bold text-gray-900 text-sm mb-1 leading-snug">{item.attractionName}</h3>
+                        <p className="text-xs text-gray-400 mb-4">
+                          Saved {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                        <Link href={meta.href}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-800 transition-colors">
+                          {meta.linkLabel} <ExternalLink className="w-3 h-3" />
+                        </Link>
                       </div>
-                      <h3 className="font-bold text-gray-900 text-sm mb-1 leading-snug">{item.attractionName}</h3>
-                      <p className="text-xs text-gray-400 mb-4">
-                        Saved {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                      {item.attractionUrl ? (
-                        <Link href={item.attractionUrl}
-                          className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-800 transition-colors">
-                          View attraction <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      ) : (
-                        <Link href="/attractions"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-800 transition-colors">
-                          Browse tickets <ChevronRight className="w-3 h-3" />
-                        </Link>
-                      )}
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>

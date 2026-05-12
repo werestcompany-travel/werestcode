@@ -45,6 +45,17 @@ async function main() {
         imageUrl:      VEHICLE_CONFIGS.MINIVAN.imageUrl,
         isActive:      true,
       },
+      {
+        vehicleType:   VehicleType.LUXURY_MPV,
+        name:          VEHICLE_CONFIGS.LUXURY_MPV.name,
+        description:   VEHICLE_CONFIGS.LUXURY_MPV.description,
+        maxPassengers: VEHICLE_CONFIGS.LUXURY_MPV.maxPassengers,
+        maxLuggage:    VEHICLE_CONFIGS.LUXURY_MPV.maxLuggage,
+        baseFare:      3500,
+        pricePerKm:    0,
+        imageUrl:      VEHICLE_CONFIGS.LUXURY_MPV.imageUrl,
+        isActive:      true,
+      },
     ],
   });
 

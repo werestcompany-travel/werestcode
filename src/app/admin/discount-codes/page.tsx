@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Plus, X, ChevronRight, Tag, Copy, Check,
-  Percent, DollarSign, Clock, ToggleLeft, ToggleRight, Trash2, Pencil,
+  Percent, DollarSign, Clock, ToggleLeft, ToggleRight, Trash2, Pencil, Users,
 } from 'lucide-react';
 
 interface DiscountCode {
@@ -12,6 +12,7 @@ interface DiscountCode {
   value: number; description: string | null;
   minOrderAmount: number | null; maxUses: number | null; usedCount: number;
   expiresAt: string | null; isActive: boolean;
+  newUserOnly: boolean; perUserLimit: number | null;
   createdAt: string; updatedAt: string;
 }
 interface Stats { total: number; active: number; expired: number; }
@@ -20,6 +21,7 @@ const EMPTY_FORM = {
   code: '', type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
   value: '', description: '', minOrderAmount: '', maxUses: '',
   expiresAt: '', isActive: true,
+  newUserOnly: false, perUserLimit: '',
 };
 
 function genCode() {
@@ -63,6 +65,8 @@ export default function AdminDiscountCodesPage() {
       maxUses: c.maxUses ? String(c.maxUses) : '',
       expiresAt: c.expiresAt ? c.expiresAt.slice(0, 10) : '',
       isActive: c.isActive,
+      newUserOnly: c.newUserOnly ?? false,
+      perUserLimit: c.perUserLimit ? String(c.perUserLimit) : '',
     });
     setError('');
     setShowModal(true);
@@ -208,6 +212,11 @@ export default function AdminDiscountCodesPage() {
                             ? <ToggleRight className="w-5 h-5 text-green-500" />
                             : <ToggleLeft  className="w-5 h-5 text-gray-300"  />}
                         </button>
+                        <Link href={`/admin/discount-codes/${c.id}`}
+                          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-brand-400 hover:text-brand-600 transition-colors"
+                          title="View redemptions">
+                          <Users className="w-3 h-3" />
+                        </Link>
                         <button onClick={() => openEdit(c)}
                           className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-brand-400 hover:text-brand-600 transition-colors">
                           <Pencil className="w-3 h-3" />
@@ -297,6 +306,23 @@ export default function AdminDiscountCodesPage() {
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Max uses</label>
                   <input type="number" value={form.maxUses} onChange={e => setForm(f => ({ ...f, maxUses: e.target.value }))}
+                    placeholder="Leave empty for unlimited"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                </div>
+              </div>
+
+              {/* New users only + Per-user limit */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">New users only</label>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, newUserOnly: !f.newUserOnly }))}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center gap-2 ${form.newUserOnly ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                    {form.newUserOnly ? <><ToggleRight className="w-4 h-4" /> New customers only</> : <><ToggleLeft className="w-4 h-4" /> All customers</>}
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Per-user limit</label>
+                  <input type="number" min="1" value={form.perUserLimit} onChange={e => setForm(f => ({ ...f, perUserLimit: e.target.value }))}
                     placeholder="Leave empty for unlimited"
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
                 </div>

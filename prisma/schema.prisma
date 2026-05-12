@@ -14,6 +14,7 @@ enum VehicleType {
   SEDAN
   SUV
   MINIVAN
+  LUXURY_MPV
 }
 
 enum BookingStatus {
@@ -62,10 +63,24 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  wishlist           WishlistItem[]
-  attractionBookings AttractionBooking[]
+  wishlist            WishlistItem[]
+  attractionBookings  AttractionBooking[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([email])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique // SHA-256 of the raw URL token
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([tokenHash])
+  @@index([userId])
 }
 
 model WishlistItem {
@@ -158,9 +173,17 @@ model Booking {
   specialNotes  String?
 
   // Pricing
-  basePrice   Float
-  addOnsTotal Float @default(0)
-  totalPrice  Float
+  basePrice       Float
+  addOnsTotal     Float @default(0)
+  discountAmount  Float @default(0)
+  discountCode    String?  // denormalized code for display (e.g. "WELCOME10")
+  discountCodeId  String?  // FK to DiscountCode (soft — not relational to allow code deletion)
+  totalPrice      Float    // base + addOns + surcharges - discount
+
+  // Driver assignment (optional — set by admin after booking)
+  driverId   String?
+  driver     Driver?  @relation("DriverBookings", fields: [driverId], references: [id])
+  driverName String?  // denormalized for display when driver record may change
 
   // Status
   currentStatus BookingStatus @default(PENDING)
@@ -246,11 +269,135 @@ model DiscountCode {
   usedCount      Int          @default(0)
   expiresAt      DateTime?
   isActive       Boolean      @default(true)
+  newUserOnly    Boolean      @default(false)
+  perUserLimit   Int?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  redemptions    DiscountRedemption[]
+
   @@index([code])
   @@index([isActive])
+}
+
+model DiscountRedemption {
+  id             String       @id @default(cuid())
+  discountCodeId String
+  discountCode   DiscountCode @relation(fields: [discountCodeId], references: [id])
+  customerEmail  String
+  bookingId      String       @unique
+  usedAt         DateTime     @default(now())
+
+  @@index([discountCodeId, customerEmail])
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  CONFIRMED
+  CANCELLED
+}
+
+model Inquiry {
+  id                 String        @id @default(cuid())
+  ref                String        @unique
+  status             InquiryStatus @default(NEW)
+  fullName           String
+  email              String
+  whatsapp           String
+  country            String?
+  travelDate         String?
+  flexibleDate       Boolean       @default(false)
+  adults             Int           @default(2)
+  children           Int           @default(0)
+  destination        String
+  multiDestination   Boolean       @default(false)
+  tourDuration       String?
+  hotelCategory      String?
+  budgetRange        String?
+  transportType      String?
+  activities         Json?
+  tourPreferences    String?
+  specialRequests    String?
+  source             String?
+  adminNotes         String?
+  lastContactedAt    DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+enum TourBookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model TourBooking {
+  id            String            @id @default(cuid())
+  bookingRef    String            @unique
+  tourSlug      String
+  tourTitle     String
+  optionLabel   String
+  bookingDate   DateTime
+  adultQty      Int
+  childQty      Int               @default(0)
+  adultPrice    Float
+  childPrice    Float             @default(0)
+  totalPrice    Float
+  customerName  String
+  customerEmail String
+  customerPhone String
+  status        TourBookingStatus @default(CONFIRMED)
+  userId        String?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([customerEmail])
+  @@index([bookingDate])
+  @@index([status])
+}
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+enum ReviewEntityType {
+  TOUR
+  ATTRACTION
+  TRANSFER
+}
+
+model Review {
+  id         String           @id @default(cuid())
+  entityType ReviewEntityType
+  entityId   String           // tourSlug | attractionSlug | bookingRef
+  entityName String           // display name of the thing reviewed
+
+  rating     Int              // 1–5
+  title      String?
+  body       String           @db.Text
+
+  // Reviewer
+  authorName  String
+  authorEmail String           // used to verify ownership, not shown publicly
+  verified    Boolean          @default(false) // set to true after booking lookup
+
+  // Moderation
+  isPublished Boolean          @default(false) // admin approves before showing
+  adminNotes  String?
+
+  // Link to user account if they were logged in
+  userId      String?
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([entityType, entityId, isPublished])
+  @@index([authorEmail])
+  @@index([isPublished])
 }
 
 model AttractionListing {
@@ -325,6 +472,91 @@ model BlogPost {
   @@index([status])
   @@index([category])
   @@index([publishedAt])
+}
+
+// ─── Tours ────────────────────────────────────────────────────────────────────
+
+model Tour {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  subtitle     String?
+  location     String
+  cities       String[] // destination keywords for search matching
+  duration     String
+  maxGroupSize Int      @default(15)
+  languages    String[]
+  rating       Float    @default(5.0)
+  reviewCount  Int      @default(0)
+  category     String   // day-trip | cultural | adventure | food | nature | water
+  badge        String?  // Best Seller | Top Rated | New
+  images       String[]
+  highlights   String[]
+  description  String   @db.Text
+  includes     String[]
+  excludes     String[]
+  itinerary    Json?    // TourItineraryItem[]
+  options      Json?    // TourOption[]
+  meetingPoint String?
+  importantInfo String[]
+  reviews      Json?    // TourReview[]
+  faqs               Json?
+  cancellationPolicy String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([slug])
+}
+
+// ─── Drivers & Vehicles ───────────────────────────────────────────────────────
+
+model Driver {
+  id             String      @id @default(cuid())
+  name           String
+  phone          String      @unique
+  licenseNumber  String?
+  languages      String[]    // e.g. ["English", "Thai"]
+  photoUrl       String?
+  isActive       Boolean     @default(true)
+  rating         Float       @default(5.0)
+  totalTrips     Int         @default(0)
+  notes          String?
+
+  vehicles       Vehicle[]
+  bookings       Booking[]   @relation("DriverBookings")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([phone])
+}
+
+model Vehicle {
+  id          String      @id @default(cuid())
+  plateNumber String      @unique
+  make        String      // e.g. "Toyota"
+  model       String      // e.g. "Alphard"
+  year        Int
+  vehicleType VehicleType
+  capacity    Int         @default(4)
+  color       String?
+  photoUrl    String?
+  isActive    Boolean     @default(true)
+
+  driverId    String?
+  driver      Driver?     @relation(fields: [driverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vehicleType])
+  @@index([isActive])
+  @@index([driverId])
 }
 
 model AttractionPackage {

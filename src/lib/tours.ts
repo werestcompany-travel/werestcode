@@ -526,13 +526,22 @@ export function getToursForDestination(destination: string): Tour[] {
 }
 
 /** Search / filter tours by text query, destination, category and trip type */
+function parseDurationHours(duration: string): number {
+  if (/full[\s-]?day/i.test(duration)) return 10
+  const m = duration.match(/(\d+(?:\.\d+)?)/)
+  return m ? parseFloat(m[1]) : 4
+}
+
 export function searchTours(params: {
   q?:           string
   destination?: string
   category?:    string
   type?:        string
-}): Tour[] {
-  let tours = [...TOURS]
+  duration?:    string   // 'half' (≤5h) | 'full' (>5h)
+  rating?:      string   // '4.5' | '4.0'
+  sort?:        string   // 'recommended' | 'price_asc' | 'price_desc' | 'rating' | 'popular'
+}, source?: Tour[]): Tour[] {
+  let tours = [...(source ?? TOURS)]
 
   // Destination filter — matches cities array, location field, or title
   if (params.destination?.trim()) {
@@ -552,6 +561,19 @@ export function searchTours(params: {
     tours = tours.filter(t => t.category === params.category)
   }
 
+  // Duration filter
+  if (params.duration === 'half') {
+    tours = tours.filter(t => parseDurationHours(t.duration) <= 5)
+  } else if (params.duration === 'full') {
+    tours = tours.filter(t => parseDurationHours(t.duration) > 5)
+  }
+
+  // Rating filter
+  if (params.rating) {
+    const minRating = parseFloat(params.rating)
+    if (!isNaN(minRating)) tours = tours.filter(t => t.rating >= minRating)
+  }
+
   // Free-text search — title, subtitle, description, highlights, location
   if (params.q?.trim()) {
     const q = params.q.trim().toLowerCase()
@@ -563,6 +585,22 @@ export function searchTours(params: {
       t.highlights.some(h => h.toLowerCase().includes(q)) ||
       t.cities.some(c => c.toLowerCase().includes(q)),
     )
+  }
+
+  // Sort
+  switch (params.sort) {
+    case 'price_asc':
+      tours.sort((a, b) => Math.min(...a.options.map(o => o.pricePerPerson)) - Math.min(...b.options.map(o => o.pricePerPerson)))
+      break
+    case 'price_desc':
+      tours.sort((a, b) => Math.min(...b.options.map(o => o.pricePerPerson)) - Math.min(...a.options.map(o => o.pricePerPerson)))
+      break
+    case 'rating':
+      tours.sort((a, b) => b.rating - a.rating)
+      break
+    case 'popular':
+      tours.sort((a, b) => b.reviewCount - a.reviewCount)
+      break
   }
 
   return tours

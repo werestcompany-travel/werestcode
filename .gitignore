@@ -27,16 +27,8 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma generated
-prisma/migrations/
-
 # misc
 .DS_Store
 *.pem
 Thumbs.db
-.claude/
-.claude/
-.claude/
-.claude/
-.claude/
 .claude/

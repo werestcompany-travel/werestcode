@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Car, MapPin, Ticket, Package,
-  Tag, FileText, LogOut, Search, Bell, Settings,
+  Tag, FileText, LogOut, Search, Bell, Settings, Inbox, Users, Star,
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -13,8 +13,10 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin',                  icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/admin/transfers',        icon: Car,             label: 'Transfers' },
+      { href: '/admin/drivers',          icon: Users,           label: 'Drivers' },
       { href: '/admin/tours',            icon: MapPin,          label: 'Tours' },
       { href: '/admin/attraction-tickets', icon: Ticket,        label: 'Attraction Tickets' },
+      { href: '/admin/inquiries',          icon: Inbox,          label: 'Inquiries' },
     ],
   },
   {
@@ -22,6 +24,7 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin/attractions',      icon: Package,  label: 'Manage Attractions' },
       { href: '/admin/discount-codes',   icon: Tag,      label: 'Discount Codes' },
+      { href: '/admin/reviews',          icon: Star,     label: 'Reviews' },
       { href: '/admin/blog',             icon: FileText, label: 'Blog' },
     ],
   },

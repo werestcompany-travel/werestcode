@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Clock, Calendar, ChevronRight, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import ReadingProgress from '@/components/blog/ReadingProgress'
 import ArticleBody from '@/components/blog/ArticleBody'
 import TableOfContents from '@/components/blog/TableOfContents'
 import BlogFAQ from '@/components/blog/BlogFAQ'
@@ -108,6 +109,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
 
+      <ReadingProgress />
       <Navbar />
 
       <main className="min-h-screen bg-white">

@@ -6,9 +6,10 @@ interface PricingConfig {
 }
 
 const PRICING: Record<VehicleType, PricingConfig> = {
-  SEDAN:   { baseFare: 500,  pricePerKm: 12 },
-  SUV:     { baseFare: 800,  pricePerKm: 18 },
-  MINIVAN: { baseFare: 1200, pricePerKm: 22 },
+  SEDAN:      { baseFare: 500,  pricePerKm: 12 },
+  SUV:        { baseFare: 800,  pricePerKm: 18 },
+  MINIVAN:    { baseFare: 1200, pricePerKm: 22 },
+  LUXURY_MPV: { baseFare: 3500, pricePerKm: 35 },
 };
 
 export function calculateBasePrice(vehicleType: VehicleType, distanceKm: number): number {
