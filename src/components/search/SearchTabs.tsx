@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Car, Compass, Ticket, Tag } from 'lucide-react';
+import { Car, Compass, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { TabType } from '@/types';
 import PrivateRideForm from './PrivateRideForm';
@@ -31,10 +31,9 @@ export default function SearchTabs({
   }, [activeService]);
 
   const TABS = [
-    { id: 'private-ride' as TabType, label: 'Private Transfers', Icon: Car,    badge: null,  href: undefined },
-    { id: 'tours'        as TabType, label: 'Tours & Experiences', Icon: Compass, badge: null,  href: undefined },
-    { id: 'tickets'      as TabType, label: 'Attractions ticket', Icon: Ticket,  badge: null,  href: undefined },
-    { id: 'deals'        as TabType, label: 'Deals',             Icon: Tag,     badge: 'Hot', href: '/deals'  },
+    { id: 'private-ride' as TabType, label: 'Private Transfers',  Icon: Car,     badge: null, href: undefined },
+    { id: 'tours'        as TabType, label: 'Tours & Experiences', Icon: Compass, badge: null, href: undefined },
+    { id: 'tickets'      as TabType, label: 'Attractions ticket',  Icon: Ticket,  badge: null, href: undefined },
   ];
 
   return (
@@ -42,7 +41,7 @@ export default function SearchTabs({
 
       {/* ── Floating pill tab bar — hidden on mobile (replaced by hero circular icons), visible sm+ ── */}
       <div className="relative z-10 hidden sm:flex justify-center overflow-x-auto [&::-webkit-scrollbar]:hidden px-4 sm:px-0">
-        <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.45)]">
+        <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full">
           {TABS.map(({ id, label, Icon, badge, href }) => {
             const isActive = activeTab === id;
             const cls = `flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap select-none ${

@@ -1,16 +1,11 @@
 'use client';
-import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import FlashDealBanner from '@/components/home/FlashDealBanner';
 import SearchTabs from '@/components/search/SearchTabs';
-import WhatsAppCTA from '@/components/home/WhatsAppCTA';
 import BlogCard from '@/components/blog/BlogCard';
-import DestinationGrid from '@/components/home/DestinationGrid';
-import PopularThisMonth from '@/components/home/PopularThisMonth';
 import DynamicTourSections from '@/components/home/DynamicTourSections';
 import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
@@ -104,11 +99,11 @@ const NEW_USER_CARDS = [
 
 /* ── Auto-slider promotional banners ─────────────────────────────────────── */
 const PROMO_BANNERS = [
-  { gradient: 'from-[#1a237e] to-[#1565c0]', tag: 'New User Offer',  title: 'First Booking — 10% Off',          desc: 'Sign in and save on your first private transfer',        cta: 'Claim Now',  href: '#',        openModal: true,  emoji: '🎉' },
-  { gradient: 'from-[#004d40] to-[#00695c]', tag: 'Free Cancel',     title: 'Book with Confidence',             desc: 'Cancel for free up to 24 hours before pickup',           cta: 'Learn More', href: '/booking', openModal: false, emoji: '🛡️' },
-  { gradient: 'from-[#4a148c] to-[#7b1fa2]', tag: 'Earn Rewards',    title: 'Collect Werest Points',            desc: 'Earn on every trip and redeem for free rides',            cta: 'Join Now',   href: '#',        openModal: true,  emoji: '⭐' },
-  { gradient: 'from-[#bf360c] to-[#f4511e]', tag: 'Popular Route',   title: 'Bangkok → Pattaya ฿1,800',        desc: 'Fixed price · No surge · Available 24/7',                cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false, emoji: '🚗' },
-  { gradient: 'from-[#e65100] to-[#fbc02d]', tag: 'Airport Special', title: 'Airport Pickup from ฿900',        desc: 'Professional driver waiting at arrivals',                 cta: 'See Routes', href: '/results', openModal: false, emoji: '✈️' },
+  { img: '/images/promos/promo1.avif', tag: 'New User Offer',  title: 'First Booking — 10% Off',   desc: 'Sign in and save on your first private transfer',  cta: 'Claim Now',  href: '#',        openModal: true  },
+  { img: '/images/promos/promo2.avif', tag: 'Free Cancel',     title: 'Book with Confidence',      desc: 'Cancel for free up to 24 hours before pickup',     cta: 'Learn More', href: '/booking', openModal: false },
+  { img: '/images/promos/promo3.avif', tag: 'Earn Rewards',    title: 'Collect Werest Points',     desc: 'Earn on every trip and redeem for free rides',      cta: 'Join Now',   href: '#',        openModal: true  },
+  { img: '/images/promos/promo4.avif', tag: 'Popular Route',   title: 'Bangkok → Pattaya ฿1,800', desc: 'Fixed price · No surge · Available 24/7',           cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false },
+  { img: '/images/promos/promo5.avif', tag: 'Airport Special', title: 'Airport Pickup from ฿900', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
 ];
 
 /* ── Get-inspired destination cards ─────────────────────────────────────── */
@@ -238,7 +233,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   }, [selectedDest]);
 
   /* ── Promo slider ── */
-  const sliderRef  = useRef<HTMLDivElement>(null);
+  const sliderRef    = useRef<HTMLDivElement>(null);
+  const trackRef     = useRef<HTMLDivElement>(null);
+  const touchStartX  = useRef(0);
+  const touchStartY  = useRef(0);
+  const touchOffset  = useRef(0);
+  const isDragging   = useRef(false);
   const [sliderIdx,  setSliderIdx]  = useState(0);
   const [sliderStep, setSliderStep] = useState(0); // px per item + gap
 
@@ -261,6 +261,44 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     return () => clearInterval(t);
   }, [sliderStep]);
 
+  /* ── Promo slider touch drag handlers ── */
+  const handlePromoTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchOffset.current = 0;
+    isDragging.current  = false;
+    if (trackRef.current) trackRef.current.style.transition = 'none';
+  };
+
+  const handlePromoTouchMove = (e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    // Ignore if vertical scroll is dominant and drag hasn't started yet
+    if (!isDragging.current && Math.abs(dx) < Math.abs(dy)) return;
+    isDragging.current  = true;
+    touchOffset.current = dx;
+    if (trackRef.current && sliderStep) {
+      trackRef.current.style.transform = `translateX(${-(sliderIdx * sliderStep) + dx}px)`;
+    }
+  };
+
+  const handlePromoTouchEnd = () => {
+    if (trackRef.current) trackRef.current.style.transition = 'transform 500ms ease-in-out';
+    if (!isDragging.current) return;
+    const delta = touchOffset.current;
+    const ipv   = window.innerWidth >= 640 ? 3 : 1;
+    const max   = PROMO_BANNERS.length - ipv;
+    let newIdx  = sliderIdx;
+    if (delta < -50 && sliderIdx < max) newIdx = sliderIdx + 1;
+    else if (delta > 50 && sliderIdx > 0) newIdx = sliderIdx - 1;
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(-${newIdx * sliderStep}px)`;
+    }
+    setSliderIdx(newIdx);
+    touchOffset.current = 0;
+    isDragging.current  = false;
+  };
+
   /** Parse "City A to City B" → prefill hero form + scroll up */
   const handleSeoRouteClick = useCallback((route: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -275,7 +313,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
   return (
     <Fragment>
-      <FlashDealBanner />
       <Navbar
         onHamburgerClick={() => setSidebarPinned(p => !p)}
         onHamburgerHoverEnter={() => { if (!sidebarPinned) setSidebarHover(true); }}
@@ -287,7 +324,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Full-page sticky sidebar ── */}
         <aside
-          className={`hidden md:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
+          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
           style={{
             top: navHidden ? '0px' : '64px',
             height: navHidden ? '100vh' : 'calc(100vh - 64px)',
@@ -397,93 +434,79 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Hero" className="mb-[30px]">
+      <section aria-label="Hero" className="mb-0 sm:mb-[30px]">
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden md:overflow-hidden pt-16 relative"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden md:overflow-hidden pt-16 relative bg-white sm:bg-transparent min-h-0 sm:min-h-[500px] md:min-h-[580px]"
         >
-          {/* Background landscape */}
-          <Image
-            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=85"
-            alt=""
-            fill
-            priority
-            className="object-cover object-bottom"
-            sizes="100vw"
-          />
-          {/* Blue gradient overlay */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
-          {/* Mobile: Trip.com-style circular service icons */}
-          <div className="relative z-10 md:hidden w-full px-4 pt-3 pb-1 shrink-0">
-            <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
-              {SERVICE_TABS.map((tab) => {
+          {/* Background landscape — hidden on mobile, visible sm+ */}
+          <div className="hidden sm:block absolute inset-0">
+            <Image
+              src="/images/hero-bg.jpg"
+              alt=""
+              fill
+              priority
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+          </div>
+          {/* Blue gradient overlay — hidden on mobile, visible sm+ */}
+          <div className="hidden sm:block absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
+          {/* Mobile: Trip.com-style icon grid (4-column, 2-row) */}
+          <div className="relative z-10 md:hidden w-full px-3 pt-[18px] pb-0 shrink-0">
+            <div className="grid grid-cols-4 gap-y-5">
+              {SERVICE_TABS.map((tab, idx) => {
                 const Icon   = tab.icon;
                 const active = activeService === tab.id;
-                const itemStyle: CSSProperties = { width: 'calc(25% - 6px)' };
+                const isPrimary = idx < 4; // first row gets solid filled circles
+
+                // Mobile (white bg): blue circles for primary, gray for secondary
+                // sm+ (blue bg): same blue for primary, frosted glass for secondary
+                const circleClass = isPrimary
+                  ? 'bg-[#2534ff]'
+                  : active
+                    ? 'bg-gray-200 ring-2 ring-brand-300 sm:bg-white/30 sm:backdrop-blur-sm sm:ring-white/60'
+                    : 'bg-gray-100 border border-gray-200 sm:bg-white/15 sm:backdrop-blur-sm sm:border-white/30';
 
                 const content = (
                   <>
-                    <div className={`relative w-14 h-14 rounded-full flex items-center justify-center mx-auto transition-all duration-200 ${
-                      active
-                        ? 'bg-[#2534ff] shadow-[0_4px_20px_rgba(37,52,255,0.55)]'
-                        : 'bg-white/20 backdrop-blur-sm border border-white/25'
-                    }`}>
-                      <Icon className={`w-6 h-6 ${active ? 'text-white' : 'text-white/90'}`} />
+                    <div className={`relative w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto transition-all duration-200 ${circleClass}`}>
+                      <Icon className={`w-[26px] h-[26px] ${isPrimary ? 'text-white' : 'text-brand-600 sm:text-white'}`} />
                       {tab.badge && (
-                        <span className={`absolute -top-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full leading-none ${
+                        <span className={`absolute -top-0.5 -right-0.5 text-[8px] font-black px-1 py-0.5 rounded-full leading-none ${
                           tab.badgeColor === 'red'   ? 'bg-red-500 text-white'   :
-                          tab.badgeColor === 'blue'  ? 'bg-blue-500 text-white'  :
+                          tab.badgeColor === 'blue'  ? 'bg-blue-400 text-white'  :
                           tab.badgeColor === 'amber' ? 'bg-amber-400 text-white' :
-                          'bg-gray-500 text-white'
+                          'bg-white/80 text-gray-700'
                         }`}>{tab.badge}</span>
                       )}
                     </div>
-                    <p className={`mt-1.5 text-[10px] font-semibold leading-tight text-center ${
-                      active ? 'text-white' : 'text-white/80'
-                    }`}>
+                    <p className="mt-2 text-[11px] font-semibold leading-tight text-center text-gray-700 sm:text-white/90 px-0.5">
                       {tab.label}
                     </p>
                   </>
                 );
 
                 return tab.href ? (
-                  <Link key={tab.id} href={tab.href} className="flex flex-col items-center" style={itemStyle}>
+                  <Link key={tab.id} href={tab.href} className="flex flex-col items-center">
                     {content}
                   </Link>
                 ) : (
-                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className="flex flex-col items-center" style={itemStyle}>
+                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className="flex flex-col items-center">
                     {content}
                   </button>
                 );
               })}
             </div>
-            {/* Sub-row: quick-action links when Private Transfers is active */}
-            {activeService === 'transfer' && (
-              <div className="flex gap-2 justify-center mt-3">
-                {SERVICE_TABS.find(t => t.id === 'transfer')?.children?.map((child) => {
-                  const ChildIcon = child.icon;
-                  return (
-                    <Link
-                      key={child.id}
-                      href={child.href}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold bg-white/15 text-white/85 border border-white/25 hover:bg-white/25 transition-all backdrop-blur-sm"
-                    >
-                      <ChildIcon className="w-3 h-3" />
-                      {child.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          {/* Central content */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 md:py-12 flex flex-col items-center gap-3 sm:gap-5 text-center">
+          {/* Central content — desktop only */}
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-0 sm:py-8 md:py-12 flex flex-col items-center gap-3 sm:gap-5 text-center">
 
-            {/* Title */}
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
-              {activeService === 'transfer'    && 'Your Journey Starts Here'}
+            {/* Title — hidden on mobile */}
+            <h1 className="hidden sm:block text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              {activeService === 'transfer'    && <><span className="block">Your Thailand Journey</span><span className="block">Starts Here</span></>}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
               {activeService === 'deals'       && 'Exclusive Deals & Offers'}
@@ -492,8 +515,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               {activeService === 'rewards'     && 'Earn Werest Rewards'}
             </h1>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-5 gap-y-1 text-white/80 text-[11px] sm:text-[13px] font-medium">
+            {/* Trust badges — hidden on mobile */}
+            <div className="hidden sm:flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-5 gap-y-1 text-white/80 text-[11px] sm:text-[13px] font-medium">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Secure booking</span>
               <span className="text-white/30 hidden sm:block">|</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Support in approx. 30s</span>
@@ -501,13 +524,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Free cancellation</span>
             </div>
 
-            {/* Search container */}
+            {/* Search container — hidden on mobile, visible on sm+ */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="w-full my-3 sm:my-[30px]">
+              <div className="hidden sm:block w-full my-3 sm:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
               </div>
             ) : (
-              <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
+              <div className="hidden sm:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
                 {activeService === 'dinner'  && <Ship     className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'group'   && <Users    className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'rewards' && <Gift     className="w-12 h-12 text-amber-400 mx-auto mb-4" />}
@@ -540,14 +563,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           2. NEW USER EXCLUSIVE
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="New user exclusive" className="bg-white py-7">
+      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 sm:pt-7">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {NEW_USER_CARDS.map((c) => {
+              const mobileCard = 'shrink-0 w-[75vw] max-w-[264px] snap-start sm:w-auto sm:max-w-none';
               const cls = c.highlight
-                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[130px] sm:min-h-[148px]`
-                : `group flex flex-col justify-between rounded-2xl p-4 sm:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[130px] sm:min-h-[148px] bg-white`;
+                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px] sm:min-h-[148px] ${mobileCard}`
+                : `group flex flex-col justify-between rounded-2xl p-4 sm:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] sm:min-h-[148px] bg-white ${mobileCard}`;
 
               const inner = c.highlight ? (
                 <>
@@ -583,16 +608,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 </Link>
               );
             })}
-          </div>
-
-          {/* Mobile — see all link */}
-          <div className="sm:hidden mt-5 text-center">
-            <Link
-              href="/attractions"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
-            >
-              See all experiences <ArrowRight className="w-4 h-4" />
-            </Link>
+            {/* Trailing spacer so last card doesn't flush against screen edge on mobile */}
+            <div className="shrink-0 w-1 sm:hidden" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -635,21 +652,21 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             {/* Track */}
             <div ref={sliderRef} className="overflow-hidden">
               <div
-                className="flex gap-3 transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${sliderIdx * sliderStep}px)` }}
+                ref={trackRef}
+                className="flex gap-3"
+                style={{ transform: `translateX(-${sliderIdx * sliderStep}px)`, transition: 'transform 500ms ease-in-out' }}
+                onTouchStart={handlePromoTouchStart}
+                onTouchMove={handlePromoTouchMove}
+                onTouchEnd={handlePromoTouchEnd}
               >
                 {PROMO_BANNERS.map((b) => {
                   const inner = (
-                    <div className={`bg-gradient-to-r ${b.gradient} h-[145px] sm:h-[165px] flex items-center px-6 gap-5`}>
-                      <span className="text-4xl shrink-0">{b.emoji}</span>
-                      <div className="min-w-0">
-                        <span className="inline-block bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 uppercase tracking-wider">{b.tag}</span>
-                        <p className="text-white font-extrabold text-base sm:text-lg leading-tight">{b.title}</p>
-                        <p className="text-white/75 text-xs mt-0.5 truncate">{b.desc}</p>
-                      </div>
-                      <span className="shrink-0 ml-auto bg-white text-gray-900 font-bold text-xs px-4 py-2 rounded-full hover:bg-gray-100 transition-colors whitespace-nowrap">
-                        {b.cta}
-                      </span>
+                    <div className="relative h-[145px] sm:h-[165px] overflow-hidden">
+                      <img
+                        src={b.img}
+                        alt={b.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   );
                   return b.openModal ? (
@@ -929,25 +946,44 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         </div>
       </section>
 
-      {/* Destination inspiration grid */}
-      <DestinationGrid />
-
-      {/* Popular this month */}
-      <PopularThisMonth />
-
       {/* Dynamic tour sections — "Things to do in [City]" */}
       <DynamicTourSections />
 
       {/* ════════════════════════════════════════════════════════════
+          DISCOVER THE WONDERS OF THAILAND — full-width banner
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-label="Discover Thailand" className="hidden sm:block relative w-full overflow-hidden" style={{ height: 200 }}>
+        {/* Background photo — Phi Phi Island */}
+        <Image
+          src="https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1920&q=80"
+          alt="Discover Thailand — Phi Phi Island aerial view"
+          fill
+          className="object-cover object-center"
+          sizes="100vw"
+          unoptimized
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(5,12,40,0.72) 0%, rgba(10,22,70,0.58) 50%, rgba(5,12,40,0.72) 100%)' }} />
+        {/* Text */}
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <p className="text-white tracking-[0.25em] sm:tracking-[0.32em] text-base sm:text-xl md:text-3xl select-none drop-shadow-md uppercase font-light text-center">
+            Discover the wonders of&nbsp;
+            <strong className="font-extrabold tracking-[0.18em]" style={{ color: '#2534ff' }}>Thailand</strong>
+          </p>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="py-10 sm:py-16 bg-white">
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 sm:py-16 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="text-center mb-8 sm:mb-12">
+          <div className="text-center mb-4 sm:mb-12">
             <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 lg:gap-10">
+          <div className="bg-white rounded-2xl px-3 py-4 sm:px-6 sm:py-8">
+          <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible sm:gap-8 lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -957,28 +993,29 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="flex flex-col items-center text-center py-6 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[55vw] max-w-[220px] snap-start sm:w-auto sm:max-w-none flex flex-col items-center text-center py-6 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-3 sm:mb-5" style={{ height: 'clamp(100px, 18vw, 180px)' }}>
+                  <div className="relative w-full mb-3 sm:mb-5" style={{ height: 'clamp(130px, 23vw, 260px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
                       fill
                       className="object-contain drop-shadow-lg"
-                      sizes="(max-width: 640px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 55vw, 25vw"
                       quality={100}
                       unoptimized
                     />
                   </div>
                   <p className="text-base sm:text-lg font-semibold text-gray-800">{cls.name}</p>
-                  <div className={`mt-2 flex items-center gap-1 text-xs font-semibold text-brand-600 transition-all duration-200 ${open ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
+                  <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-brand-600">
                     <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                     Up to {cls.maxPax} passengers
                   </div>
                 </button>
               );
             })}
+          </div>
           </div>
         </div>
       </section>
@@ -987,7 +1024,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           9. TRAVEL BLOG
       ════════════════════════════════════════════════════════════ */}
       {latestPosts.length > 0 && (
-        <section aria-labelledby="blog-heading" className="py-20 bg-white">
+        <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between mb-8">
               <div>
@@ -1082,8 +1119,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         </main>{/* end main */}
       </div>{/* end flex shell */}
 
-      {/* Floating WhatsApp CTA */}
-      <WhatsAppCTA />
     </Fragment>
   );
 }
