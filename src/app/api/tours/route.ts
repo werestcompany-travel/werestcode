@@ -117,8 +117,9 @@ function buildFacets(tourList: Tour[]) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapDbTour(t: any): Tour {
+import { Tour as PrismaTour } from '@prisma/client'
+
+function mapDbTour(t: PrismaTour): Tour {
   return {
     slug: t.slug,
     title: t.title,
@@ -142,12 +143,12 @@ function mapDbTour(t: any): Tour {
     meetingPoint: t.meetingPoint ?? '',
     importantInfo: t.importantInfo,
     reviews: (t.reviews as unknown as Tour['reviews']) ?? [],
-    primaryLocation: t.primaryLocation as string | undefined,
-    tags: t.tags as string[] | undefined,
-    priceFrom: t.priceFrom as number | undefined,
-    isFeatured: t.isFeatured as boolean | undefined,
-    isPopular: t.isPopular as boolean | undefined,
-    instantConfirmation: t.instantConfirmation as boolean | undefined,
+    primaryLocation: t.primaryLocation,
+    tags: t.tags,
+    priceFrom: t.priceFrom,
+    isFeatured: t.isFeatured,
+    isPopular: t.isPopular,
+    instantConfirmation: t.instantConfirmation,
   }
 }
 

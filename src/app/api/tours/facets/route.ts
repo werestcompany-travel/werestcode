@@ -163,12 +163,12 @@ export async function GET(request: NextRequest) {
         meetingPoint: t.meetingPoint ?? '',
         importantInfo: t.importantInfo,
         reviews: (t.reviews as unknown as Tour['reviews']) ?? [],
-        primaryLocation: (t as Record<string, unknown>)['primaryLocation'] as string | undefined,
-        tags: (t as Record<string, unknown>)['tags'] as string[] | undefined,
-        priceFrom: (t as Record<string, unknown>)['priceFrom'] as number | undefined,
-        isFeatured: (t as Record<string, unknown>)['isFeatured'] as boolean | undefined,
-        isPopular: (t as Record<string, unknown>)['isPopular'] as boolean | undefined,
-        instantConfirmation: (t as Record<string, unknown>)['instantConfirmation'] as boolean | undefined,
+        primaryLocation: t.primaryLocation,
+        tags: t.tags,
+        priceFrom: t.priceFrom,
+        isFeatured: t.isFeatured,
+        isPopular: t.isPopular,
+        instantConfirmation: t.instantConfirmation,
       }))
     }
   } catch {
