@@ -8,6 +8,8 @@ import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import CookieConsent from '@/components/CookieConsent';
+import ChatWidget from '@/components/chat/ChatWidget';
+import { ChatProvider } from '@/context/ChatContext';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -80,16 +82,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <WishlistProvider>
             <AuthModalProvider>
-              {children}
-              <WhatsAppFloat />
-              <CookieConsent />
-              <Toaster
-                position="top-center"
-                toastOptions={{
-                  duration: 4000,
-                  style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-                }}
-              />
+              <ChatProvider>
+                {children}
+                <WhatsAppFloat />
+                <ChatWidget />
+                <CookieConsent />
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    duration: 4000,
+                    style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+                  }}
+                />
+              </ChatProvider>
             </AuthModalProvider>
           </WishlistProvider>
         </LocaleProvider>

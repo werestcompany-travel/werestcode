@@ -27,7 +27,7 @@ export default function WhatsAppFloat() {
   }, [])
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-none">
+    <div className="fixed bottom-[84px] right-6 z-50 flex flex-col items-end gap-2 pointer-events-none">
       {/* "Need help?" pill — desktop only, auto-hides after 5 s */}
       {showLabel && (
         <div className="hidden sm:flex items-center bg-white text-gray-800 text-sm font-semibold px-4 py-2 rounded-full shadow-lg border border-gray-100 pointer-events-auto">
