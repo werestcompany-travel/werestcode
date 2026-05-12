@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
       : [];
 
     const resolvedAddOns = (data.selectedAddOns ?? []).map((a) => {
-      const db = dbAddOns.find((d) => d.id === a.addOnId);
-      return db ? { ...a, unitPrice: db.price, name: db.name } : null;
+      const found = dbAddOns.find((d) => d.id === a.addOnId);
+      return found ? { ...a, unitPrice: found.price, name: found.name } : null;
     }).filter(Boolean) as { addOnId: string; quantity: number; unitPrice: number }[];
 
     const resolvedAddOnsTotal = resolvedAddOns.reduce(

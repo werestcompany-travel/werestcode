@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { ROUTES, ALL_ROUTES } from '@/lib/routes';
 
 const SITE_URL = 'https://www.werest.com';
@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic blog posts
   let blogRoutes: MetadataRoute.Sitemap = [];
   try {
-    const posts = await db.blogPost.findMany({
+    const posts = await prisma.blogPost.findMany({
       where: { status: 'PUBLISHED' },
       select: { slug: true, updatedAt: true },
       orderBy: { publishedAt: 'desc' },
@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic attraction pages
   let attractionRoutes: MetadataRoute.Sitemap = [];
   try {
-    const attractions = await db.attractionListing.findMany({
+    const attractions = await prisma.attractionListing.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true },
     });
@@ -74,5 +74,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes, ...routePages, ...transferRoutePages];
+  const seen = new Set(routePages.map(r => r.url));
+  const dedupedTransferRoutePages = transferRoutePages.filter(r => !seen.has(r.url));
+
+  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes, ...routePages, ...dedupedTransferRoutePages];
 }

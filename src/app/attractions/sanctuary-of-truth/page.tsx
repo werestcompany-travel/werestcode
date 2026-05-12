@@ -8,6 +8,10 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ReviewSection from '@/components/reviews/ReviewSection';
+import OpeningHoursCard from '@/components/attractions/OpeningHours';
+import DressCodeBadge from '@/components/attractions/DressCodeBadge';
+import TravellerPhotos from '@/components/attractions/TravellerPhotos';
+import GoodForTags from '@/components/attractions/GoodForTags';
 import {
   Star, ChevronRight, MapPin, Clock, Users, Check, X,
   ChevronDown, Heart, Zap, Smartphone, Info,
@@ -435,6 +439,22 @@ export default function SanctuaryDetailPage() {
             {/* ════════════════ LEFT COLUMN ════════════════ */}
             <div className="lg:col-span-2 space-y-0">
 
+              {/* Opening hours info box (A5) */}
+              <div className="mb-4">
+                <OpeningHoursCard slug="sanctuary-of-truth" />
+              </div>
+
+              {/* Dress code info card (A6) */}
+              <div className="mb-4">
+                <DressCodeBadge />
+              </div>
+
+              {/* Good For tags (A8) */}
+              <div className="mb-5">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Good for</p>
+                <GoodForTags category="temple" max={3} size="md" />
+              </div>
+
               {/* Quick tags */}
               <div className="flex flex-wrap gap-2 pb-5 border-b border-gray-100">
                 <span className="text-[11px] bg-orange-50 text-orange-600 font-semibold px-2.5 py-1 rounded-full">Historical Sites</span>
@@ -583,6 +603,9 @@ export default function SanctuaryDetailPage() {
                   ))}
                 </div>
               </div>
+
+              {/* ── TRAVELLER PHOTOS (A9) ── */}
+              <TravellerPhotos />
 
               {/* ── REVIEWS ── */}
               <div className="pt-8">

@@ -19,16 +19,32 @@ export interface VehicleConfig {
   description:   string;
   emoji:         string;
   imageUrl:      string;
+  exteriorImage: string;
+  interiorImage: string;
+  badge?:        'Most Popular' | 'Best Value' | 'Premium';
+  includes:      string[];
 }
+
+const BASE_INCLUDES = [
+  'Air conditioning',
+  'Bottled water',
+  'GPS navigation',
+  'Professional driver',
+  'Child seat on request',
+];
 
 export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
   SEDAN: {
     maxPassengers: 2,
     maxLuggage:    2,
     name:          'Sedan',
-    description:   'Toyota Camry or similar – perfect for couples and solo travellers',
+    description:   'Toyota Corolla Altis or similar – perfect for couples and solo travellers',
     emoji:         '🚗',
     imageUrl:      '/images/sedan.png',
+    exteriorImage: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80',
+    interiorImage: 'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=800&q=80',
+    badge:         'Best Value',
+    includes:      [...BASE_INCLUDES],
   },
   SUV: {
     maxPassengers: 4,
@@ -37,14 +53,33 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     description:   'Toyota Fortuner or similar – spacious for small families',
     emoji:         '🚙',
     imageUrl:      '/images/suv.jpg',
+    exteriorImage: '/images/suv.jpg',
+    interiorImage: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80',
+    badge:         'Most Popular',
+    includes:      [...BASE_INCLUDES],
   },
   MINIVAN: {
     maxPassengers: 10,
     maxLuggage:    7,
     name:          'Minivan',
-    description:   'Toyota Commuter or similar – best for groups and large luggage',
+    description:   'Toyota Hi-Ace Commuter or similar – best for groups and large luggage',
     emoji:         '🚐',
     imageUrl:      '/images/minivan.png',
+    exteriorImage: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=800&q=80',
+    interiorImage: 'https://images.unsplash.com/photo-1591086694498-4b09eca7e0df?w=800&q=80',
+    includes:      [...BASE_INCLUDES],
+  },
+  LUXURY_MPV: {
+    maxPassengers: 6,
+    maxLuggage:    6,
+    name:          'Luxury MPV',
+    description:   'Toyota Alphard or similar – premium comfort for VIP transfers',
+    emoji:         '🚘',
+    imageUrl:      '/images/minivan.png',
+    exteriorImage: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80',
+    interiorImage: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+    badge:         'Premium',
+    includes:      [...BASE_INCLUDES, 'Meet & greet service', 'Luxury amenities'],
   },
   LUXURY_MPV: {
     maxPassengers: 6,

@@ -131,6 +131,66 @@ export function bookingReservationSchema(booking: {
 
 // ─── City-pair route page ──────────────────────────────────────────────────────
 
+// ─── Tourist Attraction ───────────────────────────────────────────────────────
+
+export function touristAttractionSchema(attraction: {
+  slug: string
+  name: string
+  location: string
+  overview?: string | null
+  rating: number
+  reviewCount: number
+  price: number
+  featureImage?: string | null
+  category: string
+}) {
+  const url = `${SITE}/attractions/${attraction.slug}`
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TouristAttraction',
+        '@id': `${url}#attraction`,
+        name: attraction.name,
+        description: attraction.overview ?? `Visit ${attraction.name} in ${attraction.location}`,
+        image: attraction.featureImage ? [attraction.featureImage] : [],
+        url,
+        touristType: attraction.category,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: attraction.location,
+          addressCountry: 'TH',
+        },
+        aggregateRating: attraction.reviewCount > 0 ? {
+          '@type': 'AggregateRating',
+          ratingValue: attraction.rating.toFixed(1),
+          reviewCount: attraction.reviewCount,
+          bestRating: '5',
+          worstRating: '1',
+        } : undefined,
+        offers: {
+          '@type': 'Offer',
+          price: attraction.price,
+          priceCurrency: 'THB',
+          availability: 'https://schema.org/InStock',
+          url,
+          seller: { '@type': 'Organization', name: 'Werest Travel', url: SITE },
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE },
+          { '@type': 'ListItem', position: 2, name: 'Attractions', item: `${SITE}/attractions` },
+          { '@type': 'ListItem', position: 3, name: attraction.name, item: url },
+        ],
+      },
+    ],
+  }
+}
+
+// ─── City-pair route page ──────────────────────────────────────────────────────
+
 export function routePageSchema(from: string, to: string, priceFrom: number) {
   const slug = `${from.toLowerCase().replace(/\s+/g, '-')}-to-${to.toLowerCase().replace(/\s+/g, '-')}`;
   const url = `${SITE}/routes/${slug}`;

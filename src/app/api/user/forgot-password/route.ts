@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
 import { forgotPasswordSchema } from '@/lib/validation/auth';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
@@ -25,20 +25,20 @@ export async function POST(req: NextRequest) {
     const { email } = parsed.data;
 
     // Always return success to prevent user enumeration
-    const user = await db.user.findUnique({ where: { email: email.toLowerCase() } });
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
     if (!user) {
       return NextResponse.json({ ok: true });
     }
 
     // Invalidate any existing tokens for this user
-    await db.passwordResetToken.deleteMany({ where: { userId: user.id } });
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
 
     // Generate a random 48-byte hex token (96 chars)
     const rawToken  = crypto.randomBytes(48).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    await db.passwordResetToken.create({
+    await prisma.passwordResetToken.create({
       data: { userId: user.id, tokenHash, expiresAt },
     });
 

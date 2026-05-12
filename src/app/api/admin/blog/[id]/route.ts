@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const post = await db.blogPost.findUnique({ where: { id: params.id } });
+    const post = await prisma.blogPost.findUnique({ where: { id: params.id } });
     if (!post) return NextResponse.json({ success: false, error: 'Post not found' }, { status: 404 });
     return NextResponse.json({ success: true, data: post });
   } catch {
@@ -26,7 +26,7 @@ export async function PATCH(
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const existing = await db.blogPost.findUnique({ where: { id: params.id } });
+    const existing = await prisma.blogPost.findUnique({ where: { id: params.id } });
     if (!existing) return NextResponse.json({ success: false, error: 'Post not found' }, { status: 404 });
 
     const body = await req.json();
@@ -39,7 +39,7 @@ export async function PATCH(
       resolvedPublishedAt = publishedAt;
     }
 
-    const post = await db.blogPost.update({
+    const post = await prisma.blogPost.update({
       where: { id: params.id },
       data: {
         ...rest,
@@ -66,10 +66,10 @@ export async function DELETE(
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const existing = await db.blogPost.findUnique({ where: { id: params.id } });
+    const existing = await prisma.blogPost.findUnique({ where: { id: params.id } });
     if (!existing) return NextResponse.json({ success: false, error: 'Post not found' }, { status: 404 });
 
-    await db.blogPost.delete({ where: { id: params.id } });
+    await prisma.blogPost.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
 export async function POST() {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const attraction = await db.attractionListing.upsert({
+  const attraction = await prisma.attractionListing.upsert({
     where: { slug: 'sanctuary-of-truth' },
     update: {},
     create: {
@@ -15,7 +15,7 @@ export async function POST() {
       location: 'Pattaya, Chonburi',
       category: 'Historical Sites',
       rating: 4.8,
-      reviewCount: '2,847',
+      reviewCount: 2847,
       price: 500,
       originalPrice: 650,
       featureImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',

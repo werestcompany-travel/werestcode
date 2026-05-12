@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
         customerName:  b.customerName,
         customerEmail: b.customerEmail,
         tourTitle:     b.tourTitle,
-        optionLabel:   b.optionLabel,
+        optionLabel:   b.optionLabel ?? null,
         bookingDate:   b.bookingDate,
         totalPrice:    b.totalPrice,
       });

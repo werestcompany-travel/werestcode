@@ -19,7 +19,7 @@ import QuickInfoBar from '@/components/tours/QuickInfoBar'
 import ItineraryItem from '@/components/tours/ItineraryItem'
 import JsonLd from '@/components/seo/JsonLd'
 import { tourProductSchema } from '@/lib/seo/schema'
-import { getTourBySlug, getToursForDestination, TOURS, formatTHB, type Tour } from '@/lib/tours'
+import { getTourBySlug, getToursForDestination, tours as TOURS, formatTHB, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 
 // ─── Static params ─────────────────────────────────────────────────────────────
@@ -167,13 +167,25 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
     related = getToursForDestination(tour.location ?? '').filter(t => t.slug !== tour.slug).slice(0, 3)
   }
 
-  // ── Rating distribution ────────────────────────────────────────────────────
+  // ── Rating distribution (Feature 8 – prefer ratingBreakdown, fall back to review array) ──
   const reviewsArr = Array.isArray(tour.reviews) ? tour.reviews as { rating: number }[] : []
-  const reviewTotal = reviewsArr.length || 1
-  const ratingDist = [5, 4, 3, 2, 1].map(star => ({
-    star,
-    pct: Math.round((reviewsArr.filter(r => Math.round(r.rating) === star).length / reviewTotal) * 100),
-  }))
+  const ratingDist = (() => {
+    const rb = tour.ratingBreakdown
+    if (rb) {
+      const total = rb[5] + rb[4] + rb[3] + rb[2] + rb[1] || 1
+      return [5, 4, 3, 2, 1].map(star => ({
+        star,
+        count: rb[star as 5 | 4 | 3 | 2 | 1],
+        pct: Math.round((rb[star as 5 | 4 | 3 | 2 | 1] / total) * 100),
+      }))
+    }
+    const reviewTotal = reviewsArr.length || 1
+    return [5, 4, 3, 2, 1].map(star => ({
+      star,
+      count: reviewsArr.filter(r => Math.round(r.rating) === star).length,
+      pct: Math.round((reviewsArr.filter(r => Math.round(r.rating) === star).length / reviewTotal) * 100),
+    }))
+  })()
 
   return (
     <>
@@ -256,9 +268,21 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
                     {tour.duration}
                   </div>
                   <span className="text-gray-200 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
                     <Globe2 className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
-                    {tour.languages.join(', ')}
+                    {tour.languages.map((lang, idx) => {
+                      const flags: Record<string, string> = {
+                        'English': '🇬🇧', 'Thai': '🇹🇭', 'Chinese': '🇨🇳', 'Japanese': '🇯🇵',
+                        'French': '🇫🇷', 'German': '🇩🇪', 'Russian': '🇷🇺', 'Korean': '🇰🇷', 'Spanish': '🇪🇸',
+                      }
+                      return (
+                        <span key={lang} className="flex items-center gap-0.5">
+                          {idx > 0 && <span className="text-gray-300">·</span>}
+                          <span title={lang}>{flags[lang] ?? '🌐'}</span>
+                          <span>{lang}</span>
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -440,9 +464,9 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
                         <div key={star} className="flex items-center gap-3 text-sm">
                           <span className="text-gray-500 w-4 text-right shrink-0">{star}</span>
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
-                          <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-amber-400 rounded-full"
+                              className="h-full bg-amber-400 rounded-full transition-all duration-500"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -487,6 +511,25 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
                   entityName={tour.title}
                 />
               </section>
+
+              {/* ── Frequently Booked Together (Feature 9) ─────────────────── */}
+              {tour.frequentlyBookedWith && tour.frequentlyBookedWith.length > 0 && (() => {
+                const fbtTours = tour.frequentlyBookedWith!
+                  .map(slug => TOURS.find(t => t.slug === slug))
+                  .filter(Boolean) as Tour[]
+                if (!fbtTours.length) return null
+                return (
+                  <section className="py-10 border-t border-gray-100">
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Frequently Booked Together</h2>
+                    <p className="text-sm text-gray-500 mb-6">Travellers who book this tour often also book:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {fbtTours.map(t => (
+                        <TourCard key={t.slug} tour={t} />
+                      ))}
+                    </div>
+                  </section>
+                )
+              })()}
 
               {/* ── Related Tours ─────────────────────────────────────────────── */}
               {related.length > 0 && (
@@ -544,7 +587,7 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
                   <p className="text-sm font-semibold text-gray-900 mb-1">Have a question?</p>
                   <p className="text-xs text-gray-500 mb-3">Our team replies within minutes on WhatsApp</p>
                   <a
-                    href="https://wa.me/66000000000"
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors w-full justify-center"

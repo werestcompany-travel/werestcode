@@ -4,7 +4,7 @@
  *   npx tsx prisma/seed-tours.ts
  */
 import { PrismaClient } from '@prisma/client';
-import { TOURS } from '../src/lib/tours';
+import { tours as TOURS } from '../src/lib/tours';
 
 const prisma = new PrismaClient();
 

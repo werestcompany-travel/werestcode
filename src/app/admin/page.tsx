@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 interface TransferStats { total: number; pending: number; active: number; completed: number; revenue: number }
 interface AttractionStats { total: number; pending: number; confirmed: number; revenue: number }
+interface TourStats { listed: number; active: number; bookings: number }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Booking = any;
 
@@ -37,6 +38,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [transferStats,   setTransferStats]   = useState<TransferStats | null>(null);
   const [attractionStats, setAttractionStats] = useState<AttractionStats | null>(null);
+  const [tourStats,       setTourStats]       = useState<TourStats | null>(null);
   const [allTransfers,      setAllTransfers]      = useState<Booking[]>([]);
   const [recentTransfers,   setRecentTransfers]   = useState<Booking[]>([]);
   const [recentAttractions, setRecentAttractions] = useState<Booking[]>([]);
@@ -45,19 +47,27 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [tRes, aRes] = await Promise.all([
+      const [tRes, aRes, tourRes] = await Promise.all([
         fetch('/api/admin/bookings'),
         fetch('/api/admin/attraction-bookings'),
+        fetch('/api/admin/tours'),
       ]);
-      if (tRes.status === 401 || aRes.status === 401) { router.push('/admin/login'); return; }
-      const tJson = await tRes.json();
-      const aJson = await aRes.json();
+      if (tRes.status === 401 || aRes.status === 401 || tourRes.status === 401) { router.push('/admin/login'); return; }
+      const tJson    = await tRes.json();
+      const aJson    = await aRes.json();
+      const tourJson = await tourRes.json();
       const allB  = tJson.data?.bookings ?? [];
       setTransferStats(tJson.data?.stats ?? null);
       setAllTransfers(allB);
       setRecentTransfers(allB.slice(0, 5));
       setAttractionStats(aJson.stats ?? null);
       setRecentAttractions((aJson.bookings ?? []).slice(0, 5));
+      const tours: Booking[] = tourJson.tours ?? [];
+      setTourStats({
+        listed:   tours.length,
+        active:   tours.filter((t: Booking) => t.isActive).length,
+        bookings: tourJson.totalBookings ?? 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -119,12 +129,12 @@ export default function AdminDashboard() {
           iconBg="bg-emerald-50"
           title="Tours"
           stats={[
-            { label: 'Listed',   value: 8 },
-            { label: 'Active',   value: 8 },
-            { label: 'Bookings', value: 0 },
+            { label: 'Listed',   value: tourStats?.listed   ?? 0 },
+            { label: 'Active',   value: tourStats?.active   ?? 0 },
+            { label: 'Bookings', value: tourStats?.bookings ?? 0 },
           ]}
           href="/admin/tours"
-          loading={false}
+          loading={loading}
         />
         <SectionCard
           icon={<Ticket className="w-5 h-5 text-violet-600" />}

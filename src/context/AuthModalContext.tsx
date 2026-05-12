@@ -9,7 +9,13 @@ import AuthModal from '@/components/AuthModal';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-export interface AuthUser { id: string; name: string; email: string; }
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  loyaltyPoints?: number;
+  tierLevel?: string;
+}
 
 interface AuthModalContextValue {
   openModal: (step?: 'email' | 'register') => void;

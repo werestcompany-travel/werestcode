@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
+const GUEST_KEY = 'werest_guest_wishlist';
+
 interface RawWishlistItem {
   id: string;
   attractionId: string;
@@ -10,6 +12,14 @@ interface RawWishlistItem {
   itemType: string;
   itemImage?: string;
   createdAt: string;
+}
+
+interface GuestWishlistItem {
+  itemId: string;
+  itemName: string;
+  itemUrl: string;
+  itemType: string;
+  itemImage?: string;
 }
 
 export interface WishlistTogglePayload {
@@ -23,15 +33,51 @@ export interface WishlistTogglePayload {
 export type WishlistToggleResult = 'added' | 'removed' | 'auth_required' | 'error';
 
 interface WishlistContextValue {
-  isWishlisted:   (id: string) => boolean;
-  toggle:         (payload: WishlistTogglePayload) => Promise<WishlistToggleResult>;
-  wishlistedIds:  Set<string>;
-  isLoggedIn:     boolean;
-  loaded:         boolean;
+  isWishlisted:    (id: string) => boolean;
+  toggle:          (payload: WishlistTogglePayload) => Promise<WishlistToggleResult>;
+  wishlistedIds:   Set<string>;
+  isLoggedIn:      boolean;
+  loaded:          boolean;
   refreshWishlist: () => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
+
+/* ── localStorage helpers ─────────────────────────────────────────────────── */
+
+function readGuest(): GuestWishlistItem[] {
+  try {
+    const raw = localStorage.getItem(GUEST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuest(items: GuestWishlistItem[]) {
+  try {
+    localStorage.setItem(GUEST_KEY, JSON.stringify(items));
+  } catch {}
+}
+
+/* ── Merge guest wishlist to server after sign-in ─────────────────────────── */
+
+async function mergeGuestWishlist() {
+  const items = readGuest();
+  if (items.length === 0) return;
+  try {
+    await fetch('/api/user/wishlist/merge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    localStorage.removeItem(GUEST_KEY);
+  } catch {
+    // non-critical — guest list stays in localStorage
+  }
+}
+
+/* ── Provider ─────────────────────────────────────────────────────────────── */
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
@@ -45,33 +91,57 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     ]);
     const meData = await meRes.json();
     const wlData = await wlRes.json();
-    setIsLoggedIn(!!meData.user);
-    setWishlistedIds(new Set<string>(
-      (wlData.items ?? []).map((i: RawWishlistItem) => i.attractionId)
-    ));
+    const loggedIn = !!meData.user;
+    setIsLoggedIn(loggedIn);
+
+    if (loggedIn) {
+      // Server wishlist
+      const serverIds = new Set<string>(
+        (wlData.items ?? []).map((i: RawWishlistItem) => i.attractionId)
+      );
+      setWishlistedIds(serverIds);
+    } else {
+      // Guest wishlist from localStorage
+      const guestItems = readGuest();
+      setWishlistedIds(new Set(guestItems.map((i) => i.itemId)));
+    }
     setLoaded(true);
   }, []);
 
   useEffect(() => { refreshWishlist(); }, [refreshWishlist]);
 
-  /* Re-sync after sign-in via auth modal */
+  /* Re-sync after sign-in: merge guest list then reload */
   useEffect(() => {
-    const handler = () => refreshWishlist();
+    const handler = async () => {
+      await mergeGuestWishlist();
+      await refreshWishlist();
+    };
     document.addEventListener('userSignedIn', handler);
     return () => document.removeEventListener('userSignedIn', handler);
   }, [refreshWishlist]);
 
   const toggle = useCallback(async (payload: WishlistTogglePayload): Promise<WishlistToggleResult> => {
-    if (!isLoggedIn) {
-      document.dispatchEvent(new CustomEvent('openAuthModal'));
-      return 'auth_required';
-    }
-
     const { itemId, itemName, itemUrl, itemType = 'attraction', itemImage } = payload;
     const wasWishlisted = wishlistedIds.has(itemId);
 
-    /* Optimistic update */
-    setWishlistedIds(prev => {
+    if (!isLoggedIn) {
+      // Guest — update localStorage
+      const current = readGuest();
+      if (wasWishlisted) {
+        writeGuest(current.filter((i) => i.itemId !== itemId));
+      } else {
+        writeGuest([...current, { itemId, itemName, itemUrl, itemType, itemImage }]);
+      }
+      setWishlistedIds((prev) => {
+        const next = new Set(prev);
+        wasWishlisted ? next.delete(itemId) : next.add(itemId);
+        return next;
+      });
+      return wasWishlisted ? 'removed' : 'added';
+    }
+
+    /* Authenticated — update server + optimistic local state */
+    setWishlistedIds((prev) => {
       const next = new Set(prev);
       wasWishlisted ? next.delete(itemId) : next.add(itemId);
       return next;
@@ -90,7 +160,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       return wasWishlisted ? 'removed' : 'added';
     } catch {
       /* Rollback on error */
-      setWishlistedIds(prev => {
+      setWishlistedIds((prev) => {
         const next = new Set(prev);
         wasWishlisted ? next.add(itemId) : next.delete(itemId);
         return next;

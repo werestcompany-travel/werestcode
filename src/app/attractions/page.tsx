@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthModal } from '@/context/AuthModalContext';
 import Link from 'next/link';
@@ -10,6 +10,12 @@ import Footer from '@/components/Footer';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { Search, Star, ChevronRight, Zap, Smartphone, Heart } from 'lucide-react';
+import ComboDealsSection from '@/components/attractions/ComboDealsSection';
+import VisitDatePicker from '@/components/attractions/VisitDatePicker';
+import AttractionsMap from '@/components/attractions/AttractionsMap';
+import GoodForTags, { GoodForFilter, ALL_GOOD_FOR_OPTIONS, GOOD_FOR_TAGS } from '@/components/attractions/GoodForTags';
+import OpeningHoursCard, { OPENING_HOURS } from '@/components/attractions/OpeningHours';
+import DressCodeBadge from '@/components/attractions/DressCodeBadge';
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 type Badge = 'Sale' | 'Hot deal' | 'Likely to sell out' | 'Exclusive' | 'New' | 'Limited';
@@ -65,6 +71,21 @@ const BADGE_STYLES: Record<string, string> = {
   'Limited':            'bg-purple-500 text-white',
 };
 
+// Categories where dress code applies
+const DRESS_CODE_CATEGORIES = new Set(['temple', 'historical sites', 'historical', 'cultural', 'museums']);
+
+function hasDressCode(category: string): boolean {
+  return DRESS_CODE_CATEGORIES.has(category.toLowerCase());
+}
+
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
+function getGoodForTags(category: string): string[] {
+  const key = category.toLowerCase();
+  if (GOOD_FOR_TAGS[key]) return GOOD_FOR_TAGS[key];
+  const matched = Object.entries(GOOD_FOR_TAGS).find(([k]) => key.includes(k) || k.includes(key));
+  return matched ? matched[1] : ['📸 Photography', '👨‍👩‍👧 Families'];
+}
+
 /* ─── AttractionCard ─────────────────────────────────────────────────────── */
 function AttractionCard({
   a,
@@ -80,6 +101,7 @@ function AttractionCard({
   const discount = a.originalPrice ? Math.round((1 - a.price / a.originalPrice) * 100) : 0;
   const [imgError, setImgError] = useState(false);
   const showImage = a.featureImage && !imgError;
+  const hours     = OPENING_HOURS[a.slug] ?? OPENING_HOURS['_default'];
 
   return (
     <Link href={a.href} onClick={() => a.href !== '#' && onView(a)}
@@ -106,7 +128,7 @@ function AttractionCard({
             </div>
           </>
         )}
-        {/* Overlay gradient for text readability */}
+        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
           {a.location}
@@ -147,6 +169,16 @@ function AttractionCard({
           <span className="text-xs font-semibold text-gray-700">{a.rating}</span>
           <span className="text-xs text-gray-400">({a.reviewCount})</span>
         </div>
+
+        {/* Opening hours row */}
+        <OpeningHoursCard slug={a.slug} compact />
+
+        {/* Good For tags */}
+        <GoodForTags category={a.category} max={3} size="sm" />
+
+        {/* Dress code badge (temples / cultural) */}
+        {hasDressCode(a.category) && <DressCodeBadge compact />}
+
         <div className="flex flex-wrap gap-1">
           {['Instant confirmation', 'Mobile voucher'].map(t => (
             <span key={t} className="flex items-center gap-0.5 text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
@@ -172,12 +204,13 @@ export default function AttractionsPage() {
   const router = useRouter();
   const { openModal } = useAuthModal();
   const { addItem: addRecentlyViewed } = useRecentlyViewed();
-  const [search,         setSearch]         = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [wishlistSlugs,  setWishlistSlugs]  = useState<Set<string>>(new Set());
-  const [userId,         setUserId]         = useState<string | null>(null);
-  const [attractions,    setAttractions]    = useState<Attraction[]>([]);
-  const [loadingList,    setLoadingList]    = useState(true);
+  const [search,          setSearch]          = useState('');
+  const [activeCategory,  setActiveCategory]  = useState<string | null>(null);
+  const [wishlistSlugs,   setWishlistSlugs]   = useState<Set<string>>(new Set());
+  const [userId,          setUserId]          = useState<string | null>(null);
+  const [attractions,     setAttractions]     = useState<Attraction[]>([]);
+  const [loadingList,     setLoadingList]     = useState(true);
+  const [goodForSelected, setGoodForSelected] = useState<string[]>([]);
 
   function handleView(a: Attraction) {
     addRecentlyViewed({
@@ -193,13 +226,11 @@ export default function AttractionsPage() {
   }
 
   useEffect(() => {
-    // Load attractions from DB
     fetch('/api/attractions')
       .then(r => r.json())
       .then(d => setAttractions(d.attractions ?? []))
       .finally(() => setLoadingList(false));
 
-    // Load user + wishlist
     Promise.all([
       fetch('/api/user/me').then(r => r.json()),
       fetch('/api/user/wishlist').then(r => r.json()),
@@ -230,9 +261,10 @@ export default function AttractionsPage() {
   }
 
   const filtered = attractions.filter(a => {
-    const matchSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
-    const matchCat = !activeCategory || a.category === activeCategory;
-    return matchSearch && matchCat;
+    const matchSearch   = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
+    const matchCat      = !activeCategory || a.category === activeCategory;
+    const matchGoodFor  = goodForSelected.length === 0 || goodForSelected.some(tag => getGoodForTags(a.category).includes(tag));
+    return matchSearch && matchCat && matchGoodFor;
   });
 
   return (
@@ -271,6 +303,17 @@ export default function AttractionsPage() {
       <main className="bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
 
+          {/* ── VISIT DATE PICKER (A4) ── */}
+          <Suspense fallback={null}>
+            <VisitDatePicker />
+          </Suspense>
+
+          {/* ── COMBO DEALS (A3) ── */}
+          <ComboDealsSection />
+
+          {/* ── ATTRACTIONS MAP (A7) ── */}
+          <AttractionsMap />
+
           {/* ── CATEGORY FILTER ── */}
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-5">Browse by category</h2>
@@ -287,6 +330,12 @@ export default function AttractionsPage() {
             </div>
           </section>
 
+          {/* ── GOOD FOR FILTER (A8) ── */}
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3">Good for</h2>
+            <GoodForFilter selected={goodForSelected} onChange={setGoodForSelected} />
+          </section>
+
           {/* ── ATTRACTIONS LIST ── */}
           <section>
             <div className="flex items-center justify-between mb-5">
@@ -297,7 +346,7 @@ export default function AttractionsPage() {
                   <p className="text-xs text-gray-500">{filtered.length} attractions</p>
                 </div>
               </div>
-              <button onClick={() => setActiveCategory(null)}
+              <button onClick={() => { setActiveCategory(null); setGoodForSelected([]); }}
                 className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-800 transition-colors">
                 Explore all <ChevronRight className="w-4 h-4" />
               </button>

@@ -4,9 +4,13 @@ import Link from 'next/link';
 import { Fragment, useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import FlashDealBanner from '@/components/home/FlashDealBanner';
 import SearchTabs from '@/components/search/SearchTabs';
 import WhatsAppCTA from '@/components/home/WhatsAppCTA';
 import BlogCard from '@/components/blog/BlogCard';
+import DestinationGrid from '@/components/home/DestinationGrid';
+import PopularThisMonth from '@/components/home/PopularThisMonth';
+import DynamicTourSections from '@/components/home/DynamicTourSections';
 import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -32,7 +36,7 @@ const SERVICE_TABS = [
   { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
   { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
   { id: 'dinner',      icon: Ship,        label: 'Cruises',             badge: 'New',      badgeColor: 'blue', href: '/cruises',      s: 1 },
-  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/inquiry',   s: 1 },
+  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
   // § 3 — Planning tools
   { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
   // § 4 — Account / loyalty
@@ -270,11 +274,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
   return (
     <Fragment>
+      <FlashDealBanner />
       <Navbar
         onHamburgerClick={() => setSidebarPinned(p => !p)}
         onHamburgerHoverEnter={() => { if (!sidebarPinned) setSidebarHover(true); }}
       />
-
       {/* ════════════════════════════════════════════════════════════
           PAGE SHELL — sticky sidebar + scrollable main
       ════════════════════════════════════════════════════════════ */}
@@ -392,7 +396,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Hero" className="mt-[30px] mb-[30px]">
+      <section aria-label="Hero" className="mb-[30px]">
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
@@ -503,7 +507,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     : 'Coming soon — be the first to know when it launches.'}
                 </p>
                 <Link
-                  href={activeService === 'deals' ? '/deals' : 'https://wa.me/66819519191'}
+                  href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
                   className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-brand-50 transition-colors"
                 >
                   {activeService === 'rewards' ? 'Learn More' : activeService === 'deals' ? 'View Deals' : 'Notify Me'}
@@ -561,6 +565,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 </Link>
               );
             })}
+          </div>
+
+          {/* Mobile — see all link */}
+          <div className="sm:hidden mt-5 text-center">
+            <Link
+              href="/attractions"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              See all experiences <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -897,6 +911,15 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
         </div>
       </section>
+
+      {/* Destination inspiration grid */}
+      <DestinationGrid />
+
+      {/* Popular this month */}
+      <PopularThisMonth />
+
+      {/* Dynamic tour sections — "Things to do in [City]" */}
+      <DynamicTourSections />
 
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 const RELATED_SELECT = {
   id:             true,
@@ -19,7 +19,7 @@ export async function GET(
   { params }: { params: { slug: string } },
 ) {
   try {
-    const post = await db.blogPost.findFirst({
+    const post = await prisma.blogPost.findFirst({
       where: { slug: params.slug, status: 'PUBLISHED' },
     });
 
@@ -31,14 +31,14 @@ export async function GET(
 
     if (post.relatedSlugs.length > 0) {
       // Explicit related slugs take priority
-      relatedPosts = await db.blogPost.findMany({
+      relatedPosts = await prisma.blogPost.findMany({
         where: { slug: { in: post.relatedSlugs }, status: 'PUBLISHED' },
         select: RELATED_SELECT,
         take: 4,
       });
     } else {
       // Fallback: most recent published posts in the same category, excluding self
-      relatedPosts = await db.blogPost.findMany({
+      relatedPosts = await prisma.blogPost.findMany({
         where: { category: post.category, status: 'PUBLISHED', id: { not: post.id } },
         select: RELATED_SELECT,
         orderBy: { publishedAt: 'desc' },
@@ -48,7 +48,7 @@ export async function GET(
 
     // If still empty (only post in category), grab latest from any category
     if (relatedPosts.length === 0) {
-      relatedPosts = await db.blogPost.findMany({
+      relatedPosts = await prisma.blogPost.findMany({
         where: { status: 'PUBLISHED', id: { not: post.id } },
         select: RELATED_SELECT,
         orderBy: { publishedAt: 'desc' },

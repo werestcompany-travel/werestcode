@@ -45,6 +45,14 @@ export const createBookingSchema = z.object({
   basePrice:   z.number().optional(),
   addOnsTotal: z.number().optional(),
   totalPrice:  z.number().optional(),
+
+  // Payment method
+  paymentMethod: z.string().optional(),
+
+  // Round-trip fields (display only — stored for reference, not used for pricing)
+  isRoundTrip: z.boolean().optional(),
+  returnDate:  z.string().optional(),
+  returnTime:  z.string().optional(),
 });
 
 export const discountCodeSchema = z.object({

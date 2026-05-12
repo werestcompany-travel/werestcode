@@ -43,6 +43,13 @@ const TOP_SEARCHES = [
   { rank: 4, title: 'Elephant Nature Park Half-Day Experience',           location: 'Chiang Mai',       price: 'From ฿1,800', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=80&q=80' },
 ];
 
+const TIER_CHIP: Record<string, string> = {
+  EXPLORER:   'bg-gray-100 text-gray-600',
+  ADVENTURER: 'bg-green-100 text-green-700',
+  NAVIGATOR:  'bg-blue-100 text-blue-700',
+  VOYAGER:    'bg-purple-100 text-purple-700',
+};
+
 const TRENDING_DESTINATIONS = [
   { rank: 1, name: 'Bangkok',     desc: 'Iconic landmarks | History and culture | Nightlife',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=80&q=80' },
   { rank: 2, name: 'Phuket',      desc: 'Beach paradise | Island hopping | Water sports',       img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=80&q=80' },
@@ -198,7 +205,7 @@ export default function Navbar({
         </Link>
 
         {/* 3. Search box + dropdown */}
-        <div ref={searchWrapRef} className="relative hidden sm:block ml-2 lg:ml-[38px] w-full max-w-[200px] lg:max-w-sm min-w-0">
+        <div ref={searchWrapRef} className="relative hidden sm:block ml-[38px] w-full max-w-sm">
           <form
             onSubmit={handleSearch}
             className={cn(
@@ -231,7 +238,7 @@ export default function Navbar({
 
           {/* ── Search dropdown ── */}
           {searchFocused && (
-            <div className="absolute top-full left-0 mt-2 w-[min(620px,90vw)] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden">
+            <div className="absolute top-full left-0 mt-2 w-[620px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden">
               <div className="p-4 max-h-[480px] overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
 
                 {/* Search history */}
@@ -364,20 +371,20 @@ export default function Navbar({
         {/* 4. Desktop utility links */}
         <div className="hidden md:flex items-center gap-0.5">
 
-          {/* Find bookings — large screens only (1024px+) */}
+          {/* Find bookings */}
           <Link
             href="/tracking"
-            className={`hidden lg:flex text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
+            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
           >
             Manage bookings
           </Link>
 
-          {/* Customer support — large screens only (1024px+) */}
+          {/* Customer support */}
           <a
-            href="https://wa.me/66819519191"
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
           >
             <Headphones className="w-4 h-4 shrink-0" />
             Customer support
@@ -454,6 +461,18 @@ export default function Navbar({
                   {user.name[0].toUpperCase()}
                 </div>
                 <span className="max-w-[90px] truncate hidden lg:block">{user.name.split(' ')[0]}</span>
+                {/* Loyalty tier badge */}
+                {user.tierLevel && (
+                  <span className={`hidden lg:inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
+                    {user.tierLevel}
+                  </span>
+                )}
+                {/* Points — desktop only */}
+                {user.loyaltyPoints != null && (
+                  <span className="hidden xl:inline text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                    {user.loyaltyPoints.toLocaleString()} pts
+                  </span>
+                )}
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform hidden lg:block ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -462,6 +481,20 @@ export default function Navbar({
                   <div className="px-4 py-2 border-b border-gray-100 mb-1">
                     <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                    {(user.tierLevel || user.loyaltyPoints != null) && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        {user.tierLevel && (
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {user.tierLevel}
+                          </span>
+                        )}
+                        {user.loyaltyPoints != null && (
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                            {user.loyaltyPoints.toLocaleString()} pts
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Link href="/account" onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
@@ -488,10 +521,9 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => openModal()}
-              className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-3 lg:px-5 py-2 rounded-full transition-colors whitespace-nowrap shadow-sm"
+              className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-full transition-colors whitespace-nowrap shadow-sm"
             >
-              <span className="lg:hidden">Sign in</span>
-              <span className="hidden lg:inline">Sign in / Register</span>
+              Sign in / Register
             </button>
           )}
         </div>
@@ -513,10 +545,15 @@ export default function Navbar({
             </button>
           )}
           {user && (
-            <Link href="/account">
+            <Link href="/account" className="flex items-center gap-1.5">
               <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
                 {user.name[0].toUpperCase()}
               </div>
+              {user.tierLevel && (
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
+                  {user.tierLevel}
+                </span>
+              )}
             </Link>
           )}
         </div>

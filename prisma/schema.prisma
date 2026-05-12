@@ -50,22 +50,42 @@ enum BlogCategory {
   THAILAND
   PHUKET
   KRABI
+  CHIANG_MAI
+  CHIANG_RAI
+}
+
+enum TierLevel {
+  EXPLORER
+  ADVENTURER
+  NAVIGATOR
+  VOYAGER
+}
+
+enum LoyaltyTxType {
+  EARN
+  REDEEM
+  EXPIRE
+  ADJUST
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String     @id @default(cuid())
+  email         String     @unique
+  password      String
+  name          String
+  phone         String?
+  loyaltyPoints Int        @default(0)
+  tierLevel     TierLevel  @default(EXPLORER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   wishlist            WishlistItem[]
   attractionBookings  AttractionBooking[]
   passwordResetTokens PasswordResetToken[]
+  loyaltyTransactions LoyaltyTransaction[]
+  tourBookings        TourBooking[]
 
   @@index([email])
 }
@@ -87,9 +107,11 @@ model WishlistItem {
   id             String   @id @default(cuid())
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attractionId   String   // slug, e.g. "sanctuary-of-truth"
+  attractionId   String   // slug or "tour:<slug>"
   attractionName String
   attractionUrl  String?
+  itemType       String   @default("attraction") // "attraction" | "tour"
+  itemImage      String?
   createdAt      DateTime @default(now())
 
   @@unique([userId, attractionId])
@@ -127,6 +149,12 @@ model AttractionBooking {
   // Linked user (optional — guest or logged-in)
   userId String?
   user   User?   @relation(fields: [userId], references: [id])
+
+  // Payment
+  paysoOrderId  String?
+  paymentStatus String?  @default("AWAITING_PAYMENT")
+  paidAt        DateTime?
+  paymentTransactions PaymentTransaction[]
 
   // Status & audit
   status    AttractionBookingStatus @default(PENDING)
@@ -180,6 +208,12 @@ model Booking {
   discountCodeId  String?  // FK to DiscountCode (soft — not relational to allow code deletion)
   totalPrice      Float    // base + addOns + surcharges - discount
 
+  // Payment
+  paymentStatus String?   // "UNPAID" | "AWAITING_PAYMENT" | "PAID" | "FAILED" | "REFUNDED"
+  paysoOrderId  String?   // Payso orderId (same as bookingRef usually)
+  paymentMethod String?   // "payso_card" | "cash" | "bank_transfer" etc.
+  paidAt        DateTime?
+
   // Driver assignment (optional — set by admin after booking)
   driverId   String?
   driver     Driver?  @relation("DriverBookings", fields: [driverId], references: [id])
@@ -189,8 +223,9 @@ model Booking {
   currentStatus BookingStatus @default(PENDING)
 
   // Relations
-  statusHistory BookingStatusHistory[]
-  bookingAddOns BookingAddOn[]
+  statusHistory        BookingStatusHistory[]
+  bookingAddOns        BookingAddOn[]
+  paymentTransactions  PaymentTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -198,6 +233,7 @@ model Booking {
   @@index([currentStatus])
   @@index([pickupDate])
   @@index([customerEmail])
+  @@index([paysoOrderId])
 }
 
 model BookingStatusHistory {
@@ -331,6 +367,7 @@ model Inquiry {
 }
 
 enum TourBookingStatus {
+  PENDING
   CONFIRMED
   CANCELLED
   COMPLETED
@@ -341,7 +378,9 @@ model TourBooking {
   bookingRef    String            @unique
   tourSlug      String
   tourTitle     String
-  optionLabel   String
+  optionLabel   String?
+  tourTime      String?           // e.g. "08:00"
+  tourOptionId  String?           // option ID from tours catalogue
   bookingDate   DateTime
   adultQty      Int
   childQty      Int               @default(0)
@@ -353,13 +392,32 @@ model TourBooking {
   customerPhone String
   status        TourBookingStatus @default(CONFIRMED)
   userId        String?
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   notes         String?
+  paymentMethod String?
+  paymentStatus String?           // "UNPAID" | "AWAITING_PAYMENT" | "PAID" | "FAILED"
+  paysoOrderId  String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  statusHistory TourBookingStatusHistory[]
 
   @@index([customerEmail])
   @@index([bookingDate])
   @@index([status])
+  @@index([paysoOrderId])
+}
+
+model TourBookingStatusHistory {
+  id            String      @id @default(cuid())
+  tourBookingId String
+  tourBooking   TourBooking @relation(fields: [tourBookingId], references: [id], onDelete: Cascade)
+  status        String
+  note          String?
+  updatedBy     String      @default("system")
+  createdAt     DateTime    @default(now())
+
+  @@index([tourBookingId])
 }
 
 // ─── Reviews ──────────────────────────────────────────────────────────────────
@@ -407,7 +465,7 @@ model AttractionListing {
   location      String
   category      String
   rating        Float               @default(4.5)
-  reviewCount   String              @default("0")
+  reviewCount   Int                 @default(0)
   price         Float
   originalPrice Float?
   badge         String?
@@ -507,9 +565,33 @@ model Tour {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Categorization
+  tags               String[]
+  primaryLocation    String             @default("Bangkok")
+  subLocation        String?
+  multiCategories    String[]
+
+  // Pricing
+  priceFrom          Float              @default(0)
+  discountPrice      Float?
+
+  // Feature flags
+  isFeatured         Boolean            @default(false)
+  isPopular          Boolean            @default(false)
+  isTrending         Boolean            @default(false)
+  homepageVisible    Boolean            @default(true)
+  instantConfirmation Boolean           @default(true)
+  availabilityStatus  String            @default("available")
+
+  // SEO
+  metaTitle          String?
+  metaDesc           String?
+
   @@index([category])
   @@index([isActive])
   @@index([slug])
+  @@index([primaryLocation])
+  @@index([isFeatured])
 }
 
 // ─── Drivers & Vehicles ───────────────────────────────────────────────────────
@@ -559,6 +641,40 @@ model Vehicle {
   @@index([driverId])
 }
 
+model PaymentTransaction {
+  id                  String            @id @default(cuid())
+  bookingId           String?
+  booking             Booking?          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  attractionBookingId String?
+  attractionBooking   AttractionBooking? @relation(fields: [attractionBookingId], references: [id], onDelete: Cascade)
+  paysoOrderId        String
+  paysoTxnId          String?
+  paymentUrl          String?
+  amount              Float
+  currency            String            @default("THB")
+  status              String            @default("AWAITING_PAYMENT") // AWAITING_PAYMENT | PAID | FAILED | REFUNDED
+  rawWebhook          Json?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([bookingId])
+  @@index([attractionBookingId])
+  @@index([paysoOrderId])
+}
+
+model LoyaltyTransaction {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points      Int
+  type        LoyaltyTxType
+  description String
+  bookingRef  String?
+  createdAt   DateTime      @default(now())
+
+  @@index([userId])
+}
+
 model AttractionPackage {
   id            String            @id @default(cuid())
   attractionId  String
@@ -579,4 +695,28 @@ model AttractionPackage {
   updatedAt     DateTime          @updatedAt
 
   @@index([attractionId])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("website")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model TourNotifyRequest {
+  id        String   @id @default(cuid())
+  email     String
+  tourSlug  String
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([tourSlug])
+  @@index([email])
+  @@index([notified])
 }

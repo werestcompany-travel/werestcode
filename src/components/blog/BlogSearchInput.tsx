@@ -16,17 +16,19 @@ export default function BlogSearchInput() {
     setValue(searchParams.get('q') ?? '')
   }, [searchParams])
 
-  const commit = useCallback((q: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (q.trim()) {
-      params.set('q', q.trim())
-    } else {
-      params.delete('q')
-    }
-    // Always reset to page 1 on new search
-    params.delete('page')
-    router.replace(`${pathname}?${params.toString()}`)
-  }, [pathname, router, searchParams])
+  const commit = useCallback(
+    (q: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (q.trim()) {
+        params.set('q', q.trim())
+      } else {
+        params.delete('q')
+      }
+      params.delete('page')
+      router.replace(`${pathname}?${params.toString()}`)
+    },
+    [pathname, router, searchParams],
+  )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value
@@ -50,23 +52,23 @@ export default function BlogSearchInput() {
   }
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full max-w-sm">
       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
       <input
-        type="search"
+        type="text"
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder="Search articles…"
+        placeholder="Search articles..."
         aria-label="Search blog articles"
-        className="w-full pl-10 pr-10 py-2.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-sm text-white placeholder:text-white/50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all"
+        className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2534ff]/30 focus:border-[#2534ff] focus:bg-white transition-all"
       />
       {value && (
         <button
           type="button"
           onClick={handleClear}
           aria-label="Clear search"
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X className="w-3.5 h-3.5" />
         </button>

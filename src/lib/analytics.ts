@@ -1,53 +1,53 @@
-'use client';
-
-// Typed GA4 + @vercel/analytics event helpers.
-// Call these from client components after key conversion actions.
-
+// Safe gtag wrapper — works even when GA_ID is not set
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    gtag?: (...args: unknown[]) => void
   }
 }
 
-function gtag(event: string, params: Record<string, unknown>) {
-  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('event', event, params);
+export function trackEvent(
+  eventName: string,
+  params?: Record<string, string | number | boolean>
+) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, params)
   }
 }
 
-// Fired when user starts the booking form
-export function trackBeginCheckout(vehicleType: string, estimatedPrice: number) {
-  gtag('begin_checkout', {
-    currency: 'THB',
-    value: estimatedPrice,
-    items: [{ item_id: vehicleType, item_name: `Private Transfer — ${vehicleType}`, price: estimatedPrice }],
-  });
+// Specific conversion events
+export function trackBookingStarted(vehicleType: string, estimatedPrice: number) {
+  trackEvent('begin_checkout', { vehicle_type: vehicleType, value: estimatedPrice, currency: 'THB' })
 }
 
-// Fired when booking is successfully created
-export function trackPurchase(bookingRef: string, vehicleType: string, totalPrice: number) {
-  gtag('purchase', {
+export function trackBookingCompleted(bookingRef: string, totalPrice: number, vehicleType: string) {
+  trackEvent('purchase', {
     transaction_id: bookingRef,
-    currency:       'THB',
-    value:          totalPrice,
-    items: [{ item_id: vehicleType, item_name: `Private Transfer — ${vehicleType}`, price: totalPrice }],
-  });
+    value: totalPrice,
+    currency: 'THB',
+    vehicle_type: vehicleType,
+  })
 }
 
-// Fired when tour detail page is viewed
-export function trackViewItem(tourSlug: string, tourTitle: string, priceFrom: number) {
-  gtag('view_item', {
+export function trackTourBookingCompleted(bookingRef: string, totalPrice: number, tourSlug: string) {
+  trackEvent('purchase', {
+    transaction_id: bookingRef,
+    value: totalPrice,
     currency: 'THB',
-    value:    priceFrom,
-    items:    [{ item_id: tourSlug, item_name: tourTitle, price: priceFrom, item_category: 'Tour' }],
-  });
+    item_category: 'tour',
+    item_id: tourSlug,
+  })
 }
 
-// Fired when attraction ticket checkout starts
-export function trackAttractionCheckout(attractionName: string, totalPrice: number) {
-  gtag('begin_checkout', {
+export function trackAttractionBookingCompleted(bookingRef: string, totalPrice: number, attractionSlug: string) {
+  trackEvent('purchase', {
+    transaction_id: bookingRef,
+    value: totalPrice,
     currency: 'THB',
-    value:    totalPrice,
-    items:    [{ item_name: attractionName, price: totalPrice, item_category: 'Attraction' }],
-  });
+    item_category: 'attraction',
+    item_id: attractionSlug,
+  })
+}
+
+export function trackSearchPerformed(query: string, resultCount: number) {
+  trackEvent('search', { search_term: query, result_count: resultCount })
 }

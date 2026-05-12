@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { signUserToken } from '@/lib/user-auth';
 import { loginSchema } from '@/lib/validation/auth';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = parsed.data;
-    const user = await db.user.findUnique({ where: { email: email.toLowerCase() } });
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
 
     // Always run bcrypt to prevent timing attacks even if user not found
     const dummyHash = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtgD0LHAkCOYz6TtgD0LHAkCOYzK';

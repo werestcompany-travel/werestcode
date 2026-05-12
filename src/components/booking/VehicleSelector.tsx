@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Users, Briefcase, Camera, CheckCircle2, Info, Check } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { VehicleType, PricingRule } from '@/types';
+import VehicleDetailModal from '@/components/booking/VehicleDetailModal';
 
 interface VehicleSelectorProps {
   vehicles:   PricingRule[];
@@ -97,6 +98,8 @@ function FeatureTag({ label, color, desc }: { label: string; color: string; desc
 }
 
 export default function VehicleSelector({ vehicles, selected, passengers, luggage, onSelect }: VehicleSelectorProps) {
+  const [modalVehicle, setModalVehicle] = useState<VehicleType | null>(null);
+
   return (
     <div className="space-y-5">
 
@@ -168,6 +171,22 @@ export default function VehicleSelector({ vehicles, selected, passengers, luggag
                     Too small
                   </div>
                 )}
+
+                {/* Info button */}
+                <button
+                  type="button"
+                  aria-label={`View details for ${v.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setModalVehicle(v.vehicleType);
+                  }}
+                  className={cn(
+                    'absolute bottom-3 right-3 w-7 h-7 rounded-full flex items-center justify-center transition-colors shadow-sm',
+                    'bg-white/80 hover:bg-white text-gray-500 hover:text-[#2534ff] border border-gray-200',
+                  )}
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
               </div>
 
               {/* ── Info panel ── */}
@@ -237,6 +256,16 @@ export default function VehicleSelector({ vehicles, selected, passengers, luggag
           );
         })}
       </div>
+
+      {/* Vehicle detail modal */}
+      {modalVehicle && (
+        <VehicleDetailModal
+          vehicleType={modalVehicle}
+          onClose={() => setModalVehicle(null)}
+          onSelect={onSelect}
+          isSelected={selected === modalVehicle}
+        />
+      )}
 
     </div>
   );

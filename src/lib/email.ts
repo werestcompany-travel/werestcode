@@ -128,6 +128,10 @@ export async function sendBookingConfirmationEmail(booking: BookingEmailData): P
       <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
     </div>
     <p style="text-align:center;font-size:13px;color:#9ca3af;">or track at: <a href="${trackUrl}" style="color:#2534ff;">${trackUrl}</a></p>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
+      You're receiving this email because you made a booking with Werest Travel.<br/>
+      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+    </p>
   `;
 
   try {
@@ -139,6 +143,92 @@ export async function sendBookingConfirmationEmail(booking: BookingEmailData): P
     });
   } catch (err) {
     console.error('[email] sendBookingConfirmationEmail failed:', err);
+  }
+}
+
+// ─── Tour booking confirmation ─────────────────────────────────────────────────
+
+interface TourBookingEmailData {
+  bookingRef:    string;
+  customerName:  string;
+  customerEmail: string;
+  tourTitle:     string;
+  bookingDate:   string | Date;
+  tourTime?:     string | null;
+  optionLabel?:  string | null;
+  adultQty:      number;
+  childQty:      number;
+  adultPrice:    number;
+  childPrice:    number;
+  totalPrice:    number;
+  meetingPoint?: string | null;
+  notes?:        string | null;
+}
+
+export async function sendTourBookingEmail(booking: TourBookingEmailData): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping tour booking email');
+    return;
+  }
+
+  const dateStr     = formatDate(booking.bookingDate);
+  const confirmUrl  = `${APP_URL}/tours/confirmation/${booking.bookingRef}`;
+
+  const body = `
+    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Tour Booking Confirmed ✓</h1>
+    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, your tour is booked!</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;">Booking Reference</p>
+        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${booking.bookingRef}</p>
+      </td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;width:50%;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tour</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${escapeHtml(booking.tourTitle)}</p>
+      </td><td style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}${booking.tourTime ? ` at ${booking.tourTime}` : ''}</p>
+      </td></tr>
+      ${booking.meetingPoint ? `<tr><td colspan="2" style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Meeting Point</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${escapeHtml(booking.meetingPoint)}</p>
+      </td></tr>` : ''}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="font-size:14px;color:#374151;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''} × ${formatCurrency(booking.adultPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;">${formatCurrency(booking.adultQty * booking.adultPrice)}</td>
+      </tr>
+      ${booking.childQty > 0 ? `<tr>
+        <td style="font-size:14px;color:#374151;padding-top:4px;">${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''} × ${formatCurrency(booking.childPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;padding-top:4px;">${formatCurrency(booking.childQty * booking.childPrice)}</td>
+      </tr>` : ''}
+      <tr>
+        <td style="font-size:16px;font-weight:800;color:#111827;padding-top:10px;border-top:1px solid #e5e7eb;">Total</td>
+        <td align="right" style="font-size:16px;font-weight:800;color:#2534ff;padding-top:10px;border-top:1px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
+      </tr>
+    </table>
+
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
+    </div>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
+      You're receiving this email because you made a booking with Werest Travel.<br/>
+      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+    </p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      booking.customerEmail,
+      subject: `Tour Booking Confirmed – ${booking.bookingRef} | Werest Travel`,
+      html:    baseLayout(`Tour Booking Confirmed – ${booking.bookingRef}`, body),
+    });
+  } catch (err) {
+    console.error('[email] sendTourBookingEmail failed:', err);
   }
 }
 
@@ -231,7 +321,7 @@ export async function sendInquiryConfirmationEmail(data: InquiryEmailData): Prom
   }
 }
 
-// ─── Tour booking confirmation ────────────────────────────────────────────────
+// ─── Tour booking confirmation (legacy wrapper) ───────────────────────────────
 
 interface TourEmailData {
   bookingRef:     string;
@@ -245,59 +335,21 @@ interface TourEmailData {
   totalPrice:     number;
 }
 
+/** @deprecated Use sendTourBookingEmail instead */
 export async function sendTourConfirmationEmail(booking: TourEmailData): Promise<void> {
-  if (!resend) {
-    console.warn('[email] RESEND_API_KEY not set – skipping tour confirmation email');
-    return;
-  }
-
-  const dateStr = formatDate(booking.bookingDate);
-
-  const body = `
-    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Tour Booking Confirmed ✓</h1>
-    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, your tour is booked!</p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;">Booking Reference</p>
-        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${escapeHtml(booking.bookingRef)}</p>
-      </td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tour</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${escapeHtml(booking.tourTitle)}</p>
-        <p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${escapeHtml(booking.optionLabel)}</p>
-      </td><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}</p>
-      </td></tr>
-      <tr><td colspan="2" style="padding:10px 0;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Guests</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">
-          ${booking.adultQty > 0 ? `${booking.adultQty} adult${booking.adultQty > 1 ? 's' : ''}` : ''}
-          ${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty > 1 ? 'ren' : ''}` : ''}
-        </p>
-      </td></tr>
-    </table>
-
-    <p style="font-size:16px;font-weight:800;color:#111827;text-align:right;">Total: <span style="color:#2534ff;">${formatCurrency(booking.totalPrice)}</span></p>
-
-    <p style="font-size:14px;color:#374151;margin-top:20px;">Our team will be in touch with full tour details and meeting instructions. Payment is due on the day unless otherwise stated.</p>
-
-    <div style="text-align:center;margin:28px 0 8px;">
-      <a href="${APP_URL}/tours/confirmation/${encodeURIComponent(booking.bookingRef)}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
-    </div>
-  `;
-
-  try {
-    await resend.emails.send({
-      from:    FROM,
-      to:      booking.customerEmail,
-      subject: `Tour Booking Confirmed – ${booking.bookingRef} | Werest Travel`,
-      html:    baseLayout(`Tour Booking Confirmed – ${booking.bookingRef}`, body),
-    });
-  } catch (err) {
-    console.error('[email] sendTourConfirmationEmail failed:', err);
-  }
+  return sendTourBookingEmail({
+    bookingRef:    booking.bookingRef,
+    customerName:  booking.customerName,
+    customerEmail: booking.customerEmail,
+    tourTitle:     booking.tourTitle,
+    optionLabel:   booking.optionLabel,
+    bookingDate:   booking.bookingDate,
+    adultQty:      booking.adultQty,
+    childQty:      booking.childQty,
+    adultPrice:    0,
+    childPrice:    0,
+    totalPrice:    booking.totalPrice,
+  });
 }
 
 // ─── Attraction booking confirmation ──────────────────────────────────────────
@@ -351,6 +403,10 @@ export async function sendAttractionConfirmationEmail(booking: AttractionEmailDa
     <p style="font-size:16px;font-weight:800;color:#111827;text-align:right;">Total: <span style="color:#2534ff;">${formatCurrency(booking.totalPrice)}</span></p>
 
     <p style="font-size:14px;color:#374151;margin-top:20px;">Present this booking reference at the attraction. Payment is due on the day unless otherwise stated.</p>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
+      You're receiving this email because you made a booking with Werest Travel.<br/>
+      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+    </p>
   `;
 
   try {
@@ -362,6 +418,198 @@ export async function sendAttractionConfirmationEmail(booking: AttractionEmailDa
     });
   } catch (err) {
     console.error('[email] sendAttractionConfirmationEmail failed:', err);
+  }
+}
+
+// ─── Tour booking confirmation (with slug + WhatsApp) ─────────────────────────
+
+interface TourBookingConfirmationEmailData {
+  bookingRef:    string;
+  customerName:  string;
+  customerEmail: string;
+  tourTitle:     string;
+  tourSlug:      string;
+  optionLabel?:  string | null;
+  bookingDate:   string | Date;
+  adultQty:      number;
+  childQty:      number;
+  adultPrice:    number;
+  childPrice:    number;
+  totalPrice:    number;
+  notes?:        string | null;
+}
+
+export async function sendTourBookingConfirmationEmail(booking: TourBookingConfirmationEmailData): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping tour booking confirmation email');
+    return;
+  }
+
+  const dateStr    = formatDate(booking.bookingDate);
+  const confirmUrl = `${APP_URL}/tours/confirmation/${booking.bookingRef}`;
+  const tourUrl    = `${APP_URL}/tours/${booking.tourSlug}`;
+  const waNumber   = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191';
+  const waUrl      = `https://wa.me/${waNumber}`;
+
+  const body = `
+    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Your tour is confirmed! 🎉</h1>
+    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, we can't wait to see you!</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Booking Reference</p>
+        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${escapeHtml(booking.bookingRef)}</p>
+      </td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;width:50%;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tour</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;"><a href="${tourUrl}" style="color:#2534ff;text-decoration:none;">${escapeHtml(booking.tourTitle)}</a></p>
+        ${booking.optionLabel ? `<p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${escapeHtml(booking.optionLabel)}</p>` : ''}
+      </td><td style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}</p>
+      </td></tr>
+      <tr><td colspan="2" style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Guests</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">
+          ${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''}${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''}` : ''}
+        </p>
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="font-size:14px;color:#374151;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''} × ${formatCurrency(booking.adultPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;">${formatCurrency(booking.adultQty * booking.adultPrice)}</td>
+      </tr>
+      ${booking.childQty > 0 ? `<tr>
+        <td style="font-size:14px;color:#374151;padding-top:4px;">${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''} × ${formatCurrency(booking.childPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;padding-top:4px;">${formatCurrency(booking.childQty * booking.childPrice)}</td>
+      </tr>` : ''}
+      <tr>
+        <td style="font-size:16px;font-weight:800;color:#111827;padding-top:10px;border-top:1px solid #e5e7eb;">Total</td>
+        <td align="right" style="font-size:16px;font-weight:800;color:#2534ff;padding-top:10px;border-top:1px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
+      </tr>
+    </table>
+
+    ${booking.notes ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:24px;">📝 <strong>Your notes:</strong> ${escapeHtml(booking.notes)}</p>` : ''}
+
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
+    </div>
+    <p style="text-align:center;font-size:14px;color:#374151;margin-top:20px;">
+      Questions? <a href="${waUrl}" style="color:#25D366;font-weight:600;">WhatsApp us</a>
+    </p>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
+      You're receiving this email because you made a booking with Werest Travel.<br/>
+      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+    </p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      booking.customerEmail,
+      subject: `Tour Confirmed – ${escapeHtml(booking.tourTitle)} | Werest Travel`,
+      html:    baseLayout(`Tour Confirmed – ${booking.tourTitle}`, body),
+    });
+  } catch (err) {
+    console.error('[email] sendTourBookingConfirmationEmail failed:', err);
+  }
+}
+
+// ─── Attraction booking confirmation (with slug + WhatsApp) ───────────────────
+
+interface AttractionBookingConfirmationEmailData {
+  bookingRef:     string;
+  customerName:   string;
+  customerEmail:  string;
+  attractionName: string;
+  attractionSlug: string;
+  packageName:    string;
+  visitDate:      string | Date;
+  adultQty:       number;
+  childQty:       number;
+  adultPrice:     number;
+  childPrice:     number;
+  totalPrice:     number;
+  notes?:         string | null;
+}
+
+export async function sendAttractionBookingConfirmationEmail(booking: AttractionBookingConfirmationEmailData): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping attraction booking confirmation email');
+    return;
+  }
+
+  const dateStr        = formatDate(booking.visitDate);
+  const confirmUrl     = `${APP_URL}/confirmation/attraction/${booking.bookingRef}`;
+  const attractionUrl  = `${APP_URL}/attractions/${booking.attractionSlug}`;
+  const waNumber       = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191';
+  const waUrl          = `https://wa.me/${waNumber}`;
+
+  const body = `
+    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Your tickets are confirmed! 🎫</h1>
+    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, enjoy your visit!</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Booking Reference</p>
+        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${escapeHtml(booking.bookingRef)}</p>
+      </td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;width:50%;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Attraction</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;"><a href="${attractionUrl}" style="color:#2534ff;text-decoration:none;">${escapeHtml(booking.attractionName)}</a></p>
+        <p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${escapeHtml(booking.packageName)}</p>
+      </td><td style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Visit Date</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}</p>
+      </td></tr>
+      <tr><td colspan="2" style="padding:10px 0;vertical-align:top;">
+        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Guests</p>
+        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">
+          ${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''}${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''}` : ''}
+        </p>
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="font-size:14px;color:#374151;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''} × ${formatCurrency(booking.adultPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;">${formatCurrency(booking.adultQty * booking.adultPrice)}</td>
+      </tr>
+      ${booking.childQty > 0 ? `<tr>
+        <td style="font-size:14px;color:#374151;padding-top:4px;">${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''} × ${formatCurrency(booking.childPrice)}</td>
+        <td align="right" style="font-size:14px;color:#374151;padding-top:4px;">${formatCurrency(booking.childQty * booking.childPrice)}</td>
+      </tr>` : ''}
+      <tr>
+        <td style="font-size:16px;font-weight:800;color:#111827;padding-top:10px;border-top:1px solid #e5e7eb;">Total</td>
+        <td align="right" style="font-size:16px;font-weight:800;color:#2534ff;padding-top:10px;border-top:1px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
+      </tr>
+    </table>
+
+    ${booking.notes ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:24px;">📝 <strong>Your notes:</strong> ${escapeHtml(booking.notes)}</p>` : ''}
+
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
+    </div>
+    <p style="text-align:center;font-size:14px;color:#374151;margin-top:20px;">
+      Questions? <a href="${waUrl}" style="color:#25D366;font-weight:600;">WhatsApp us</a>
+    </p>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
+      You're receiving this email because you made a booking with Werest Travel.<br/>
+      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+    </p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      booking.customerEmail,
+      subject: `Tickets Confirmed – ${escapeHtml(booking.attractionName)} | Werest Travel`,
+      html:    baseLayout(`Tickets Confirmed – ${booking.attractionName}`, body),
+    });
+  } catch (err) {
+    console.error('[email] sendAttractionBookingConfirmationEmail failed:', err);
   }
 }
 
@@ -438,7 +686,7 @@ interface TourReminderData {
   customerName:  string;
   customerEmail: string;
   tourTitle:     string;
-  optionLabel:   string;
+  optionLabel:   string | null;
   bookingDate:   string | Date;
   totalPrice:    number;
 }
@@ -459,7 +707,7 @@ export async function sendTourReminderEmail(booking: TourReminderData): Promise<
       <tr><td style="padding:10px 0;vertical-align:top;">
         <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tour</p>
         <p style="margin:3px 0 0;font-size:15px;color:#111827;font-weight:700;">${escapeHtml(booking.tourTitle)}</p>
-        <p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${escapeHtml(booking.optionLabel)}</p>
+        ${booking.optionLabel ? `<p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${escapeHtml(booking.optionLabel)}</p>` : ''}
       </td></tr>
       <tr><td style="padding:10px 0;">
         <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date</p>

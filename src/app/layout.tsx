@@ -6,8 +6,10 @@ import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
+import CookieConsent from '@/components/CookieConsent';
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 /* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
@@ -79,6 +81,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WishlistProvider>
             <AuthModalProvider>
               {children}
+              <WhatsAppFloat />
+              <CookieConsent />
               <Toaster
                 position="top-center"
                 toastOptions={{
@@ -93,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Vercel Analytics */}
         <Analytics />
 
-        {/* GA4 — only loaded when NEXT_PUBLIC_GA_ID is set */}
+        {/* GA4 — only loaded when NEXT_PUBLIC_GA_MEASUREMENT_ID is set */}
         {GA_ID && (
           <>
             <Script

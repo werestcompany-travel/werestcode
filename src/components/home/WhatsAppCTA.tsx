@@ -7,7 +7,7 @@ import { useLocale } from '@/context/LocaleContext';
  * Update WHATSAPP_NUMBER with the real business number before going live.
  * Format: country code + number, digits only (e.g. "66812345678" for Thailand).
  */
-const WHATSAPP_NUMBER = '66819519191';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191';
 
 const WHATSAPP_MESSAGES: Record<string, string> = {
   EN: 'Hi Werest Travel! I would like to book a transfer.',

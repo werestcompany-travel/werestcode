@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getUserFromCookies } from '@/lib/user-auth';
-import { sendAttractionConfirmationEmail } from '@/lib/email';
+import { sendAttractionConfirmationEmail, sendAttractionBookingConfirmationEmail } from '@/lib/email';
 import { createAttractionBookingSchema } from '@/lib/validation/attraction';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const data = parsed.data;
 
     // ── Server-side price recalculation — never trust client prices ──
-    const pkg = await db.attractionPackage.findFirst({
+    const pkg = await prisma.attractionPackage.findFirst({
       where: { id: data.packageId, attractionId: data.attractionId, isActive: true },
     });
     if (!pkg) {
@@ -56,12 +56,12 @@ export async function POST(req: NextRequest) {
     // Generate unique booking ref (retry on collision)
     let bookingRef = generateBookingRef();
     for (let i = 0; i < 5; i++) {
-      const existing = await db.attractionBooking.findUnique({ where: { bookingRef } });
+      const existing = await prisma.attractionBooking.findUnique({ where: { bookingRef } });
       if (!existing) break;
       bookingRef = generateBookingRef();
     }
 
-    const booking = await db.attractionBooking.create({
+    const booking = await prisma.attractionBooking.create({
       data: {
         bookingRef,
         attractionId:   data.attractionId,
@@ -97,6 +97,23 @@ export async function POST(req: NextRequest) {
       childQty:       booking.childQty,
       totalPrice:     booking.totalPrice,
     }).catch(console.error);
+
+    // Fire-and-forget confirmation email (with slug + WhatsApp)
+    sendAttractionBookingConfirmationEmail({
+      bookingRef:     booking.bookingRef,
+      customerName:   booking.customerName,
+      customerEmail:  booking.customerEmail,
+      attractionName: booking.attractionName,
+      attractionSlug: booking.attractionId, // slug stored as attractionId
+      packageName:    booking.packageName,
+      visitDate:      booking.visitDate,
+      adultQty:       booking.adultQty,
+      childQty:       booking.childQty,
+      adultPrice:     booking.adultPrice,
+      childPrice:     booking.childPrice,
+      totalPrice:     booking.totalPrice,
+      notes:          booking.notes,
+    }).catch(err => console.error('[attraction-booking] email error:', err));
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (e) {

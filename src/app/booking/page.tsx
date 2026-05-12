@@ -211,6 +211,14 @@ function BookingPageInner() {
                       </div>
                     </div>
                   )}
+                  {isRoundTrip && (
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                      <span className="text-amber-500 text-xs font-bold shrink-0 mt-0.5">!</span>
+                      <p className="text-[11px] text-amber-700 leading-snug">
+                        Return trip is shown for reference. Please make a separate booking for your return journey.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pax / bags / vehicle chips */}
