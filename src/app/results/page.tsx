@@ -381,27 +381,35 @@ function ResultsPageInner() {
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* Step bar */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center">
+        <div className="bg-white border-b border-gray-100 shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
             <button
               onClick={() => router.back()}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 shrink-0"
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <div className="ml-auto">
+            <div className="flex-1 flex justify-center">
               <StepBar current={1} />
             </div>
+            {/* spacer to balance the Back button */}
+            <div className="w-[60px] shrink-0" />
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
             {/* ── LEFT: vehicles + add-ons ── */}
-            <div className="lg:col-span-2 space-y-5">
+            <div className="lg:col-span-2 space-y-4">
 
-              <h2 className="text-xl font-bold text-gray-900">Select your ride</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Select your ride</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {pickupAddress.split(',')[0]} → {dropoffAddress.split(',')[0]}
+                  {duration ? <span className="ml-2 text-gray-400">· ~{duration}</span> : null}
+                </p>
+              </div>
 
               {loadingPricing ? (
                 <div className="bg-white rounded-2xl border border-gray-200 p-10 flex items-center justify-center gap-3 text-gray-400">
@@ -461,17 +469,16 @@ function ResultsPageInner() {
                 </div>
 
                 {/* Route mini */}
-                <div className="space-y-2 text-xs mb-3">
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-[#2534ff] mt-0.5 shrink-0" />
-                    <p className="text-gray-600 leading-snug line-clamp-2">{pickupAddress || 'Pickup location'}</p>
+                <div className="space-y-1.5 text-xs mb-3 bg-gray-50 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+                    <p className="text-gray-800 font-medium truncate">{pickupAddress.split(',')[0] || 'Pickup location'}</p>
                   </div>
-                  <div className="w-px h-4 bg-gray-200 ml-[6px]" />
-                  <div className="flex items-start gap-2">
-                    <div className="w-3.5 h-3.5 flex items-center justify-center mt-0.5 shrink-0">
-                      <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-100" />
+                  <div className="flex items-center gap-2 pl-[1px]">
+                    <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                      <div className="w-2 h-2 rounded-full border-2 border-red-500 bg-red-100" />
                     </div>
-                    <p className="text-gray-600 leading-snug line-clamp-2">{dropoffAddress || 'Drop-off location'}</p>
+                    <p className="text-gray-800 font-medium truncate">{dropoffAddress.split(',')[0] || 'Drop-off location'}</p>
                   </div>
                 </div>
 
