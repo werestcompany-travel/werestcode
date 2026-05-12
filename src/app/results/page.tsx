@@ -163,15 +163,11 @@ function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSel
         {/* Availability + price + CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-auto pt-2 border-t border-gray-100">
 
-          {/* Availability */}
+          {/* Availability — limited warning only */}
           <div>
-            {limited ? (
+            {limited && (
               <p className="flex items-center gap-1 text-xs font-semibold text-amber-600">
                 <Zap className="w-3.5 h-3.5 shrink-0" /> Limited availability
-              </p>
-            ) : (
-              <p className="flex items-center gap-1 text-xs font-semibold text-green-600">
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Available
               </p>
             )}
           </div>
