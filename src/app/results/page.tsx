@@ -57,43 +57,26 @@ function getBadgeEmoji(badge: string): string {
   return '';
 }
 
-/* ── Vehicle photo card with exterior/interior toggle ── */
+/* ── Vehicle photo panel ── */
 interface PhotoTabsProps {
   vehicleType: VehicleType;
   name: string;
 }
 
 function PhotoTabs({ vehicleType, name }: PhotoTabsProps) {
-  const [tab, setTab] = useState<'exterior' | 'interior'>('exterior');
   const cfg = VEHICLE_CONFIGS[vehicleType];
-  const src = tab === 'exterior' ? cfg.exteriorImage : cfg.interiorImage;
 
   return (
     <div className="relative w-full sm:w-[260px] shrink-0">
       <div className="relative h-[180px] sm:h-full min-h-[180px] overflow-hidden rounded-t-2xl sm:rounded-l-2xl sm:rounded-tr-none bg-slate-100">
         <Image
-          src={src}
-          alt={`${name} ${tab}`}
+          src={cfg.exteriorImage}
+          alt={name}
           fill
           sizes="(max-width: 640px) 100vw, 260px"
-          className="object-cover transition-opacity duration-300"
+          className="object-cover"
           priority={false}
         />
-      </div>
-      {/* Tab toggle */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 bg-black/50 backdrop-blur-sm rounded-full px-1 py-1">
-        {(['exterior', 'interior'] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`text-[11px] font-semibold px-3 py-1 rounded-full transition-colors capitalize ${
-              tab === t ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
       </div>
     </div>
   );

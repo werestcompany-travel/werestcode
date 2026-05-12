@@ -42,7 +42,7 @@ export default function SearchTabs({
 
       {/* ── Floating pill tab bar — centered, content-width only ── */}
       <div className="relative z-10 flex justify-center overflow-x-auto [&::-webkit-scrollbar]:hidden px-4 sm:px-0">
-        <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.45)]">
+        <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full">
           {TABS.map(({ id, label, Icon, badge, href }) => {
             const isActive = activeTab === id;
             const cls = `flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap select-none ${
