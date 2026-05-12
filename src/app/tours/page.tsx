@@ -5,10 +5,9 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TourGrid from '@/components/tours/TourGrid'
 import TourSearchInput from '@/components/tours/TourSearchInput'
-import TourSortSelect from '@/components/tours/TourSortSelect'
-import { searchTours, TOURS, type Tour } from '@/lib/tours'
+import { searchTours, tours as TOURS, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
-import { Sparkles, X } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -20,16 +19,6 @@ export const metadata: Metadata = {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const CATEGORIES = [
-  { key: '',          label: 'All Experiences' },
-  { key: 'day-trip',  label: 'Day Trips' },
-  { key: 'cultural',  label: 'Cultural' },
-  { key: 'food',      label: 'Food & Drink' },
-  { key: 'nature',    label: 'Nature' },
-  { key: 'water',     label: 'Water' },
-  { key: 'adventure', label: 'Adventure' },
-]
 
 const POPULAR_DESTINATIONS = [
   'Bangkok', 'Chiang Mai', 'Phuket', 'Krabi', 'Pattaya',
@@ -98,8 +87,6 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
     return `/tours${s ? `?${s}` : ''}`
   }
 
-  const clearAllUrl = '/tours'
-
   return (
     <>
       <Navbar />
@@ -133,86 +120,11 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
               </div>
             </div>
 
-            {/* Category pills */}
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(cat => {
-                const isActive = category === cat.key
-                const href = buildUrl({ category: cat.key })
-                return (
-                  <Link
-                    key={cat.key}
-                    href={href}
-                    className={[
-                      'px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
-                      isActive
-                        ? 'bg-white text-[#2534ff] border-white'
-                        : 'bg-white/15 text-white border-white/30 hover:bg-white/25',
-                    ].join(' ')}
-                  >
-                    {cat.label}
-                  </Link>
-                )
-              })}
-            </div>
           </div>
         </section>
 
         {/* ── Results ──────────────────────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* Sort dropdown */}
-          <div className="flex items-center justify-end mb-4">
-            <label className="text-xs text-gray-500 mr-2 shrink-0">Sort by</label>
-            <Suspense>
-              <TourSortSelect />
-            </Suspense>
-          </div>
-
-          {/* Active filter chips + result summary */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Result count */}
-              <p className="text-sm text-gray-600">
-                {tours.length > 0 ? (
-                  <><span className="font-semibold text-gray-900">{tours.length}</span> experience{tours.length !== 1 ? 's' : ''}</>
-                ) : (
-                  <span className="font-semibold text-gray-900">No experiences found</span>
-                )}
-                {destination && <> near <span className="font-semibold text-[#2534ff]">{destination}</span></>}
-                {q && <> for &quot;<span className="font-semibold text-[#2534ff]">{q}</span>&quot;</>}
-              </p>
-
-              {/* Active filter chips */}
-              {destination && (
-                <Link
-                  href={buildUrl({ destination: '' })}
-                  className="flex items-center gap-1 text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200 rounded-full px-2.5 py-1 hover:bg-brand-100 transition-colors"
-                >
-                  📍 {destination}
-                  <X className="w-3 h-3" />
-                </Link>
-              )}
-              {category && (
-                <Link
-                  href={buildUrl({ category: '' })}
-                  className="flex items-center gap-1 text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200 rounded-full px-2.5 py-1 hover:bg-brand-100 transition-colors"
-                >
-                  🏷 {CATEGORIES.find(c => c.key === category)?.label ?? category}
-                  <X className="w-3 h-3" />
-                </Link>
-              )}
-            </div>
-
-            {/* Clear all */}
-            {hasFilters && (
-              <Link
-                href={clearAllUrl}
-                className="text-sm text-[#2534ff] hover:underline font-medium shrink-0"
-              >
-                Clear all filters
-              </Link>
-            )}
-          </div>
 
           {/* Tour grid */}
           {tours.length === 0 ? (

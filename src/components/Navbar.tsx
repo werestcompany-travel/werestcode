@@ -198,7 +198,7 @@ export default function Navbar({
         </Link>
 
         {/* 3. Search box + dropdown */}
-        <div ref={searchWrapRef} className="relative hidden sm:block ml-[38px] w-full max-w-sm">
+        <div ref={searchWrapRef} className="relative hidden sm:block ml-2 lg:ml-[38px] w-full max-w-[200px] lg:max-w-sm min-w-0">
           <form
             onSubmit={handleSearch}
             className={cn(
@@ -231,7 +231,7 @@ export default function Navbar({
 
           {/* ── Search dropdown ── */}
           {searchFocused && (
-            <div className="absolute top-full left-0 mt-2 w-[620px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden">
+            <div className="absolute top-full left-0 mt-2 w-[min(620px,90vw)] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden">
               <div className="p-4 max-h-[480px] overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
 
                 {/* Search history */}
@@ -364,20 +364,20 @@ export default function Navbar({
         {/* 4. Desktop utility links */}
         <div className="hidden md:flex items-center gap-0.5">
 
-          {/* Find bookings */}
+          {/* Find bookings — large screens only (1024px+) */}
           <Link
             href="/tracking"
-            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
+            className={`hidden lg:flex text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
           >
             Manage bookings
           </Link>
 
-          {/* Customer support */}
+          {/* Customer support — large screens only (1024px+) */}
           <a
             href="https://wa.me/66819519191"
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
+            className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}
           >
             <Headphones className="w-4 h-4 shrink-0" />
             Customer support
@@ -488,9 +488,10 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => openModal()}
-              className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-full transition-colors whitespace-nowrap shadow-sm"
+              className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-3 lg:px-5 py-2 rounded-full transition-colors whitespace-nowrap shadow-sm"
             >
-              Sign in / Register
+              <span className="lg:hidden">Sign in</span>
+              <span className="hidden lg:inline">Sign in / Register</span>
             </button>
           )}
         </div>

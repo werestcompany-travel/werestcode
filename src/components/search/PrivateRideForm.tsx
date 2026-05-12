@@ -273,7 +273,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         </div>
 
         {/* ── Single row ── */}
-        <div className="flex items-stretch h-[72px] px-2">
+        <div className="flex items-stretch h-[72px] px-2 min-w-[600px]">
 
           {/* FROM */}
           <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
