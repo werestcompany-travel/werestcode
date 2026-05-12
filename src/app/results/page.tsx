@@ -221,72 +221,6 @@ function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSel
   );
 }
 
-/* ── Route summary bar ── */
-interface RouteSummaryBarProps {
-  pickupAddress: string;
-  dropoffAddress: string;
-  date: string;
-  time: string;
-  duration: string;
-  routeCount: number;
-  onEdit: () => void;
-}
-
-function RouteSummaryBar({ pickupAddress, dropoffAddress, date, time, duration, routeCount, onEdit }: RouteSummaryBarProps) {
-  const pickup  = pickupAddress  || 'Pickup';
-  const dropoff = dropoffAddress || 'Drop-off';
-
-  // Short names for display
-  const short = (addr: string) => addr.split(',')[0] || addr;
-
-  return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-
-        {/* Route */}
-        <div className="flex items-center gap-2 font-bold text-gray-900 text-sm min-w-0">
-          <MapPin className="w-4 h-4 text-[#2534ff] shrink-0" />
-          <span className="truncate max-w-[140px]">{short(pickup)}</span>
-          <ArrowRight className="w-4 h-4 text-gray-400 shrink-0" />
-          <span className="truncate max-w-[140px]">{short(dropoff)}</span>
-        </div>
-
-        <div className="hidden sm:block w-px h-5 bg-gray-200" />
-
-        {/* Duration */}
-        {duration && (
-          <p className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
-            <Clock className="w-3.5 h-3.5" /> Approx. {duration}
-          </p>
-        )}
-
-        {/* Date + time */}
-        {date && (
-          <p className="text-xs text-gray-500 shrink-0">
-            {formatDate(date)} at {time}
-          </p>
-        )}
-
-        {/* Social proof */}
-        {routeCount > 0 && (
-          <p className="text-xs font-semibold text-[#2534ff] shrink-0">
-            🧳 {routeCount} travellers booked this route this month
-          </p>
-        )}
-
-        {/* Edit button */}
-        <button
-          type="button"
-          onClick={onEdit}
-          className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-[#2534ff] border border-[#2534ff] px-3 py-1.5 rounded-lg hover:bg-[#2534ff] hover:text-white transition-colors shrink-0"
-        >
-          <Pencil className="w-3 h-3" /> Edit search
-        </button>
-      </div>
-    </div>
-  );
-}
-
 /* ── Step bar ── */
 function StepBar({ current }: { current: number }) {
   const steps = ['Select your ride', 'Add Experiences', 'Details & Payment'];
@@ -336,7 +270,6 @@ function ResultsPageInner() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType | null>(null);
   const [selectedAddOns, setSelectedAddOns]   = useState<SelectedAddOn[]>([]);
   const [duration, setDuration]               = useState('');
-  const [routeCount, setRouteCount]           = useState(0);
   const [mapsReady, setMapsReady]             = useState(false);
   const [isEditing, setIsEditing]             = useState(false);
 
@@ -359,16 +292,6 @@ function ResultsPageInner() {
   }, []);
 
   // Fetch route stats (social proof)
-  useEffect(() => {
-    if (!pickupAddress || !dropoffAddress) return;
-    const from = pickupAddress.split(',')[0];
-    const to   = dropoffAddress.split(',')[0];
-    fetch(`/api/bookings/route-stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-      .then(r => r.json())
-      .then(d => setRouteCount(d.count ?? 0))
-      .catch(() => {});
-  }, [pickupAddress, dropoffAddress]);
-
   // Fetch travel duration via Google Maps Distance Matrix when maps are ready
   useEffect(() => {
     if (!mapsReady || !window.google?.maps) return;
@@ -472,17 +395,6 @@ function ResultsPageInner() {
           </div>
         </div>
 
-        {/* Route summary bar */}
-        <RouteSummaryBar
-          pickupAddress={pickupAddress}
-          dropoffAddress={dropoffAddress}
-          date={tripDate}
-          time={tripTime}
-          duration={duration}
-          routeCount={routeCount}
-          onEdit={() => setIsEditing(e => !e)}
-        />
-
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
@@ -530,13 +442,22 @@ function ResultsPageInner() {
               {/* Trip info */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-card px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${isRoundTrip ? 'bg-[#2534ff] text-white' : 'bg-[#2534ff] text-white'}`}>
-                    {isRoundTrip ? 'Round trip' : 'One way'}
-                  </span>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="flex items-center gap-1"><Users className="w-3 h-3" />{passengers}</span>
-                    <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{luggage}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${isRoundTrip ? 'bg-[#2534ff] text-white' : 'bg-[#2534ff] text-white'}`}>
+                      {isRoundTrip ? 'Round trip' : 'One way'}
+                    </span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span className="flex items-center gap-1"><Users className="w-3 h-3" />{passengers}</span>
+                      <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{luggage}</span>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(e => !e)}
+                    className="flex items-center gap-1 text-xs font-semibold text-[#2534ff] border border-[#2534ff] px-2.5 py-1 rounded-lg hover:bg-[#2534ff] hover:text-white transition-colors shrink-0"
+                  >
+                    <Pencil className="w-3 h-3" /> Edit
+                  </button>
                 </div>
 
                 {/* Route mini */}
