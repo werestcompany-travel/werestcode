@@ -287,50 +287,6 @@ function RouteSummaryBar({ pickupAddress, dropoffAddress, date, time, duration, 
   );
 }
 
-/* ── Route map preview ── */
-interface RouteMapPreviewProps {
-  pickupLat: number;
-  pickupLng: number;
-  dropoffLat: number;
-  dropoffLng: number;
-  pickupAddress: string;
-  dropoffAddress: string;
-}
-
-function RouteMapPreview({ pickupLat, pickupLng, dropoffLat, dropoffLng, pickupAddress, dropoffAddress }: RouteMapPreviewProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  // Only show static map when we have valid coords and an API key
-  const hasCoords = pickupLat && pickupLng && dropoffLat && dropoffLng && apiKey;
-
-  if (hasCoords) {
-    const mapSrc = `https://maps.googleapis.com/maps/api/staticmap?size=800x200&path=color:0x2534ffff|weight:4|${pickupLat},${pickupLng}|${dropoffLat},${dropoffLng}&markers=color:blue|${pickupLat},${pickupLng}&markers=color:red|${dropoffLat},${dropoffLng}&key=${apiKey}`;
-    return (
-      <div className="w-full h-[160px] relative rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-        <Image
-          src={mapSrc}
-          alt="Route map preview"
-          fill
-          sizes="100vw"
-          className="object-cover"
-          unoptimized
-        />
-      </div>
-    );
-  }
-
-  // Fallback placeholder
-  return (
-    <div className="w-full h-[80px] rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center gap-3 text-gray-400">
-      <MapPin className="w-5 h-5" />
-      <div className="text-xs text-center">
-        <p className="font-semibold text-gray-600">Route Preview</p>
-        <p className="truncate max-w-[260px]">{pickupAddress} → {dropoffAddress}</p>
-      </div>
-    </div>
-  );
-}
-
 /* ── Step bar ── */
 function StepBar({ current }: { current: number }) {
   const steps = ['Select your ride', 'Add Experiences', 'Details & Payment'];
@@ -526,18 +482,6 @@ function ResultsPageInner() {
           routeCount={routeCount}
           onEdit={() => setIsEditing(e => !e)}
         />
-
-        {/* Route map preview */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
-          <RouteMapPreview
-            pickupLat={pickupLat}
-            pickupLng={pickupLng}
-            dropoffLat={dropoffLat}
-            dropoffLng={dropoffLng}
-            pickupAddress={pickupAddress}
-            dropoffAddress={dropoffAddress}
-          />
-        </div>
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
