@@ -1,4 +1,5 @@
 'use client';
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useState, useCallback, useEffect, useRef } from 'react';
@@ -400,7 +401,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-hidden min-h-[65vh] md:min-h-0 pt-16 relative"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden md:overflow-hidden pt-16 relative"
         >
           {/* Background landscape */}
           <Image
@@ -413,43 +414,60 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           />
           {/* Blue gradient overlay */}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
-          {/* Mobile: horizontal service chips */}
-          <div className="relative z-10 md:hidden w-full flex flex-col gap-1 shrink-0">
-            <div className="flex gap-2 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          {/* Mobile: Trip.com-style circular service icons */}
+          <div className="relative z-10 md:hidden w-full px-4 pt-3 pb-1 shrink-0">
+            <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
               {SERVICE_TABS.map((tab) => {
                 const Icon   = tab.icon;
                 const active = activeService === tab.id;
-                const chipCls = `shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  active
-                    ? 'bg-white text-brand-700 border-white shadow-sm'
-                    : 'bg-white/15 text-white border-white/30 backdrop-blur-sm'
-                }`;
-                if (tab.href) {
-                  return (
-                    <Link key={tab.id} href={tab.href} className={chipCls}>
-                      <Icon className="w-3.5 h-3.5" />
+                const itemStyle: CSSProperties = { width: 'calc(25% - 6px)' };
+
+                const content = (
+                  <>
+                    <div className={`relative w-14 h-14 rounded-full flex items-center justify-center mx-auto transition-all duration-200 ${
+                      active
+                        ? 'bg-[#2534ff] shadow-[0_4px_20px_rgba(37,52,255,0.55)]'
+                        : 'bg-white/20 backdrop-blur-sm border border-white/25'
+                    }`}>
+                      <Icon className={`w-6 h-6 ${active ? 'text-white' : 'text-white/90'}`} />
+                      {tab.badge && (
+                        <span className={`absolute -top-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full leading-none ${
+                          tab.badgeColor === 'red'   ? 'bg-red-500 text-white'   :
+                          tab.badgeColor === 'blue'  ? 'bg-blue-500 text-white'  :
+                          tab.badgeColor === 'amber' ? 'bg-amber-400 text-white' :
+                          'bg-gray-500 text-white'
+                        }`}>{tab.badge}</span>
+                      )}
+                    </div>
+                    <p className={`mt-1.5 text-[10px] font-semibold leading-tight text-center ${
+                      active ? 'text-white' : 'text-white/80'
+                    }`}>
                       {tab.label}
-                    </Link>
-                  );
-                }
-                return (
-                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className={chipCls}>
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
+                    </p>
+                  </>
+                );
+
+                return tab.href ? (
+                  <Link key={tab.id} href={tab.href} className="flex flex-col items-center" style={itemStyle}>
+                    {content}
+                  </Link>
+                ) : (
+                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className="flex flex-col items-center" style={itemStyle}>
+                    {content}
                   </button>
                 );
               })}
             </div>
-            {/* Sub-chips: shown below when Private Transfers is active */}
+            {/* Sub-row: quick-action links when Private Transfers is active */}
             {activeService === 'transfer' && (
-              <div className="flex gap-1.5 overflow-x-auto px-4 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+              <div className="flex gap-2 justify-center mt-3">
                 {SERVICE_TABS.find(t => t.id === 'transfer')?.children?.map((child) => {
                   const ChildIcon = child.icon;
                   return (
                     <Link
                       key={child.id}
                       href={child.href}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 transition-all"
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold bg-white/15 text-white/85 border border-white/25 hover:bg-white/25 transition-all backdrop-blur-sm"
                     >
                       <ChildIcon className="w-3 h-3" />
                       {child.label}
@@ -461,10 +479,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           {/* Central content */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12 flex flex-col items-center gap-5 text-center">
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 md:py-12 flex flex-col items-center gap-3 sm:gap-5 text-center">
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-white leading-tight tracking-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
               {activeService === 'transfer'    && 'Your Journey Starts Here'}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
@@ -475,7 +493,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             </h1>
 
             {/* Trust badges */}
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-white/80 text-[13px] font-medium">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-5 gap-y-1 text-white/80 text-[11px] sm:text-[13px] font-medium">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Secure booking</span>
               <span className="text-white/30 hidden sm:block">|</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Support in approx. 30s</span>
@@ -485,7 +503,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Search container */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="w-full my-[30px]">
+              <div className="w-full my-3 sm:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
               </div>
             ) : (
@@ -528,8 +546,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {NEW_USER_CARDS.map((c) => {
               const cls = c.highlight
-                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px]`
-                : `group flex flex-col justify-between rounded-2xl p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] bg-white`;
+                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[130px] sm:min-h-[148px]`
+                : `group flex flex-col justify-between rounded-2xl p-4 sm:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[130px] sm:min-h-[148px] bg-white`;
 
               const inner = c.highlight ? (
                 <>
@@ -585,7 +603,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section aria-label="Promotions" className="bg-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Slider container */}
-          <div className="relative">
+          <div className="relative overflow-hidden sm:overflow-visible">
             {/* Left arrow */}
             <button
               type="button"
@@ -700,8 +718,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     key={dest.id}
                     type="button"
                     onClick={() => setSelectedDest(dest.id)}
-                    style={{ width: 'calc(20% - 9.6px)', flexShrink: 0 }}
-                    className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none h-[160px] transition-all duration-200"
+                    className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none h-[140px] sm:h-[160px] transition-all duration-200 shrink-0 w-[calc(40%_-_6px)] sm:w-[calc(25%_-_9px)] lg:w-[calc(20%_-_9.6px)]"
                   >
                     {/* Photo */}
                     <Image
@@ -709,7 +726,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                       alt={dest.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="20vw"
+                      sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 20vw"
                       unoptimized
                     />
 
@@ -810,7 +827,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   className="flex flex-col h-full rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
                 >
                   {/* Image */}
-                  <div className="relative h-44 overflow-hidden shrink-0">
+                  <div className="relative h-32 sm:h-44 overflow-hidden shrink-0">
                     <Image
                       src={place.img}
                       alt={place.name}
@@ -924,13 +941,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16">
-          <div className="text-center mb-12">
-            <h2 id="fleet-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
+      <section aria-labelledby="fleet-heading" className="py-10 sm:py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 lg:gap-10">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -943,7 +960,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   className="flex flex-col items-center text-center py-6 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-5" style={{ height: 180 }}>
+                  <div className="relative w-full mb-3 sm:mb-5" style={{ height: 'clamp(100px, 18vw, 180px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
@@ -978,7 +995,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   <BookOpen className="w-5 h-5 text-brand-600" aria-hidden="true" />
                   <p className="text-brand-600 text-sm font-semibold uppercase tracking-widest">{t('blog.tagline')}</p>
                 </div>
-                <h2 id="blog-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">{t('blog.heading')}</h2>
+                <h2 id="blog-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">{t('blog.heading')}</h2>
               </div>
               <a href="/blog" className="hidden sm:flex items-center gap-1.5 text-brand-600 font-semibold text-sm hover:text-brand-800 transition-colors">
                 {t('blog.seeAll')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -1015,7 +1032,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         />
         <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
           <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-3">{t('cta.tagline')}</p>
-          <h2 id="cta-heading" className="text-3xl sm:text-4xl font-extrabold text-white mb-4">{t('cta.heading')}</h2>
+          <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-4">{t('cta.heading')}</h2>
           <p className="text-white/65 mb-8 max-w-xl mx-auto">{t('cta.para')}</p>
           <a
             href="#top"
