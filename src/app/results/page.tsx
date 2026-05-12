@@ -386,13 +386,7 @@ function ResultsPageInner() {
             {/* ── LEFT: vehicles + add-ons ── */}
             <div className="lg:col-span-2 space-y-4">
 
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Select your ride</h2>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {pickupAddress.split(',')[0]} → {dropoffAddress.split(',')[0]}
-                  {duration ? <span className="ml-2 text-gray-400">· ~{duration}</span> : null}
-                </p>
-              </div>
+              <h2 className="text-xl font-bold text-gray-900">Select your ride</h2>
 
               {loadingPricing ? (
                 <div className="bg-white rounded-2xl border border-gray-200 p-10 flex items-center justify-center gap-3 text-gray-400">
