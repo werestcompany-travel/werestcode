@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { MapPin, Calendar, Ticket, Search, Plus, Minus } from 'lucide-react';
 import CalendarPicker from './CalendarPicker';
 import { useLocale } from '@/context/LocaleContext';
@@ -31,8 +31,7 @@ export default function TicketsForm() {
     d ? new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
 
   return (
-    <div className="space-y-3">
-      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-visible">
+    <Fragment>
 
         {/* Header strip — same height as sub-tabs */}
         <div className="flex items-center px-6 pt-4 pb-0 border-b border-gray-100">
@@ -121,18 +120,7 @@ export default function TicketsForm() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Quick suggestions */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs text-white/60 font-medium">{t('form.popular')}</span>
-        {['Grand Palace', 'Sanctuary of Truth', 'Floating market', 'Tiger Temple'].map(s => (
-          <button key={s} type="button" onClick={() => setKeyword(s)}
-            className="text-xs bg-white/15 hover:bg-white/25 text-white border border-white/20 px-3 py-1.5 rounded-full font-medium transition-colors backdrop-blur-sm">
-            {s}
-          </button>
-        ))}
-      </div>
-    </div>
+    </Fragment>
   );
 }

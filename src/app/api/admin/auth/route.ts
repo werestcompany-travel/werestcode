@@ -2,18 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { signAdminToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { adminLoginSchema } from '@/lib/validation/auth';
+import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
-  try {
-    const { email, password } = await req.json();
+  const ip = getIP(req);
+  const rl = rateLimit(`admin-login:${ip}`, LIMITS.login);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Too many login attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+    );
+  }
 
-    const admin = await prisma.adminUser.findUnique({ where: { email } });
-    if (!admin) {
-      return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
+  try {
+    const body = await req.json();
+    const parsed = adminLoginSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 400 });
     }
 
-    const valid = await bcrypt.compare(password, admin.password);
-    if (!valid) {
+    const { email, password } = parsed.data;
+    const admin = await prisma.adminUser.findUnique({ where: { email: email.toLowerCase() } });
+
+    // Constant-time comparison
+    const dummyHash = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtgD0LHAkCOYz6TtgD0LHAkCOYzK';
+    const valid = admin
+      ? await bcrypt.compare(password, admin.password)
+      : await bcrypt.compare(password, dummyHash).then(() => false);
+
+    if (!admin || !valid) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -24,10 +42,9 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure:   process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge:   8 * 60 * 60, // 8 hours
+      maxAge:   8 * 60 * 60,
       path:     '/',
     });
-
     return res;
   } catch (err) {
     console.error('[admin/auth] POST error:', err);

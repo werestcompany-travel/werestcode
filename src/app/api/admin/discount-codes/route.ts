@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
 export async function GET() {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { code, type, value, description, minOrderAmount, maxUses, expiresAt, isActive } = await req.json();
+  const { code, type, value, description, minOrderAmount, maxUses, expiresAt, isActive, newUserOnly, perUserLimit } = await req.json();
   if (!code || !type || value == null)
     return NextResponse.json({ error: 'Code, type and value are required' }, { status: 400 });
 
@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
         maxUses: maxUses ? Number(maxUses) : null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         isActive: isActive !== false,
+        newUserOnly: newUserOnly === true,
+        perUserLimit: perUserLimit ? Number(perUserLimit) : null,
       },
     });
     return NextResponse.json({ discount }, { status: 201 });

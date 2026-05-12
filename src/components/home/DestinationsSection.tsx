@@ -98,9 +98,9 @@ export default function DestinationsSection() {
 
         {/* Route cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" role="tabpanel">
-          {routes.map((route, i) => (
+          {routes.map((route) => (
             <Link
-              key={i}
+              key={`${route.fromCity}-${route.toCity}`}
               href={`/results?pickup_address=${encodeURIComponent(route.fromCity)}&dropoff_address=${encodeURIComponent(route.toCity)}`}
               className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label={`${t('dest.transfer')}: ${route.fromCity} to ${route.toCity} — ${t('dest.oneWay')} ${route.price}`}

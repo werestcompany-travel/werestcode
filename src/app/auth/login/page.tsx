@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -41,11 +42,8 @@ function LoginForm() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">W</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">Werest <span className="text-brand-500 font-light">Travel</span></span>
+          <Link href="/" className="inline-flex items-center mb-6">
+            <Image src="/images/logo.png" alt="Werest Travel" height={36} width={119} className="object-contain" />
           </Link>
           <h1 className="text-2xl font-extrabold text-gray-900">Welcome back</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in to access your wishlist and bookings</p>

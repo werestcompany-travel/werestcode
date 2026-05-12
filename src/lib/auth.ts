@@ -1,9 +1,11 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'fallback-secret-change-in-production',
-);
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET environment variable is not set. Set it before deploying.');
+}
+const SECRET = new TextEncoder().encode(jwtSecret ?? 'dev-only-insecure-secret-do-not-use-in-prod');
 
 export async function signAdminToken(payload: { id: string; email: string; name: string }) {
   return new SignJWT(payload)

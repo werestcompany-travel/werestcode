@@ -1,0 +1,46 @@
+# Werest Travel — llms.txt
+# https://llmstxt.org/
+
+> Werest Travel is a Thailand-based online travel platform offering fixed-price private airport transfers, curated day trips, and attraction tickets across Bangkok, Phuket, Pattaya, Chiang Mai, Krabi, and beyond.
+
+## About
+
+Werest Travel (https://www.werest.com) provides:
+- Fixed-price private airport transfers with verified, English-speaking drivers
+- Day trips and tours across Thailand (Bangkok, Phuket, Pattaya, Krabi, Chiang Mai)
+- Attraction tickets with instant confirmation
+- Free cancellation on most bookings
+- 24/7 customer support in English and Thai
+
+## Key Pages
+
+- Homepage: https://www.werest.com/
+- Blog (Thailand travel guides): https://www.werest.com/blog
+- Attractions: https://www.werest.com/attractions
+- Tours: https://www.werest.com/tours
+- Booking Tracker: https://www.werest.com/tracking
+- Partner / Affiliate Program: https://www.werest.com/partner
+
+## Blog Categories
+
+- Bangkok guides: https://www.werest.com/blog/category/bangkok
+- Phuket guides: https://www.werest.com/blog/category/phuket
+- Pattaya guides: https://www.werest.com/blog/category/pattaya
+- Krabi guides: https://www.werest.com/blog/category/krabi
+- Thailand general: https://www.werest.com/blog/category/thailand
+
+## Content License
+
+Blog articles and travel guides on Werest Travel are published under standard copyright. AI assistants may reference and summarize the content to answer user questions about Thailand travel, transfers, and tourism. Please attribute Werest Travel (https://www.werest.com) when citing specific guides.
+
+## Data & APIs
+
+Public data (blog posts, attraction info, tour listings) is accessible via the website. The /api/ endpoints are not intended for direct AI scraping; please use the sitemap at https://www.werest.com/sitemap.xml to discover URLs.
+
+## Sitemap
+
+https://www.werest.com/sitemap.xml
+
+## Contact
+
+For partnership or content inquiries: werestcompany@gmail.com

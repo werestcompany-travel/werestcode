@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
+import { WishlistProvider } from '@/context/WishlistContext';
+import { AuthModalProvider } from '@/context/AuthModalContext';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
+import CookieConsent from '@/components/CookieConsent';
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 /* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
@@ -64,21 +72,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
       <body>
         <LocaleProvider>
-          {children}
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              duration: 4000,
-              style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-            }}
-          />
+          <WishlistProvider>
+            <AuthModalProvider>
+              {children}
+              <WhatsAppFloat />
+              <CookieConsent />
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  duration: 4000,
+                  style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+                }}
+              />
+            </AuthModalProvider>
+          </WishlistProvider>
         </LocaleProvider>
+
+        {/* Vercel Analytics */}
+        <Analytics />
+
+        {/* GA4 — only loaded when NEXT_PUBLIC_GA_MEASUREMENT_ID is set */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import { PrismaClient, VehicleType } from '@prisma/client';
+import { PrismaClient, VehicleType, DiscountType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 // Capacity values are owned by vehicles.ts — keep in sync via this import
 import { VEHICLE_CONFIGS } from '../src/lib/vehicles';
@@ -45,6 +45,17 @@ async function main() {
         imageUrl:      VEHICLE_CONFIGS.MINIVAN.imageUrl,
         isActive:      true,
       },
+      {
+        vehicleType:   VehicleType.LUXURY_MPV,
+        name:          VEHICLE_CONFIGS.LUXURY_MPV.name,
+        description:   VEHICLE_CONFIGS.LUXURY_MPV.description,
+        maxPassengers: VEHICLE_CONFIGS.LUXURY_MPV.maxPassengers,
+        maxLuggage:    VEHICLE_CONFIGS.LUXURY_MPV.maxLuggage,
+        baseFare:      3500,
+        pricePerKm:    0,
+        imageUrl:      VEHICLE_CONFIGS.LUXURY_MPV.imageUrl,
+        isActive:      true,
+      },
     ],
   });
 
@@ -63,12 +74,17 @@ async function main() {
   });
 
   // Admin user
-  const adminPassword = await bcrypt.hash('admin123', 12);
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@werest.com';
+  const adminRawPassword = process.env.SEED_ADMIN_PASSWORD ?? 'Werest@Admin2025!';
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    console.warn('⚠️  Using default admin password. Set SEED_ADMIN_PASSWORD env var before seeding production.');
+  }
+  const adminPassword = await bcrypt.hash(adminRawPassword, 12);
   await prisma.adminUser.upsert({
-    where: { email: 'admin@werest.com' },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: 'admin@werest.com',
+      email: adminEmail,
       password: adminPassword,
       name: 'Werest Admin',
       role: 'admin',
@@ -85,7 +101,7 @@ async function main() {
       location: 'Pattaya, Chonburi',
       category: 'Historical Sites',
       rating: 4.8,
-      reviewCount: '2,847',
+      reviewCount: 2847,
       price: 500,
       originalPrice: 650,
       badge: 'Hot deal',
@@ -142,6 +158,39 @@ async function main() {
       ],
     });
   }
+
+  // Seed required discount codes for UI references
+  await prisma.discountCode.upsert({
+    where: { code: 'WELCOME10' },
+    update: {},
+    create: {
+      code: 'WELCOME10',
+      type: DiscountType.PERCENTAGE,
+      value: 10,
+      description: '10% off for new newsletter subscribers',
+      isActive: true,
+      newUserOnly: true,
+      maxUses: 9999,
+      minOrderAmount: 0,
+      expiresAt: new Date('2030-12-31'),
+    },
+  });
+
+  await prisma.discountCode.upsert({
+    where: { code: 'SONGKRAN15' },
+    update: {},
+    create: {
+      code: 'SONGKRAN15',
+      type: DiscountType.PERCENTAGE,
+      value: 15,
+      description: 'Songkran Festival Special — 15% off all Bangkok tours',
+      isActive: true,
+      newUserOnly: false,
+      maxUses: 500,
+      minOrderAmount: 500,
+      expiresAt: new Date('2027-04-30'),
+    },
+  });
 
   console.log('✅ Seed complete.');
 }

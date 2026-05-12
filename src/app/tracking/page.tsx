@@ -1,36 +1,88 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StatusTimeline from '@/components/tracking/StatusTimeline';
 import { StatusBadge } from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { BookingDetail } from '@/types';
+import { BookingDetail, BookingStatus, BookingStatusHistory } from '@/types';
 import { formatCurrency, formatDate, VEHICLE_LABELS } from '@/lib/utils';
-import { Search, MapPin, Calendar, Clock, Users, Phone } from 'lucide-react';
+import { Search, MapPin, Calendar, Clock, Users, Phone, Wifi, WifiOff } from 'lucide-react';
 
 export default function TrackingPage() { return <Suspense><TrackingPageInner /></Suspense>; }
+
 function TrackingPageInner() {
   const searchParams = useSearchParams();
   const initialRef = searchParams.get('ref') ?? '';
 
-  const [ref, setRef] = useState(initialRef);
+  const [ref,     setRef]     = useState(initialRef);
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error,   setError]   = useState('');
+  const [live,    setLive]    = useState(false);   // SSE connected?
 
+  const esRef = useRef<EventSource | null>(null);
+
+  // ── SSE subscription ────────────────────────────────────────────────────
+  const subscribeToUpdates = (bookingId: string) => {
+    if (esRef.current) {
+      esRef.current.close();
+      esRef.current = null;
+    }
+    const es = new EventSource(`/api/bookings/${bookingId}/stream`);
+    esRef.current = es;
+
+    es.addEventListener('status', (e) => {
+      const payload = JSON.parse(e.data) as {
+        status: BookingStatus;
+        history: BookingStatusHistory[];
+      };
+      setBooking(prev =>
+        prev
+          ? { ...prev, currentStatus: payload.status, statusHistory: payload.history }
+          : prev,
+      );
+      setLive(true);
+    });
+
+    es.addEventListener('close', () => {
+      es.close();
+      esRef.current = null;
+      setLive(false);
+    });
+
+    es.onerror = () => {
+      setLive(false);
+      // EventSource auto-reconnects — just reflect the offline state briefly
+    };
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { esRef.current?.close(); };
+  }, []);
+
+  // ── Fetch booking once ──────────────────────────────────────────────────
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!ref.trim()) { setError('Please enter your booking reference'); return; }
     setError('');
     setLoading(true);
+
+    // Close any existing SSE stream
+    esRef.current?.close();
+    esRef.current = null;
+    setLive(false);
+
     try {
-      const res = await fetch(`/api/bookings/track?ref=${encodeURIComponent(ref.trim().toUpperCase())}`);
+      const res  = await fetch(`/api/bookings/track?ref=${encodeURIComponent(ref.trim().toUpperCase())}`);
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error ?? 'Booking not found');
       setBooking(json.data);
+      // Open live SSE connection for the found booking
+      subscribeToUpdates(json.data.id);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Booking not found');
       setBooking(null);
@@ -40,9 +92,8 @@ function TrackingPageInner() {
   };
 
   // Auto-search if ref pre-filled
-  useState(() => {
-    if (initialRef) handleSearch();
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (initialRef) handleSearch(); }, []);
 
   return (
     <>
@@ -62,7 +113,7 @@ function TrackingPageInner() {
                 type="text"
                 placeholder="e.g. WR-240501-1234"
                 value={ref}
-                onChange={(e) => setRef(e.target.value.toUpperCase())}
+                onChange={e => setRef(e.target.value.toUpperCase())}
                 className="input-base pl-10 font-mono tracking-wider uppercase"
               />
             </div>
@@ -81,7 +132,21 @@ function TrackingPageInner() {
               <div className="bg-brand-700 text-white rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-brand-200 text-xs font-medium">Booking Reference</p>
-                  <StatusBadge status={booking.currentStatus} className="bg-white/20 text-white" />
+                  <div className="flex items-center gap-2">
+                    {/* Live indicator */}
+                    <span
+                      title={live ? 'Live updates active' : 'Connecting…'}
+                      className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        live ? 'bg-green-500/25 text-green-300' : 'bg-white/10 text-white/50'
+                      }`}
+                    >
+                      {live
+                        ? <><Wifi className="w-3 h-3" /> Live</>
+                        : <><WifiOff className="w-3 h-3" /> Connecting…</>
+                      }
+                    </span>
+                    <StatusBadge status={booking.currentStatus} className="bg-white/20 text-white" />
+                  </div>
                 </div>
                 <p className="text-2xl font-black tracking-wider">{booking.bookingRef}</p>
                 <p className="text-brand-200 text-xs mt-1">{booking.customerName}</p>

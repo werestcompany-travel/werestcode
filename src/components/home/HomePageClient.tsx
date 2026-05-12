@@ -1,22 +1,46 @@
 'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useCallback } from 'react';
+import { Fragment, useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import FlashDealBanner from '@/components/home/FlashDealBanner';
 import SearchTabs from '@/components/search/SearchTabs';
-import FaqSection from '@/components/home/FaqSection';
-import DestinationsSection from '@/components/home/DestinationsSection';
 import WhatsAppCTA from '@/components/home/WhatsAppCTA';
 import BlogCard from '@/components/blog/BlogCard';
+import DestinationGrid from '@/components/home/DestinationGrid';
+import PopularThisMonth from '@/components/home/PopularThisMonth';
 import { useLocale } from '@/context/LocaleContext';
+import { useAuthModal } from '@/context/AuthModalContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { type BlogPostSummary } from '@/lib/blog';
 import {
-  ShieldCheck, Star, MapPin, CheckCircle2,
-  Car, Plane, Users, CreditCard, Bell, ArrowRight,
-  Quote, ArrowLeftRight, BookOpen,
+  Star, CheckCircle2, BookOpen, Heart,
+  Car, Plane, Users, ArrowRight,
+  ArrowLeftRight,
+  Compass, Ticket, Ship, Gift, ChevronRight, Tag,
+  Clock, Umbrella, Headphones,
 } from 'lucide-react';
+
+/* ── Service sidebar tabs (with section groupings) ────────────────────────── */
+const SERVICE_TABS = [
+  // § 1 — Core services
+  {
+    id: 'transfer', icon: Car, label: 'Private Transfers', badge: null, badgeColor: '', href: undefined, s: 1,
+    children: [
+      { id: 'airport', icon: Plane, label: 'Airport Transfer', href: '/results' },
+      { id: 'charter', icon: Clock, label: 'Charter Rental',   href: '#' },
+    ],
+  },
+  { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
+  { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
+  { id: 'dinner',      icon: Ship,        label: 'Cruises',             badge: 'New',      badgeColor: 'blue', href: '/cruises',      s: 1 },
+  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
+  // § 3 — Planning tools
+  { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
+  // § 4 — Account / loyalty
+  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: undefined,    s: 4 },
+];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
 const SEO_ROUTES = [
@@ -68,45 +92,80 @@ const SEO_ROUTES = [
   ],
 ];
 
-/* ── Reviews with translation keys ───────────────────────────────────────── */
-const REVIEWS = [
-  { name: 'Sarah M.',  origin: 'United Kingdom', rating: 5, textKey: 'rev.1' },
-  { name: 'James K.',  origin: 'Australia',      rating: 5, textKey: 'rev.2' },
-  { name: 'Yuki T.',   origin: 'Japan',           rating: 5, textKey: 'rev.3' },
+/* ── New-user exclusive cards ─────────────────────────────────────────────── */
+const NEW_USER_CARDS = [
+  { highlight: true,  title: 'New users get more discounts on travel!', sub: 'Sign in to unlock exclusive welcome deals', cta: 'Sign in & claim all', href: '#', openModal: true,  emoji: '🎁', gradient: 'from-brand-600 to-brand-800' },
+  { highlight: false, title: '10% off',       sub: 'First Transfer',         cta: 'Claim all', href: '#',        openModal: true,  emoji: '🚗' },
+  { highlight: false, title: 'Free cancel',   sub: 'Up to 24h before pickup',cta: 'Claim all', href: '/booking', openModal: false, emoji: '🛡️' },
+  { highlight: false, title: '15% off',       sub: 'Airport Transfers',      cta: 'Claim all', href: '/results', openModal: false, emoji: '✈️' },
 ];
 
-/* ── Benefits with translation keys ─────────────────────────────────────── */
-const BENEFITS = [
-  { icon: <Plane       className="w-6 h-6" />, titleKey: 'ben.flight.title',  descKey: 'ben.flight.desc'  },
-  { icon: <ShieldCheck className="w-6 h-6" />, titleKey: 'ben.driver.title',  descKey: 'ben.driver.desc'  },
-  { icon: <CreditCard  className="w-6 h-6" />, titleKey: 'ben.price.title',   descKey: 'ben.price.desc'   },
-  { icon: <Bell        className="w-6 h-6" />, titleKey: 'ben.confirm.title', descKey: 'ben.confirm.desc' },
-  { icon: <Users       className="w-6 h-6" />, titleKey: 'ben.greet.title',   descKey: 'ben.greet.desc'   },
-  { icon: <CheckCircle2 className="w-6 h-6" />, titleKey: 'ben.cancel.title', descKey: 'ben.cancel.desc'  },
+/* ── Auto-slider promotional banners ─────────────────────────────────────── */
+const PROMO_BANNERS = [
+  { gradient: 'from-[#1a237e] to-[#1565c0]', tag: 'New User Offer',  title: 'First Booking — 10% Off',          desc: 'Sign in and save on your first private transfer',        cta: 'Claim Now',  href: '#',        openModal: true,  emoji: '🎉' },
+  { gradient: 'from-[#004d40] to-[#00695c]', tag: 'Free Cancel',     title: 'Book with Confidence',             desc: 'Cancel for free up to 24 hours before pickup',           cta: 'Learn More', href: '/booking', openModal: false, emoji: '🛡️' },
+  { gradient: 'from-[#4a148c] to-[#7b1fa2]', tag: 'Earn Rewards',    title: 'Collect Werest Points',            desc: 'Earn on every trip and redeem for free rides',            cta: 'Join Now',   href: '#',        openModal: true,  emoji: '⭐' },
+  { gradient: 'from-[#bf360c] to-[#f4511e]', tag: 'Popular Route',   title: 'Bangkok → Pattaya ฿1,800',        desc: 'Fixed price · No surge · Available 24/7',                cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false, emoji: '🚗' },
+  { gradient: 'from-[#e65100] to-[#fbc02d]', tag: 'Airport Special', title: 'Airport Pickup from ฿900',        desc: 'Professional driver waiting at arrivals',                 cta: 'See Routes', href: '/results', openModal: false, emoji: '✈️' },
 ];
 
-/* ── How-it-works steps with translation keys ────────────────────────────── */
-const STEPS = [
-  { n: '01', icon: <MapPin       className="w-5 h-5" />, titleKey: 'step.1.title', descKey: 'step.1.desc' },
-  { n: '02', icon: <Car         className="w-5 h-5" />, titleKey: 'step.2.title', descKey: 'step.2.desc' },
-  { n: '03', icon: <CheckCircle2 className="w-5 h-5" />, titleKey: 'step.3.title', descKey: 'step.3.desc' },
+/* ── Get-inspired destination cards ─────────────────────────────────────── */
+const INSPIRED_DESTS = [
+  { id: 'anywhere',  name: 'Anywhere',    sub: 'Explore all of Thailand',  haul: null,           img: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600&q=80', wide: true  },
+  { id: 'bangkok',   name: 'Bangkok',     sub: 'City tours & transfers',   haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80', wide: false },
+  { id: 'phuket',    name: 'Phuket',      sub: 'Beach & island trips',     haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80', wide: false },
+  { id: 'chiangmai', name: 'Chiang Mai',  sub: 'Cultural experiences',     haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&q=80', wide: false },
+  { id: 'krabi',     name: 'Krabi',       sub: 'Nature & adventure',       haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80',   wide: false },
+  { id: 'pattaya',   name: 'Pattaya',     sub: 'Day trips & beach',        haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1595435934349-8d929fbb7bc5?w=600&q=80', wide: false },
+  { id: 'huahin',    name: 'Hua Hin',     sub: 'Beaches & royal town',     haul: 'Medium haul',  img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80', wide: false },
+  { id: 'samui',     name: 'Koh Samui',   sub: 'Island paradise',          haul: 'Medium haul',  img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=600&q=80', wide: false },
+  { id: 'ayutthaya', name: 'Ayutthaya',   sub: 'Ancient temples & ruins',  haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=600&q=80', wide: false },
 ];
 
-/* ── Trust-section items with translation keys ───────────────────────────── */
-const TRUST_ITEMS = [
-  { icon: <Plane       className="w-5 h-5 text-brand-600" />, titleKey: 'trust.flight.t', descKey: 'trust.flight.d' },
-  { icon: <ShieldCheck className="w-5 h-5 text-brand-600" />, titleKey: 'trust.driver.t', descKey: 'trust.driver.d' },
-  { icon: <Car         className="w-5 h-5 text-brand-600" />, titleKey: 'trust.vehicle.t', descKey: 'trust.vehicle.d' },
-  { icon: <Bell        className="w-5 h-5 text-brand-600" />, titleKey: 'trust.support.t', descKey: 'trust.support.d' },
-];
-
-/* ── Stats ───────────────────────────────────────────────────────────────── */
-const STATS = [
-  { value: '50+',    labelKey: 'stats.routes'     },
-  { value: '10K+',  labelKey: 'stats.travellers'  },
-  { value: '4.9★',  labelKey: 'stats.rating'      },
-  { value: '24 / 7', labelKey: 'stats.support'    },
-];
+/* ── Places you may like data (per destination) ─────────────────────────── */
+type PlaceEntry = {
+  name: string; category: string; sub: string; img: string;
+  price: string; rating: number; reviews: number; booked: string;
+  badge?: string; originalPrice?: string; deals?: string[];
+};
+const PLACES_BY_DEST: Record<string, PlaceEntry[]> = {
+  anywhere: [
+    { name: 'Grand Palace & Emerald Buddha', category: 'Attraction', sub: 'Bangkok',    img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 18200, booked: '500K+', badge: 'Best seller',  originalPrice: '฿600',   deals: ['10% off', 'Audio guide'] },
+    { name: 'Phi Phi Islands Speedboat',     category: 'Day Trip',   sub: 'Phuket',    img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=400&q=80', price: '฿3,200',     rating: 4.9, reviews: 7846,  booked: '300K+', badge: 'Likely to sell out', deals: ['Buy 4 get 25% off'] },
+    { name: 'Airport Transfer BKK → City',  category: 'Transfer',   sub: 'Bangkok',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80', price: 'From ฿900', rating: 4.9, reviews: 15426, booked: '1M+',   badge: 'Top rated',   deals: ['Free waiting time'] },
+    { name: 'Elephant Sanctuary Day Trip',  category: 'Tour',       sub: 'Chiang Mai',img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,500',     rating: 4.8, reviews: 3200,  booked: '200K+', badge: 'Eco-friendly', deals: ['Lunch included'] },
+  ],
+  bangkok: [
+    { name: 'Grand Palace & Wat Phra Kaew',    category: 'Attraction', sub: 'Old Town',    img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 18200, booked: '500K+', badge: 'Best seller',  originalPrice: '฿600', deals: ['10% off'] },
+    { name: 'Damnoen Saduak Floating Market',  category: 'Day Trip',   sub: 'Ratchaburi',  img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80', price: '฿1,800',     rating: 4.8, reviews: 5400,  booked: '150K+',                         deals: ['Breakfast included'] },
+    { name: 'Suvarnabhumi Airport Transfer',   category: 'Transfer',   sub: 'BKK Airport', img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80', price: 'From ฿900', rating: 4.9, reviews: 15426, booked: '1M+',   badge: 'Top rated',   deals: ['Free waiting time'] },
+    { name: 'Bangkok Night Tour & Street Food',category: 'Tour',       sub: 'City Centre', img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿2,200',     rating: 4.7, reviews: 2100,  booked: '80K+',  badge: 'New',          deals: ['Dinner included'] },
+  ],
+  phuket: [
+    { name: 'Phi Phi Islands Speedboat',   category: 'Day Trip', sub: 'Andaman Sea',  img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=400&q=80', price: '฿3,200',     rating: 4.9, reviews: 7846, booked: '300K+', badge: 'Likely to sell out', deals: ['Buy 4 get 25% off'] },
+    { name: 'Phuket Airport Transfer',     category: 'Transfer', sub: 'HKT Airport',  img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: 'From ฿800', rating: 4.9, reviews: 9200, booked: '400K+', badge: 'Top rated',           deals: ['Free waiting time'] },
+    { name: 'James Bond Island Tour',      category: 'Day Trip', sub: 'Phang Nga Bay',img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿2,800',     rating: 4.8, reviews: 4300, booked: '200K+', badge: 'Likely to sell out' },
+    { name: 'Old Phuket Town Exploration', category: 'Tour',     sub: 'Phuket Town',  img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: '฿1,200',     rating: 4.7, reviews: 1800, booked: '60K+' },
+  ],
+  chiangmai: [
+    { name: 'Elephant Nature Park',        category: 'Tour',     sub: 'Mae Taeng',   img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,500',     rating: 4.9, reviews: 3200, booked: '200K+', badge: 'Eco-friendly', deals: ['Lunch included'] },
+    { name: 'Chiang Mai Airport Transfer', category: 'Transfer', sub: 'CNX Airport', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: 'From ฿400', rating: 4.9, reviews: 5100, booked: '180K+', badge: 'Top rated',   deals: ['Free waiting time'] },
+    { name: 'Doi Inthanon National Park',  category: 'Day Trip', sub: 'Chom Thong',  img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,200',     rating: 4.8, reviews: 2800, booked: '100K+' },
+    { name: 'Night Bazaar & Street Food',  category: 'Tour',     sub: 'Old City',    img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80', price: '฿1,500',     rating: 4.7, reviews: 1400, booked: '50K+',                         deals: ['Dinner included'] },
+  ],
+  krabi: [
+    { name: '4 Islands Snorkeling Trip', category: 'Day Trip',   sub: 'Andaman Sea', img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿1,800',     rating: 4.9, reviews: 6200, booked: '250K+', badge: 'Best seller', deals: ['Lunch included'] },
+    { name: 'Krabi → Phuket Airport',   category: 'Transfer',   sub: 'HKT Airport', img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: 'From ฿2,400',rating: 4.8, reviews: 2100, booked: '80K+',                        deals: ['Free waiting time'] },
+    { name: 'Ao Nang & Railay Cave',    category: 'Attraction', sub: 'Ao Nang',     img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿200',       rating: 4.7, reviews: 3400, booked: '120K+',                       originalPrice: '฿250', deals: ['20% off'] },
+    { name: 'Tiger Cave Temple Hike',   category: 'Tour',       sub: 'Krabi Town',  img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿1,200',     rating: 4.8, reviews: 1900, booked: '70K+' },
+  ],
+  pattaya: [
+    { name: 'Sanctuary of Truth Tour',    category: 'Attraction', sub: 'Pattaya',          img: 'https://images.unsplash.com/photo-1562802378-063ec186a863?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 4800, booked: '180K+', badge: 'Best seller', originalPrice: '฿600', deals: ['10% off'] },
+    { name: 'Bangkok → Pattaya Transfer', category: 'Transfer',   sub: 'BKK → Pattaya',   img: 'https://images.unsplash.com/photo-1548625361-58a9d86b0e5b?w=400&q=80', price: 'From ฿1,800',rating: 4.8, reviews: 7200, booked: '350K+', badge: 'Top rated',   deals: ['Free waiting time'] },
+    { name: 'Coral Island Day Trip',      category: 'Day Trip',   sub: 'Gulf of Thailand', img: 'https://images.unsplash.com/photo-1595435934349-8d929fbb7bc5?w=400&q=80', price: '฿2,200',     rating: 4.7, reviews: 2900, booked: '100K+',                      deals: ['Lunch included'] },
+    { name: 'Pattaya City & Temple Tour', category: 'Tour',       sub: 'City Centre',      img: 'https://images.unsplash.com/photo-1548625361-58a9d86b0e5b?w=400&q=80', price: '฿1,500',     rating: 4.8, reviews: 1600, booked: '55K+',                       deals: ['Guide included'] },
+  ],
+};
 
 /* ── Car classes ─────────────────────────────────────────────────────────── */
 const CAR_CLASSES = [
@@ -114,19 +173,19 @@ const CAR_CLASSES = [
     id: 'sedan',
     name: 'Sedan',
     maxPax: 3,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/14png/w=140,h=112,fit=contain',
+    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/14png/w=600,h=400,fit=contain',
   },
   {
     id: 'suv',
     name: 'SUV',
     maxPax: 6,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/13png/w=140,h=112,fit=contain',
+    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/13png/w=600,h=400,fit=contain',
   },
   {
     id: 'minivan',
     name: 'Minivan',
     maxPax: 10,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/10-1png/w=140,h=112,fit=contain',
+    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/10-1png/w=600,h=400,fit=contain',
   },
   {
     id: 'luxury-mpv',
@@ -140,9 +199,65 @@ const CAR_CLASSES = [
 
 export default function HomePageClient({ latestPosts = [] }: { latestPosts?: BlogPostSummary[] }) {
   const { t } = useLocale();
-  const [blogTab, setBlogTab] = useState(0); // reserved for future blog filters
+  const { openModal } = useAuthModal();
+  const [blogTab, setBlogTab] = useState(0);
   const [prefillRoute, setPrefillRoute] = useState<{ from: string; to: string } | null>(null);
   const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
+  const [activeService, setActiveService] = useState('transfer');
+  const [sidebarPinned,  setSidebarPinned]  = useState(true);
+  const [sidebarHover,   setSidebarHover]   = useState(false);
+  const [hoveredSidebarTab, setHoveredSidebarTab] = useState<string | null>(null);
+  const [selectedDest,   setSelectedDest]   = useState('anywhere');
+  const { isWishlisted, toggle, isLoggedIn } = useWishlist();
+  const inspiredSliderRef                   = useRef<HTMLDivElement>(null);
+  const [sliderCanLeft,  setSliderCanLeft]  = useState(false);
+  const [sliderCanRight, setSliderCanRight] = useState(true);
+  const [placesVisible,  setPlacesVisible]  = useState(true);
+  const [navHidden,      setNavHidden]      = useState(false);
+  const sidebarVisible = sidebarPinned || sidebarHover;
+
+  /* ── Mirror navbar hide/show so sidebar top slides in sync ── */
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastY && y > 80) setNavHidden(true);
+      else setNavHidden(false);
+      lastY = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    setPlacesVisible(false);
+    const timer = setTimeout(() => setPlacesVisible(true), 220);
+    return () => clearTimeout(timer);
+  }, [selectedDest]);
+
+  /* ── Promo slider ── */
+  const sliderRef  = useRef<HTMLDivElement>(null);
+  const [sliderIdx,  setSliderIdx]  = useState(0);
+  const [sliderStep, setSliderStep] = useState(0); // px per item + gap
+
+  useEffect(() => {
+    function measure() {
+      if (!sliderRef.current) return;
+      const w   = sliderRef.current.offsetWidth;
+      const ipv = window.innerWidth >= 640 ? 3 : 1;
+      setSliderStep((w + 12) / ipv); // 12 = gap-3
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  useEffect(() => {
+    const ipv = window.innerWidth >= 640 ? 3 : 1;
+    const max = PROMO_BANNERS.length - ipv;
+    const t = setInterval(() => setSliderIdx(i => i >= max ? 0 : i + 1), 3000);
+    return () => clearInterval(t);
+  }, [sliderStep]);
 
   /** Parse "City A to City B" → prefill hero form + scroll up */
   const handleSeoRouteClick = useCallback((route: string, e: React.MouseEvent) => {
@@ -157,162 +272,651 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   }, []);
 
   return (
-    <>
-      <Navbar transparent />
+    <Fragment>
+      <FlashDealBanner />
+      <Navbar
+        onHamburgerClick={() => setSidebarPinned(p => !p)}
+        onHamburgerHoverEnter={() => { if (!sidebarPinned) setSidebarHover(true); }}
+      />
+      {/* ════════════════════════════════════════════════════════════
+          PAGE SHELL — sticky sidebar + scrollable main
+      ════════════════════════════════════════════════════════════ */}
+      <div className="flex">
+
+        {/* ── Full-page sticky sidebar ── */}
+        <aside
+          className={`hidden md:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
+          style={{
+            top: navHidden ? '0px' : '64px',
+            height: navHidden ? '100vh' : 'calc(100vh - 64px)',
+            transition: 'top 300ms ease-in-out, height 300ms ease-in-out, width 300ms',
+          }}
+          onMouseLeave={() => { if (!sidebarPinned) setSidebarHover(false); }}
+        >
+          <div className="w-[238px] flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <nav className="flex-1 pb-2">
+              {SERVICE_TABS.map((tab, idx) => {
+                const showDivider = idx > 0 && tab.s !== SERVICE_TABS[idx - 1].s;
+                const active    = activeService === tab.id;
+                const Icon      = tab.icon;
+                const expanded  = sidebarVisible;
+                const cls = `group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] ${
+                  expanded ? 'gap-3 px-5' : 'pl-[19px]'
+                } ${
+                  active
+                    ? 'bg-gray-100 text-gray-900 border-gray-300'
+                    : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-gray-900'
+                }`;
+                const inner = (
+                  <>
+                    <Icon className={`w-[17px] h-[17px] shrink-0 ${active ? 'text-gray-700' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    {expanded && <span className="flex-1 text-left truncate">{tab.label}</span>}
+                    {expanded && tab.badge && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                        tab.badgeColor === 'red'   ? 'bg-red-100 text-red-600' :
+                        tab.badgeColor === 'blue'  ? 'bg-brand-100 text-brand-700' :
+                        tab.badgeColor === 'amber' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>{tab.badge}</span>
+                    )}
+                    {expanded && active && <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
+                  </>
+                );
+                const isTabHovered = hoveredSidebarTab === tab.id;
+                return (
+                  <span
+                    key={tab.id}
+                    className="block mb-[5px]"
+                    onMouseEnter={() => tab.children && setHoveredSidebarTab(tab.id)}
+                    onMouseLeave={() => tab.children && setHoveredSidebarTab(null)}
+                  >
+                    {showDivider && tab.s === 3 && (
+                      <span className="block h-px bg-gray-100 mx-3 my-2" />
+                    )}
+                    {tab.href ? (
+                      <Link href={tab.href} className={cls}>{inner}</Link>
+                    ) : (
+                      <button type="button" onClick={() => setActiveService(tab.id)} className={cls}>{inner}</button>
+                    )}
+                    {tab.children && sidebarVisible && (
+                      <span
+                        className="block overflow-hidden transition-all duration-200"
+                        style={{ maxHeight: isTabHovered ? `${tab.children.length * 36}px` : '0px', opacity: isTabHovered ? 1 : 0 }}
+                      >
+                        {tab.children.map((child) => {
+                          const ChildIcon = child.icon;
+                          return (
+                            <Link
+                              key={child.id}
+                              href={child.href}
+                              className="group flex items-center gap-2.5 py-2 pl-[52px] pr-4 text-[12px] font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50/60 transition-all duration-150"
+                            >
+                              <ChildIcon className="w-[13px] h-[13px] shrink-0 text-gray-400 group-hover:text-brand-500" />
+                              <span className="truncate">{child.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+            </nav>
+
+            {/* ── Pinned bottom: Why travel with us? ── */}
+            <div className="mt-auto shrink-0">
+              <span className="block h-px bg-gray-100 mx-3 mb-2" />
+              {sidebarVisible && (
+                <p className="px-5 pt-1 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Why travel with us?
+                </p>
+              )}
+              <Link
+                href="#"
+                className={`group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 mb-[5px] ${sidebarVisible ? 'gap-3 px-5' : 'pl-[19px]'}`}
+              >
+                <Umbrella className="w-[17px] h-[17px] shrink-0 text-gray-400 group-hover:text-gray-600" />
+                {sidebarVisible && <span className="flex-1 text-left truncate">Insurance benefits</span>}
+              </Link>
+              <Link
+                href="#"
+                className={`group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 mb-[5px] ${sidebarVisible ? 'gap-3 px-5' : 'pl-[19px]'}`}
+              >
+                <Headphones className="w-[17px] h-[17px] shrink-0 text-gray-400 group-hover:text-gray-600" />
+                {sidebarVisible && <span className="flex-1 text-left truncate">24/7 Local Support</span>}
+              </Link>
+            </div>
+          </div>
+        </aside>
+
+        {/* ── Main scrollable content ── */}
+        <main className="flex-1 min-w-0">
 
       {/* ════════════════════════════════════════════════════════════
-          1. HERO  — visual design preserved exactly
+          1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section
-        aria-label="Hero"
-        className="relative flex flex-col justify-center overflow-hidden"
-        style={{ minHeight: '92vh' }}
-      >
-        <div className="absolute inset-0">
+      <section aria-label="Hero" className="mb-[30px]">
+
+        {/* ── Right: Trip.com-style blue gradient hero ── */}
+        <div
+          className="flex-1 flex flex-col items-center justify-center overflow-hidden min-h-[65vh] md:min-h-0 pt-16 relative"
+        >
+          {/* Background landscape */}
           <Image
             src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=85"
-            alt="Scenic road through Thailand — private transfer and day trip booking"
-            fill priority
-            className="object-cover object-center scale-[1.02]"
+            alt=""
+            fill
+            priority
+            className="object-cover object-bottom"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/60" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 flex flex-col items-center gap-5 text-center">
-          <p className="text-white/80 text-sm font-semibold tracking-widest uppercase">
-            {t('hero.tagline')}
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight max-w-3xl">
-            {t('hero.title1')}<br className="hidden sm:block" /> {t('hero.title2')}
-          </h1>
-          <p className="text-white/70 text-base sm:text-lg max-w-lg">
-            {t('hero.subtitle')}
-          </p>
-          <div id="hero-search-anchor" className="w-full mt-2">
-            <SearchTabs prefillRoute={prefillRoute} />
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/75 text-xs font-medium mt-1">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
-              {t('hero.badge1')}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
-              {t('hero.badge2')}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
-              {t('hero.badge3')}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl px-5 py-3 mt-1">
-            <div className="flex gap-0.5" aria-label="5 stars">
-              {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />)}
+          {/* Blue gradient overlay */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
+          {/* Mobile: horizontal service chips */}
+          <div className="relative z-10 md:hidden w-full flex flex-col gap-1 shrink-0">
+            <div className="flex gap-2 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+              {SERVICE_TABS.map((tab) => {
+                const Icon   = tab.icon;
+                const active = activeService === tab.id;
+                const chipCls = `shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  active
+                    ? 'bg-white text-brand-700 border-white shadow-sm'
+                    : 'bg-white/15 text-white border-white/30 backdrop-blur-sm'
+                }`;
+                if (tab.href) {
+                  return (
+                    <Link key={tab.id} href={tab.href} className={chipCls}>
+                      <Icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                    </Link>
+                  );
+                }
+                return (
+                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className={chipCls}>
+                    <Icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="text-left">
-              <p className="text-white text-xs font-bold leading-none">{t('hero.rating')}</p>
-              <p className="text-white/60 text-[10px] mt-0.5">{t('hero.ratingCount')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0" aria-hidden="true">
-          <svg viewBox="0 0 1440 72" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block">
-            <path d="M0 72L1440 72L1440 20C1200 72 720 0 0 52L0 72Z" fill="white" />
-          </svg>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════
-          2. STATS BAR
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Key statistics" className="bg-white py-10 border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <dl className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:divide-x lg:divide-gray-100">
-            {STATS.map((s) => (
-              <div key={s.labelKey} className="flex flex-col items-center text-center px-6 py-2">
-                <dt className="text-3xl sm:text-4xl font-extrabold text-brand-600 tracking-tight">{s.value}</dt>
-                <dd className="text-sm text-gray-500 mt-1">{t(s.labelKey)}</dd>
+            {/* Sub-chips: shown below when Private Transfers is active */}
+            {activeService === 'transfer' && (
+              <div className="flex gap-1.5 overflow-x-auto px-4 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                {SERVICE_TABS.find(t => t.id === 'transfer')?.children?.map((child) => {
+                  const ChildIcon = child.icon;
+                  return (
+                    <Link
+                      key={child.id}
+                      href={child.href}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 transition-all"
+                    >
+                      <ChildIcon className="w-3 h-3" />
+                      {child.label}
+                    </Link>
+                  );
+                })}
               </div>
-            ))}
-          </dl>
+            )}
+          </div>
+
+          {/* Central content */}
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12 flex flex-col items-center gap-5 text-center">
+
+            {/* Title */}
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              {activeService === 'transfer'    && 'Your Journey Starts Here'}
+              {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
+              {activeService === 'attractions' && 'Top Attraction Tickets'}
+              {activeService === 'deals'       && 'Exclusive Deals & Offers'}
+              {activeService === 'dinner'      && 'Unforgettable Cruises'}
+              {activeService === 'group'       && 'Group Adventures Await'}
+              {activeService === 'rewards'     && 'Earn Werest Rewards'}
+            </h1>
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-white/80 text-[13px] font-medium">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Secure booking</span>
+              <span className="text-white/30 hidden sm:block">|</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Support in approx. 30s</span>
+              <span className="text-white/30 hidden sm:block">|</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Free cancellation</span>
+            </div>
+
+            {/* Search container */}
+            {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
+              <div className="w-full my-[30px]">
+                <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
+              </div>
+            ) : (
+              <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
+                {activeService === 'dinner'  && <Ship     className="w-12 h-12 text-white mx-auto mb-4" />}
+                {activeService === 'group'   && <Users    className="w-12 h-12 text-white mx-auto mb-4" />}
+                {activeService === 'rewards' && <Gift     className="w-12 h-12 text-amber-400 mx-auto mb-4" />}
+                {activeService === 'deals'   && <Tag      className="w-12 h-12 text-white mx-auto mb-4" />}
+                <h2 className="text-2xl font-extrabold text-white mb-2">
+                  {activeService === 'dinner'  ? 'Cruises'          :
+                   activeService === 'group'   ? 'Group Tours'      :
+                   activeService === 'deals'   ? 'Hot Deals'        : 'Werest Rewards'}
+                </h2>
+                <p className="text-white/75 text-sm mb-6">
+                  {activeService === 'rewards'
+                    ? 'Earn points on every booking and redeem for free trips.'
+                    : activeService === 'deals'
+                    ? 'Browse our latest exclusive discounts.'
+                    : 'Coming soon — be the first to know when it launches.'}
+                </p>
+                <Link
+                  href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
+                  className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-brand-50 transition-colors"
+                >
+                  {activeService === 'rewards' ? 'Learn More' : activeService === 'deals' ? 'View Deals' : 'Notify Me'}
+                </Link>
+              </div>
+            )}
+
+          </div>
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          3. WHY CHOOSE WEREST — benefits grid
+          2. NEW USER EXCLUSIVE
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="benefits-heading" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-brand-600 text-sm font-semibold uppercase tracking-widest mb-2">{t('why.tagline')}</p>
-            <h2 id="benefits-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">{t('why.heading')}</h2>
-            <p className="text-gray-500 mt-3 max-w-xl mx-auto">{t('why.sub')}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {BENEFITS.map((b) => (
-              <article
-                key={b.titleKey}
-                className="group p-6 rounded-2xl border border-gray-100 hover:border-brand-200 hover:shadow-[0_4px_24px_rgba(37,52,255,0.08)] transition-all duration-200 bg-white"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-200" aria-hidden="true">
-                  {b.icon}
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1.5">{t(b.titleKey)}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{t(b.descKey)}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <section aria-label="New user exclusive" className="bg-white py-7">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {NEW_USER_CARDS.map((c) => {
+              const cls = c.highlight
+                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px]`
+                : `group flex flex-col justify-between rounded-2xl p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] bg-white`;
 
-      {/* ════════════════════════════════════════════════════════════
-          4. HOW IT WORKS
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="hiw-heading" className="py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <p className="text-brand-600 text-sm font-semibold uppercase tracking-widest mb-2">{t('hiw.tagline')}</p>
-            <h2 id="hiw-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">{t('hiw.heading')}</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative">
-            <div className="hidden sm:block absolute top-8 h-0.5 bg-brand-200" style={{ width: 'calc(33.33% - 48px)', left: 'calc(16.66% + 24px)' }} aria-hidden="true" />
-            <div className="hidden sm:block absolute top-8 h-0.5 bg-brand-200" style={{ width: 'calc(33.33% - 48px)', left: 'calc(49.99% + 24px)' }} aria-hidden="true" />
-            {STEPS.map((s) => (
-              <div key={s.n} className="flex flex-col items-center text-center gap-4">
-                <div className="relative">
-                  <div
-                    className="w-16 h-16 rounded-2xl text-white flex items-center justify-center shadow-[0_8px_24px_rgba(37,52,255,0.25)] z-10 relative"
-                    style={{ background: 'linear-gradient(135deg, #2534ff, #1825b8)' }}
-                    aria-hidden="true"
-                  >
-                    {s.icon}
+              const inner = c.highlight ? (
+                <>
+                  <div>
+                    <span className="text-2xl">{c.emoji}</span>
+                    <p className="text-white font-bold text-sm leading-snug mt-2">{c.title}</p>
+                    <p className="text-white/70 text-xs mt-1 leading-snug">{c.sub}</p>
                   </div>
-                  <span className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-white border-2 border-brand-600 text-brand-700 text-[10px] font-black flex items-center justify-center" aria-hidden="true">
-                    {s.n}
+                  <span className="mt-4 inline-block bg-white text-brand-700 font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-50 transition-colors text-center">
+                    {c.cta}
                   </span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-base mb-1.5">{t(s.titleKey)}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{t(s.descKey)}</p>
-                </div>
-              </div>
-            ))}
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span className="text-2xl">{c.emoji}</span>
+                    <p className="font-extrabold text-gray-900 text-xl mt-2 leading-tight">{c.title}</p>
+                    <p className="text-gray-500 text-xs mt-1">{c.sub}</p>
+                  </div>
+                  <span className="mt-4 inline-block bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-700 transition-colors text-center">
+                    {c.cta}
+                  </span>
+                </>
+              );
+
+              return c.openModal ? (
+                <button key={c.title} type="button" onClick={() => openModal('register')} className={cls}>
+                  {inner}
+                </button>
+              ) : (
+                <Link key={c.title} href={c.href} className={cls}>
+                  {inner}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          3. PROMOTIONAL BANNER SLIDER
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-label="Promotions" className="bg-white py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Slider container */}
+          <div className="relative">
+            {/* Left arrow */}
+            <button
+              type="button"
+              aria-label="Previous"
+              onClick={() => {
+                const ipv = window.innerWidth >= 640 ? 3 : 1;
+                const max = PROMO_BANNERS.length - ipv;
+                setSliderIdx(i => i <= 0 ? max : i - 1);
+              }}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-brand-600 hover:border-brand-300 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
+
+            {/* Right arrow */}
+            <button
+              type="button"
+              aria-label="Next"
+              onClick={() => {
+                const ipv = window.innerWidth >= 640 ? 3 : 1;
+                const max = PROMO_BANNERS.length - ipv;
+                setSliderIdx(i => i >= max ? 0 : i + 1);
+              }}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-brand-600 hover:border-brand-300 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Track */}
+            <div ref={sliderRef} className="overflow-hidden">
+              <div
+                className="flex gap-3 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${sliderIdx * sliderStep}px)` }}
+              >
+                {PROMO_BANNERS.map((b) => {
+                  const inner = (
+                    <div className={`bg-gradient-to-r ${b.gradient} h-[145px] sm:h-[165px] flex items-center px-6 gap-5`}>
+                      <span className="text-4xl shrink-0">{b.emoji}</span>
+                      <div className="min-w-0">
+                        <span className="inline-block bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 uppercase tracking-wider">{b.tag}</span>
+                        <p className="text-white font-extrabold text-base sm:text-lg leading-tight">{b.title}</p>
+                        <p className="text-white/75 text-xs mt-0.5 truncate">{b.desc}</p>
+                      </div>
+                      <span className="shrink-0 ml-auto bg-white text-gray-900 font-bold text-xs px-4 py-2 rounded-full hover:bg-gray-100 transition-colors whitespace-nowrap">
+                        {b.cta}
+                      </span>
+                    </div>
+                  );
+                  return b.openModal ? (
+                    <button
+                      key={b.title}
+                      type="button"
+                      onClick={() => openModal('register')}
+                      className="shrink-0 block rounded-2xl overflow-hidden text-left"
+                      style={{ width: sliderStep ? sliderStep - 12 : 'auto' }}
+                    >
+                      {inner}
+                    </button>
+                  ) : (
+                    <Link
+                      key={b.title}
+                      href={b.href}
+                      className="shrink-0 block rounded-2xl overflow-hidden"
+                      style={{ width: sliderStep ? sliderStep - 12 : 'auto' }}
+                    >
+                      {inner}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Dots */}
+            <div className="flex justify-center gap-1.5 mt-3">
+              {Array.from({ length: PROMO_BANNERS.length }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSliderIdx(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === sliderIdx ? 'bg-brand-600 w-4' : 'bg-gray-300'}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ════════════════════════════════════════════════════════════
+          GET INSPIRED — destination card carousel (smooth scroll)
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-labelledby="inspired-heading" className="py-10 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">Get inspired for your next trip</h2>
+          <div className="relative">
+
+            {/* Scrollable track — hidden scrollbar, 5 rectangle cards visible */}
+            <div
+              ref={inspiredSliderRef}
+              className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              onScroll={() => {
+                const el = inspiredSliderRef.current;
+                if (!el) return;
+                setSliderCanLeft(el.scrollLeft > 2);
+                setSliderCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+              }}
+            >
+              {INSPIRED_DESTS.map((dest) => {
+                const isSelected = selectedDest === dest.id;
+                return (
+                  <button
+                    key={dest.id}
+                    type="button"
+                    onClick={() => setSelectedDest(dest.id)}
+                    style={{ width: 'calc(20% - 9.6px)', flexShrink: 0 }}
+                    className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none h-[160px] transition-all duration-200"
+                  >
+                    {/* Photo */}
+                    <Image
+                      src={dest.img}
+                      alt={dest.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="20vw"
+                      unoptimized
+                    />
+
+                    {/* Bottom gradient — always on for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+                    {/* Brand overlay — fades in only when selected */}
+                    <div
+                      className="absolute inset-0 transition-opacity duration-300"
+                      style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.3 : 0 }}
+                    />
+
+                    {/* Text */}
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+                      <p className="font-bold text-white text-[13px] leading-tight drop-shadow-sm">{dest.name}</p>
+                      <p className="text-white/80 text-[11px] mt-0.5 leading-snug">{dest.sub}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Left arrow */}
+            {sliderCanLeft && (
+              <button
+                type="button"
+                onClick={() => {
+                  const el = inspiredSliderRef.current;
+                  if (!el) return;
+                  const card = el.firstElementChild as HTMLElement;
+                  const step = card ? (card.offsetWidth + 12) * 2 : el.clientWidth / 5 * 2;
+                  el.scrollBy({ left: -step, behavior: 'smooth' });
+                }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                aria-label="Previous destinations"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-700 rotate-180" />
+              </button>
+            )}
+
+            {/* Right arrow */}
+            {sliderCanRight && (
+              <button
+                type="button"
+                onClick={() => {
+                  const el = inspiredSliderRef.current;
+                  if (!el) return;
+                  const card = el.firstElementChild as HTMLElement;
+                  const step = card ? (card.offsetWidth + 12) * 2 : el.clientWidth / 5 * 2;
+                  el.scrollBy({ left: step, behavior: 'smooth' });
+                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                aria-label="Next destinations"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-700" />
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          THINGS TO DO IN [CITY]
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-labelledby="places-heading" className="py-10 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 id="places-heading" className="text-xl font-bold text-gray-900">
+                Things to do in{' '}
+                <span key={selectedDest} className="text-brand-600 animate-fade-in">
+                  {selectedDest === 'anywhere'
+                    ? 'Thailand'
+                    : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')}
+                </span>
+              </h2>
+              <p className="text-gray-400 text-sm mt-0.5">Handpicked experiences — book instantly</p>
+            </div>
+            <Link
+              href="/attractions"
+              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0"
+            >
+              See all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Cards grid */}
+          <div
+            className="grid grid-cols-2 sm:grid-cols-4 gap-4 transition-opacity duration-300"
+            style={{ opacity: placesVisible ? 1 : 0 }}
+          >
+            {(PLACES_BY_DEST[selectedDest] ?? PLACES_BY_DEST.anywhere).map((place) => (
+              <div key={place.name} className="relative group flex flex-col">
+                {/* Card — full-height link */}
+                <Link
+                  href={`/results?pickup_address=${encodeURIComponent(place.category === 'Transfer' ? '' : place.sub)}`}
+                  className="flex flex-col h-full rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
+                >
+                  {/* Image */}
+                  <div className="relative h-44 overflow-hidden shrink-0">
+                    <Image
+                      src={place.img}
+                      alt={place.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      unoptimized
+                    />
+                    {/* Badge — top-left */}
+                    {place.badge && (
+                      <div className="absolute top-2.5 left-2.5 z-10">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md text-white shadow-sm ${
+                          place.badge === 'Likely to sell out' ? 'bg-amber-500' :
+                          place.badge === 'New'                ? 'bg-green-600' :
+                          place.badge === 'Eco-friendly'       ? 'bg-emerald-700' :
+                          'bg-brand-600'
+                        }`}>
+                          {place.badge}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3 flex flex-col flex-1">
+                    {/* Category · Location */}
+                    <p className="text-gray-400 text-[11px] mb-1.5">
+                      {place.category} · {place.sub}
+                    </p>
+
+                    {/* Title */}
+                    <p className="font-bold text-gray-900 text-[14px] leading-snug line-clamp-2 group-hover:text-brand-700 transition-colors mb-1.5 flex-1">
+                      {place.name}
+                    </p>
+
+                    {/* Availability */}
+                    <p className="text-[11px] text-green-600 font-medium mb-1.5">
+                      Book now for today
+                    </p>
+
+                    {/* Rating + booked count */}
+                    <div className="flex items-center flex-wrap gap-x-1 gap-y-0.5 mb-2">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                      <span className="text-[11px] font-bold text-gray-800">{place.rating}</span>
+                      <span className="text-[11px] text-gray-400">({place.reviews.toLocaleString()})</span>
+                      <span className="text-[11px] text-gray-300">·</span>
+                      <span className="text-[11px] text-gray-400">{place.booked} booked</span>
+                    </div>
+
+                    {/* Price row */}
+                    <div className="flex items-baseline gap-1.5 mb-2">
+                      <span className="font-bold text-gray-900 text-[15px]">{place.price}</span>
+                      {place.originalPrice && (
+                        <span className="text-[12px] text-gray-400 line-through">{place.originalPrice}</span>
+                      )}
+                    </div>
+
+                    {/* Deal tags */}
+                    {place.deals && place.deals.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {place.deals.map(deal => (
+                          <span
+                            key={deal}
+                            className="text-[10px] font-bold bg-brand-50 text-brand-700 border border-brand-200 px-1.5 py-0.5 rounded"
+                          >
+                            {deal}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+
+                {/* Heart / wishlist — outside <Link> to avoid nested interactive elements */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!isLoggedIn) { openModal('email'); return; }
+                    await toggle({ itemId: `place:${place.name}`, itemName: place.name, itemUrl: '/attractions', itemType: 'attraction' });
+                  }}
+                  className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors z-10"
+                  aria-label={isWishlisted(`place:${place.name}`) ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart className={`w-3.5 h-3.5 transition-colors ${isWishlisted(`place:${place.name}`) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile — see all link */}
+          <div className="sm:hidden mt-5 text-center">
+            <Link
+              href="/attractions"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              See all experiences <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Destination inspiration grid */}
+      <DestinationGrid />
+
+      {/* Popular this month */}
+      <PopularThisMonth />
 
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="py-16 bg-[#f2f2f2]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+      <section aria-labelledby="fleet-heading" className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16">
+          <div className="text-center mb-12">
             <h2 id="fleet-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -322,20 +926,21 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="flex flex-col items-center text-center py-4 px-2 rounded-xl transition-colors hover:bg-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="flex flex-col items-center text-center py-6 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-4" style={{ height: 112 }}>
+                  <div className="relative w-full mb-5" style={{ height: 180 }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
                       fill
-                      className="object-contain drop-shadow-sm"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      className="object-contain drop-shadow-lg"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      quality={100}
                       unoptimized
                     />
                   </div>
-                  <p className="text-sm sm:text-base font-medium text-gray-800">{cls.name}</p>
+                  <p className="text-base sm:text-lg font-semibold text-gray-800">{cls.name}</p>
                   <div className={`mt-2 flex items-center gap-1 text-xs font-semibold text-brand-600 transition-all duration-200 ${open ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
                     <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                     Up to {cls.maxPax} passengers
@@ -343,100 +948,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 </button>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════
-          6. BOOK BY DESTINATION — photo route cards (client tabs)
-      ════════════════════════════════════════════════════════════ */}
-      <DestinationsSection />
-
-      {/* ════════════════════════════════════════════════════════════
-          7. TRUST / SAFETY — split section
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="trust-heading" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{ minHeight: 420 }}>
-              <Image
-                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=80"
-                alt="Professional driver and clean vehicle — safe Thailand transfer service"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" aria-hidden="true" />
-              <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-xl">
-                <p className="text-2xl font-extrabold text-gray-900">4.9 / 5</p>
-                <div className="flex gap-0.5 my-1" aria-label="4.9 out of 5 stars">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />)}
-                </div>
-                <p className="text-xs text-gray-500">{t('trust.verified')}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-brand-600 text-sm font-semibold uppercase tracking-widest mb-3">{t('trust.tagline')}</p>
-              <h2 id="trust-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-                {t('trust.heading')}
-              </h2>
-              <p className="text-gray-500 mb-8 leading-relaxed">{t('trust.para')}</p>
-              <ul className="space-y-4">
-                {TRUST_ITEMS.map((item) => (
-                  <li key={item.titleKey} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm">{t(item.titleKey)}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{t(item.descKey)}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════
-          8. TESTIMONIALS
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="reviews-heading" className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-brand-600 text-sm font-semibold uppercase tracking-widest mb-2">{t('rev.tagline')}</p>
-            <h2 id="reviews-heading" className="text-3xl sm:text-4xl font-extrabold text-gray-900">{t('rev.heading')}</h2>
-            <div className="flex justify-center items-center gap-1 mt-3" aria-label="Average rating: 4.9 out of 5">
-              {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" aria-hidden="true" />)}
-              <span className="ml-2 text-sm text-gray-600 font-medium">{t('rev.score')}</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {REVIEWS.map((r) => (
-              <article
-                key={r.name}
-                className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-brand-200 hover:shadow-[0_4px_24px_rgba(37,52,255,0.07)] transition-all duration-200"
-                itemScope itemType="https://schema.org/Review"
-              >
-                <Quote className="w-8 h-8 text-brand-200 mb-3" aria-hidden="true" />
-                <p className="text-gray-700 text-sm leading-relaxed mb-5" itemProp="reviewBody">"{t(r.textKey)}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0" aria-hidden="true">
-                    {r.name[0]}
-                  </div>
-                  <div itemProp="author" itemScope itemType="https://schema.org/Person">
-                    <p className="font-semibold text-gray-900 text-sm" itemProp="name">{r.name}</p>
-                    <p className="text-xs text-gray-500">{r.origin}</p>
-                  </div>
-                  <div className="ml-auto flex gap-0.5" aria-label={`${r.rating} stars`}>
-                    {Array.from({ length: r.rating }).map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
           </div>
         </div>
       </section>
@@ -503,14 +1014,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          11. FAQ — extracted client component
-      ════════════════════════════════════════════════════════════ */}
-      <FaqSection />
-
-      {/* ════════════════════════════════════════════════════════════
           12. SEO ROUTE KEYWORD GRID
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="All transfer routes in Thailand" className="py-14 bg-gray-50 border-t border-gray-100">
+      <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t('seo.h2')}</h2>
           <nav aria-label="Transfer route directory">
@@ -541,10 +1047,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         </div>
       </section>
 
-      <Footer />
+        <Footer />
+        </main>{/* end main */}
+      </div>{/* end flex shell */}
 
       {/* Floating WhatsApp CTA */}
       <WhatsAppCTA />
-    </>
+    </Fragment>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
 function generateBookingRef(): string {
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status');
   const search = searchParams.get('search') ?? '';
 
-  const bookings = await db.attractionBooking.findMany({
+  const bookings = await prisma.attractionBooking.findMany({
     where: {
       ...(status ? { status: status as never } : {}),
       ...(search
@@ -38,10 +38,10 @@ export async function GET(req: NextRequest) {
   });
 
   const stats = {
-    total:     await db.attractionBooking.count(),
-    pending:   await db.attractionBooking.count({ where: { status: 'PENDING' } }),
-    confirmed: await db.attractionBooking.count({ where: { status: 'CONFIRMED' } }),
-    revenue:   (await db.attractionBooking.aggregate({
+    total:     await prisma.attractionBooking.count(),
+    pending:   await prisma.attractionBooking.count({ where: { status: 'PENDING' } }),
+    confirmed: await prisma.attractionBooking.count({ where: { status: 'CONFIRMED' } }),
+    revenue:   (await prisma.attractionBooking.aggregate({
       where: { status: { in: ['CONFIRMED', 'USED'] } },
       _sum: { totalPrice: true },
     }))._sum.totalPrice ?? 0,
@@ -78,13 +78,13 @@ export async function POST(req: NextRequest) {
     let bookingRef = generateBookingRef();
     let attempts = 0;
     while (attempts < 5) {
-      const existing = await db.attractionBooking.findUnique({ where: { bookingRef } });
+      const existing = await prisma.attractionBooking.findUnique({ where: { bookingRef } });
       if (!existing) break;
       bookingRef = generateBookingRef();
       attempts++;
     }
 
-    const booking = await db.attractionBooking.create({
+    const booking = await prisma.attractionBooking.create({
       data: {
         bookingRef,
         attractionId,

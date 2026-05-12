@@ -1,6 +1,6 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-export type VehicleType = 'SEDAN' | 'SUV' | 'MINIVAN';
+export type VehicleType = 'SEDAN' | 'SUV' | 'MINIVAN' | 'LUXURY_MPV';
 
 export type BookingStatus =
   | 'PENDING'
@@ -10,7 +10,7 @@ export type BookingStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
-export type TabType = 'private-ride' | 'tours' | 'tickets';
+export type TabType = 'private-ride' | 'tours' | 'tickets' | 'deals';
 
 // ─── Search ───────────────────────────────────────────────────────────────────
 
@@ -128,6 +128,8 @@ export interface BookingDetail {
   specialNotes?: string | null;
   basePrice: number;
   addOnsTotal: number;
+  discountAmount: number;
+  discountCode?: string | null;
   totalPrice: number;
   currentStatus: BookingStatus;
   statusHistory: BookingStatusHistory[];

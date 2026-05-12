@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
 function generateSlug(title: string): string {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     if (status) where.status = status;
     if (category) where.category = category;
 
-    const posts = await db.blogPost.findMany({
+    const posts = await prisma.blogPost.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const resolvedPublishedAt =
       resolvedStatus === 'PUBLISHED' && !publishedAt ? new Date() : publishedAt ?? null;
 
-    const post = await db.blogPost.create({
+    const post = await prisma.blogPost.create({
       data: {
         title,
         slug: resolvedSlug,

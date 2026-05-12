@@ -1,13 +1,14 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromCookies } from '@/lib/user-auth';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 // GET /api/user/wishlist — list the current user's wishlist
 export async function GET() {
   const session = await getUserFromCookies();
   if (!session) return NextResponse.json({ items: [] });
 
-  const items = await db.wishlistItem.findMany({
+  const items = await prisma.wishlistItem.findMany({
     where: { userId: session.id },
     orderBy: { createdAt: 'desc' },
   });
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'attractionId and attractionName required' }, { status: 400 });
   }
 
-  const item = await db.wishlistItem.upsert({
+  const item = await prisma.wishlistItem.upsert({
     where: { userId_attractionId: { userId: session.id, attractionId } },
     create: { userId: session.id, attractionId, attractionName, attractionUrl },
     update: {},
@@ -43,7 +44,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'attractionId required' }, { status: 400 });
   }
 
-  await db.wishlistItem.deleteMany({
+  await prisma.wishlistItem.deleteMany({
     where: { userId: session.id, attractionId },
   });
   return NextResponse.json({ ok: true });

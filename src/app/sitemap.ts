@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
+import { ROUTES, ALL_ROUTES } from '@/lib/routes';
 
 const SITE_URL = 'https://www.werest.com';
 
@@ -25,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic blog posts
   let blogRoutes: MetadataRoute.Sitemap = [];
   try {
-    const posts = await db.blogPost.findMany({
+    const posts = await prisma.blogPost.findMany({
       where: { status: 'PUBLISHED' },
       select: { slug: true, updatedAt: true },
       orderBy: { publishedAt: 'desc' },
@@ -43,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic attraction pages
   let attractionRoutes: MetadataRoute.Sitemap = [];
   try {
-    const attractions = await db.attractionListing.findMany({
+    const attractions = await prisma.attractionListing.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true },
     });
@@ -57,5 +58,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // skip
   }
 
-  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes];
+  // Programmatic SEO route pages — legacy [route] pages
+  const routePages: MetadataRoute.Sitemap = ROUTES.map(r => ({
+    url: `${SITE_URL}/routes/${r.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.75,
+  }));
+
+  // Programmatic SEO route pages — new [slug] TransferRoute pages
+  const transferRoutePages: MetadataRoute.Sitemap = ALL_ROUTES.map(r => ({
+    url: `${SITE_URL}/routes/${r.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  const seen = new Set(routePages.map(r => r.url));
+  const dedupedTransferRoutePages = transferRoutePages.filter(r => !seen.has(r.url));
+
+  return [...staticRoutes, ...categoryRoutes, ...blogRoutes, ...attractionRoutes, ...routePages, ...dedupedTransferRoutePages];
 }

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     const [posts, total] = await Promise.all([
-      db.blogPost.findMany({
+      prisma.blogPost.findMany({
         where,
         orderBy: { publishedAt: 'desc' },
         skip,
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
           seoDescription: true,
         },
       }),
-      db.blogPost.count({ where }),
+      prisma.blogPost.count({ where }),
     ]);
 
     return NextResponse.json({

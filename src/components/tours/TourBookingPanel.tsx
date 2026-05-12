@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { Calendar, Users, ChevronDown, ChevronUp, Shield, CheckCircle2, ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Calendar, Users, ChevronDown, ChevronUp, Shield, CheckCircle2, ArrowRight, X, Loader2 } from 'lucide-react'
 import { type Tour, formatTHB } from '@/lib/tours'
 
 interface TourBookingPanelProps {
@@ -21,7 +22,6 @@ function generateCalendarDays(year: number, month: number) {
 }
 
 export default function TourBookingPanel({ tour }: TourBookingPanelProps) {
-  const params = useSearchParams()
   const router = useRouter()
 
   const today = new Date()
@@ -32,6 +32,14 @@ export default function TourBookingPanel({ tour }: TourBookingPanelProps) {
   const [adults,   setAdults]   = useState(2)
   const [children, setChildren] = useState(0)
   const [showPaxDropdown, setShowPaxDropdown] = useState(false)
+
+  // Customer form state
+  const [showForm,       setShowForm]       = useState(false)
+  const [customerName,   setCustomerName]   = useState('')
+  const [customerEmail,  setCustomerEmail]  = useState('')
+  const [customerPhone,  setCustomerPhone]  = useState('')
+  const [isSubmitting,   setIsSubmitting]   = useState(false)
+  const [submitError,    setSubmitError]    = useState<string | null>(null)
 
   const chosenOption = tour.options.find(o => o.id === selectedOption) ?? tour.options[0]
   const subtotal = useMemo(
@@ -52,31 +60,62 @@ export default function TourBookingPanel({ tour }: TourBookingPanelProps) {
     else setCalMonth(m => m + 1)
   }
 
+  const selectedDate = selectedDay
+    ? new Date(calYear, calMonth, selectedDay)
+    : null
+
   const selectedDateStr = selectedDay
     ? `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
     : null
 
-  // Carry through any existing booking params (if coming from the flow)
-  const existingParams = params.toString()
+  const canBook = !!selectedDay && !!selectedOption && adults > 0
 
   const handleBook = () => {
-    if (!selectedDay || !selectedOption) return
-    const p = new URLSearchParams(existingParams || undefined)
-    p.set('tour_slug',   tour.slug)
-    p.set('tour_date',   selectedDateStr!)
-    p.set('tour_option', selectedOption)
-    p.set('tour_adults', String(adults))
-    p.set('tour_children', String(children))
-    p.set('tour_total',  String(subtotal))
-    // If in transfer booking flow, go to booking; else to checkout
-    if (existingParams && params.get('vehicle')) {
-      router.push(`/booking?${p.toString()}`)
-    } else {
-      router.push(`/booking?${p.toString()}`)
-    }
+    if (!canBook) return
+    setSubmitError(null)
+    setShowForm(true)
   }
 
-  const canBook = !!selectedDay && selectedOption && adults > 0
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedDateStr || !chosenOption) return
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const res = await fetch('/api/tour-bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tourSlug:      tour.slug,
+          tourTitle:     tour.title,
+          optionLabel:   chosenOption.label ?? chosenOption.time,
+          bookingDate:   selectedDateStr,
+          adultQty:      adults,
+          childQty:      children,
+          adultPrice:    chosenOption.pricePerPerson,
+          childPrice:    chosenOption.childPrice,
+          totalPrice:    subtotal,
+          customerName,
+          customerEmail,
+          customerPhone,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setSubmitError(data.error ?? 'Failed to create booking. Please try again.')
+        return
+      }
+
+      router.push(`/tours/confirmation/${data.bookingRef}`)
+    } catch {
+      setSubmitError('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -280,6 +319,14 @@ export default function TourBookingPanel({ tour }: TourBookingPanelProps) {
             )}
           </button>
 
+          {/* Inquiry link */}
+          <Link
+            href={`/inquiry?destination=${encodeURIComponent(tour.title)}&type=tour`}
+            className="block text-center text-sm text-brand-600 hover:text-brand-700 font-medium mt-2"
+          >
+            Need a custom quote? Send an inquiry →
+          </Link>
+
           {/* Trust chips */}
           <div className="space-y-1.5 text-xs text-gray-500">
             <div className="flex items-center gap-1.5">
@@ -297,6 +344,86 @@ export default function TourBookingPanel({ tour }: TourBookingPanelProps) {
           </div>
         </div>
       </div>
+
+      {/* Customer info modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-gray-900 text-lg">Complete Your Booking</h3>
+              <button
+                onClick={() => setShowForm(false)}
+                className="w-8 h-8 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-500">
+              {tour.title} · {chosenOption?.label ?? chosenOption?.time} ·{' '}
+              {selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  minLength={2}
+                  value={customerName}
+                  onChange={e => setCustomerName(e.target.value)}
+                  placeholder="John Smith"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-gray-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={customerEmail}
+                  onChange={e => setCustomerEmail(e.target.value)}
+                  placeholder="john@example.com"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-gray-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">WhatsApp / Phone *</label>
+                <input
+                  type="tel"
+                  required
+                  minLength={8}
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  placeholder="+66 81 234 5678"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-gray-300"
+                />
+              </div>
+
+              {submitError && (
+                <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{submitError}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+                ) : (
+                  <>Confirm Booking · {formatTHB(subtotal)}</>
+                )}
+              </button>
+
+              <p className="text-xs text-gray-400 text-center">No payment now — pay on the day</p>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

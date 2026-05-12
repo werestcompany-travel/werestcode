@@ -1,0 +1,12 @@
+{
+  "name": "Werest Travel",
+  "short_name": "Werest",
+  "description": "Private transfers, day trips and attraction tickets across Thailand",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2534ff",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

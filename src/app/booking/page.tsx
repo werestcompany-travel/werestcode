@@ -10,14 +10,18 @@ import PriceSummary from '@/components/booking/PriceSummary';
 import { VehicleType, SelectedAddOn } from '@/types';
 import { formatDate, formatCurrency, VEHICLE_LABELS } from '@/lib/utils';
 import { VEHICLE_CONFIGS } from '@/lib/vehicles';
+import { calculateSurcharges } from '@/lib/surcharges';
 import { Calendar, Clock, Users, Briefcase, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function BookingPage() { return <Suspense><BookingPageInner /></Suspense>; }
 function BookingPageInner() {
   const params = useSearchParams();
   const router = useRouter();
-  const [loading,       setLoading]       = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit_card');
+  const [loading,        setLoading]        = useState(false);
+  const [paymentMethod,  setPaymentMethod]  = useState<PaymentMethod>('credit_card');
+  const [discountCode,   setDiscountCode]   = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountApplied, setDiscountApplied] = useState(false);
 
   // Parse params
   const pickupAddress  = params.get('pickup_address')  ?? '';
@@ -49,6 +53,37 @@ function BookingPageInner() {
       return { addOnId, name: '', quantity: parseInt(qty), unitPrice: parseFloat(unitPrice) };
     });
 
+  // Client-side surcharge preview (same logic as server — pure math, no DB)
+  const surchargeResult = (date && time && pickupAddress)
+    ? calculateSurcharges(basePrice, pickupAddress, dropoffAddress, time, new Date(date))
+    : { total: 0, breakdown: [] };
+  const clientTotal = Math.round(basePrice + addOnsTotal + surchargeResult.total);
+  const displayTotal = Math.max(0, clientTotal - discountAmount);
+
+  const handleApplyDiscount = async (code: string): Promise<{ error?: string }> => {
+    try {
+      const res = await fetch('/api/discount-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, orderAmount: totalPrice }),
+      });
+      const json = await res.json();
+      if (!json.valid) return { error: json.error ?? 'Invalid discount code.' };
+      setDiscountCode(json.discount.code);
+      setDiscountAmount(json.discount.discountAmount);
+      setDiscountApplied(true);
+      return {};
+    } catch {
+      return { error: 'Could not validate code. Please try again.' };
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode('');
+    setDiscountAmount(0);
+    setDiscountApplied(false);
+  };
+
   const handleSubmit = async (customerData: CustomerFormData) => {
     setLoading(true);
     try {
@@ -66,6 +101,7 @@ function BookingPageInner() {
           selectedAddOns,
           basePrice, addOnsTotal, totalPrice,
           paymentMethod,
+          ...(discountApplied && discountCode ? { discountCode } : {}),
           ...customerData,
         }),
       });
@@ -175,6 +211,14 @@ function BookingPageInner() {
                       </div>
                     </div>
                   )}
+                  {isRoundTrip && (
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                      <span className="text-amber-500 text-xs font-bold shrink-0 mt-0.5">!</span>
+                      <p className="text-[11px] text-amber-700 leading-snug">
+                        Return trip is shown for reference. Please make a separate booking for your return journey.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pax / bags / vehicle chips */}
@@ -197,7 +241,9 @@ function BookingPageInner() {
                 basePrice={basePrice}
                 selectedAddOns={selectedAddOns}
                 addOnsTotal={addOnsTotal}
-                totalPrice={totalPrice}
+                surcharges={surchargeResult.breakdown}
+                surchargeTotal={surchargeResult.total}
+                totalPrice={displayTotal}
                 onContinue={() => {
                   const form = document.getElementById('customer-form') as HTMLFormElement | null;
                   form?.requestSubmit();
@@ -205,6 +251,11 @@ function BookingPageInner() {
                 loading={loading}
                 isRoundTrip={isRoundTrip}
                 buttonLabel="Confirm Booking"
+                discountCode={discountCode}
+                discountAmount={discountAmount}
+                discountApplied={discountApplied}
+                onApplyDiscount={handleApplyDiscount}
+                onRemoveDiscount={handleRemoveDiscount}
               />
             </div>
 

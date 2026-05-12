@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/context/AuthModalContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ReviewSection from '@/components/reviews/ReviewSection';
+import OpeningHoursCard from '@/components/attractions/OpeningHours';
+import DressCodeBadge from '@/components/attractions/DressCodeBadge';
+import TravellerPhotos from '@/components/attractions/TravellerPhotos';
+import GoodForTags from '@/components/attractions/GoodForTags';
 import {
   Star, ChevronRight, MapPin, Clock, Users, Check, X,
   ChevronDown, Heart, Zap, Smartphone, Info,
@@ -137,6 +143,7 @@ type FaqItem       = { q: string; a: string };
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function SanctuaryDetailPage() {
   const router = useRouter();
+  const { openModal } = useAuthModal();
 
   // Dynamic data (DB-driven with fallbacks)
   const [gallery,      setGallery]      = useState<GalleryImage[]>(DEFAULT_GALLERY);
@@ -221,7 +228,7 @@ export default function SanctuaryDetailPage() {
   async function handleToggleWishlist() {
     const meRes = await fetch('/api/user/me');
     const meData = await meRes.json();
-    if (!meData.user) { router.push('/auth/login?redirect=/attractions/sanctuary-of-truth'); return; }
+    if (!meData.user) { openModal('email'); return; }
     if (wishlisted) {
       await fetch('/api/user/wishlist?attractionId=sanctuary-of-truth', { method: 'DELETE' });
     } else {
@@ -432,6 +439,22 @@ export default function SanctuaryDetailPage() {
             {/* ════════════════ LEFT COLUMN ════════════════ */}
             <div className="lg:col-span-2 space-y-0">
 
+              {/* Opening hours info box (A5) */}
+              <div className="mb-4">
+                <OpeningHoursCard slug="sanctuary-of-truth" />
+              </div>
+
+              {/* Dress code info card (A6) */}
+              <div className="mb-4">
+                <DressCodeBadge />
+              </div>
+
+              {/* Good For tags (A8) */}
+              <div className="mb-5">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Good for</p>
+                <GoodForTags category="temple" max={3} size="md" />
+              </div>
+
               {/* Quick tags */}
               <div className="flex flex-wrap gap-2 pb-5 border-b border-gray-100">
                 <span className="text-[11px] bg-orange-50 text-orange-600 font-semibold px-2.5 py-1 rounded-full">Historical Sites</span>
@@ -580,6 +603,9 @@ export default function SanctuaryDetailPage() {
                   ))}
                 </div>
               </div>
+
+              {/* ── TRAVELLER PHOTOS (A9) ── */}
+              <TravellerPhotos />
 
               {/* ── REVIEWS ── */}
               <div className="pt-8">
@@ -767,6 +793,13 @@ export default function SanctuaryDetailPage() {
 
           </div>
         </div>
+      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-12">
+        <ReviewSection
+          entityType="ATTRACTION"
+          entityId="sanctuary-of-truth"
+          entityName="Sanctuary of Truth"
+        />
       </div>
       <Footer />
     </>

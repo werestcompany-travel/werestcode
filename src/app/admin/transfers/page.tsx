@@ -11,7 +11,12 @@ import toast from 'react-hot-toast';
 import {
   X, Search, RefreshCw, Eye, TrendingUp,
   Clock, CheckCircle2, XCircle, Car,
+  ChevronLeft, ChevronRight, LayoutGrid, List,
 } from 'lucide-react';
+import {
+  format, startOfMonth, endOfMonth, eachDayOfInterval,
+  getDay, isSameDay, addMonths, subMonths,
+} from 'date-fns';
 
 const STATUS_CHIP: Record<string, string> = {
   PENDING:          'bg-amber-100 text-amber-700',
@@ -22,6 +27,13 @@ const STATUS_CHIP: Record<string, string> = {
   CANCELLED:        'bg-red-100   text-red-700',
 };
 
+interface DriverOption {
+  id: string;
+  name: string;
+  phone: string;
+  isActive: boolean;
+}
+
 export default function TransfersPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<AdminBookingRow[]>([]);
@@ -30,6 +42,15 @@ export default function TransfersPage() {
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState('');
   const [filter,   setFilter]   = useState('ALL');
+
+  // View mode: 'table' | 'calendar'
+  const [viewMode, setViewMode]       = useState<'table' | 'calendar'>('table');
+  const [calMonth, setCalMonth]       = useState(new Date());
+  const [calDayFilter, setCalDayFilter] = useState<Date | null>(null);
+
+  // Driver assignment state
+  const [drivers, setDrivers]         = useState<DriverOption[]>([]);
+  const [assigningDriver, setAssigningDriver] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +65,17 @@ export default function TransfersPage() {
   }, [router]);
 
   useEffect(() => { load(); }, [load]);
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/drivers');
+      if (!res.ok) return;
+      const json = await res.json();
+      setDrivers((json.drivers ?? []).filter((d: DriverOption) => d.isActive));
+    } catch {
+      // non-critical; silently ignore
+    }
+  }, []);
 
   const handleStatusChange = async (bookingId: string, status: BookingStatus) => {
     try {
@@ -65,7 +97,35 @@ export default function TransfersPage() {
 
   const openDetail = async (id: string) => {
     const res = await fetch(`/api/bookings/${id}`);
-    setDetail((await res.json()).data);
+    const data = (await res.json()).data;
+    setDetail(data);
+    fetchDrivers();
+  };
+
+  const handleAssignDriver = async (driverId: string | null) => {
+    if (!detail) return;
+    setAssigningDriver(true);
+    try {
+      const res = await fetch(`/api/admin/bookings/${detail.id}/assign-driver`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: driverId || null }),
+      });
+      if (!res.ok) {
+        const j = await res.json();
+        throw new Error(j.error ?? 'Assignment failed');
+      }
+      toast.success(driverId ? 'Driver assigned' : 'Driver unassigned');
+      // Refresh the detail panel
+      const dr = await fetch(`/api/bookings/${detail.id}`);
+      const updated = (await dr.json()).data;
+      setDetail(updated);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message ?? 'Assignment failed');
+    } finally {
+      setAssigningDriver(false);
+    }
   };
 
   const filtered = bookings.filter((b) => {
@@ -73,8 +133,17 @@ export default function TransfersPage() {
     const matchSearch = !q || b.customerName.toLowerCase().includes(q) ||
       b.bookingRef.toLowerCase().includes(q) || b.pickupAddress.toLowerCase().includes(q);
     const matchFilter = filter === 'ALL' || b.currentStatus === filter;
-    return matchSearch && matchFilter;
+    const matchDay = !calDayFilter || isSameDay(new Date(b.pickupDate), calDayFilter);
+    return matchSearch && matchFilter && (viewMode === 'calendar' ? matchDay || !calDayFilter : true);
   });
+
+  // ── Calendar helpers ────────────────────────────────────────────────────────
+  const calStart    = startOfMonth(calMonth);
+  const calEnd      = endOfMonth(calMonth);
+  const calDays     = eachDayOfInterval({ start: calStart, end: calEnd });
+  const startPad    = getDay(calStart); // 0=Sun
+  const bookingsForDay = (day: Date) =>
+    bookings.filter((b) => isSameDay(new Date(b.pickupDate), day));
 
   return (
     <AdminShell title="Private Transfers" subtitle="Manage all private transfer bookings">
@@ -97,6 +166,144 @@ export default function TransfersPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* View toggle */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+          <button
+            onClick={() => { setViewMode('table'); setCalDayFilter(null); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              viewMode === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <List className="w-3.5 h-3.5" /> Table
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              viewMode === 'calendar' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" /> Calendar
+          </button>
+        </div>
+        {calDayFilter && viewMode === 'calendar' && (
+          <button
+            onClick={() => setCalDayFilter(null)}
+            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+          >
+            <X className="w-3 h-3" /> Clear day filter
+          </button>
+        )}
+      </div>
+
+      {/* Calendar view */}
+      {viewMode === 'calendar' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+          {/* Calendar header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <button
+              onClick={() => setCalMonth((m) => subMonths(m, 1))}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-500" />
+            </button>
+            <h3 className="font-bold text-gray-900 text-sm">{format(calMonth, 'MMMM yyyy')}</h3>
+            <button
+              onClick={() => setCalMonth((m) => addMonths(m, 1))}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Day-of-week headers */}
+          <div className="grid grid-cols-7 border-b border-gray-50">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => (
+              <div key={d} className="text-center text-[10px] font-semibold text-gray-400 py-2">{d}</div>
+            ))}
+          </div>
+
+          {/* Day cells */}
+          <div className="grid grid-cols-7">
+            {/* Leading empty cells */}
+            {Array.from({ length: startPad }).map((_, i) => (
+              <div key={`pad-${i}`} className="min-h-[90px] border-b border-r border-gray-50 bg-gray-50/50" />
+            ))}
+
+            {calDays.map((day) => {
+              const dayBookings = bookingsForDay(day);
+              const isSelected  = calDayFilter ? isSameDay(day, calDayFilter) : false;
+              const isToday     = isSameDay(day, new Date());
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  onClick={() => setCalDayFilter(isSelected ? null : day)}
+                  className={`min-h-[90px] border-b border-r border-gray-50 p-2 cursor-pointer transition-colors ${
+                    isSelected ? 'bg-brand-50' : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <p className={`text-[11px] font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
+                    isToday    ? 'bg-brand-600 text-white' :
+                    isSelected ? 'text-brand-700' :
+                                 'text-gray-500'
+                  }`}>
+                    {format(day, 'd')}
+                  </p>
+
+                  <div className="space-y-0.5">
+                    {dayBookings.slice(0, 3).map((b) => (
+                      <div
+                        key={b.id}
+                        onClick={(e) => { e.stopPropagation(); openDetail(b.id); }}
+                        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md truncate cursor-pointer ${
+                          STATUS_CHIP[b.currentStatus] ?? 'bg-gray-100 text-gray-600'
+                        }`}
+                        title={`${b.pickupTime} · ${b.customerName} · ${b.bookingRef}`}
+                      >
+                        {b.pickupTime} {b.customerName.split(' ')[0]}
+                      </div>
+                    ))}
+                    {dayBookings.length > 3 && (
+                      <p className="text-[9px] text-gray-400 pl-1">+{dayBookings.length - 3} more</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* If a day is selected, show its bookings below the calendar */}
+          {calDayFilter && (
+            <div className="border-t border-gray-100 px-5 py-4">
+              <p className="text-xs font-bold text-gray-700 mb-3">
+                Bookings on {format(calDayFilter, 'EEEE, d MMMM yyyy')}
+                {' '}({bookingsForDay(calDayFilter).length})
+              </p>
+              <div className="space-y-2">
+                {bookingsForDay(calDayFilter).length === 0 ? (
+                  <p className="text-xs text-gray-400">No bookings on this day.</p>
+                ) : bookingsForDay(calDayFilter).map((b) => (
+                  <div
+                    key={b.id}
+                    onClick={() => openDetail(b.id)}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${STATUS_CHIP[b.currentStatus] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {STATUS_LABELS[b.currentStatus] ?? b.currentStatus}
+                    </span>
+                    <span className="font-mono text-[11px] text-brand-700 font-bold shrink-0">{b.bookingRef}</span>
+                    <span className="text-xs text-gray-700 flex-1 truncate">{b.customerName}</span>
+                    <span className="text-xs text-gray-400 shrink-0">{b.pickupTime}</span>
+                    <span className="text-xs font-bold text-gray-900 shrink-0">{formatCurrency(b.totalPrice)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -224,6 +431,34 @@ export default function TransfersPage() {
                 ))}
                 <DrawerRow label="TOTAL" value={formatCurrency(detail.totalPrice)} bold />
               </DrawerSection>
+
+              {/* Driver assignment */}
+              <DrawerSection title="Assign Driver">
+                <div className="space-y-2">
+                  {(detail as any).driverName && (
+                    <p className="text-xs text-gray-600">
+                      Currently assigned: <span className="font-semibold text-gray-900">{(detail as any).driverName}</span>
+                    </p>
+                  )}
+                  <select
+                    defaultValue={(detail as any).driverId ?? ''}
+                    disabled={assigningDriver}
+                    onChange={(e) => handleAssignDriver(e.target.value || null)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                  >
+                    <option value="">— Unassigned —</option>
+                    {drivers.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} · {d.phone}
+                      </option>
+                    ))}
+                  </select>
+                  {assigningDriver && (
+                    <p className="text-[10px] text-gray-400">Saving…</p>
+                  )}
+                </div>
+              </DrawerSection>
+
               <DrawerSection title="Status Timeline">
                 <StatusTimeline currentStatus={detail.currentStatus} history={detail.statusHistory} />
               </DrawerSection>
