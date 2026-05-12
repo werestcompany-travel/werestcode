@@ -57,6 +57,16 @@ export interface Tour {
   ratingBreakdown?: { 5: number; 4: number; 3: number; 2: number; 1: number }
   // Feature 9 – Frequently booked together
   frequentlyBookedWith?: string[]
+  // New fields
+  tags?: string[]
+  primaryLocation?: string
+  subLocation?: string
+  priceFrom?: number
+  discountPrice?: number
+  isFeatured?: boolean
+  isPopular?: boolean
+  isTrending?: boolean
+  instantConfirmation?: boolean
 }
 
 // ─── Tour data ─────────────────────────────────────────────────────────────────
@@ -77,6 +87,12 @@ export const tours: Tour[] = [
     reviewCount: 2847,
     category: 'cultural',
     badge: 'Best Seller',
+    primaryLocation: 'Bangkok',
+    tags: ['cultural', 'temple', 'history', 'walking', 'royal'],
+    priceFrom: 1290,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     spotsLeft: 3,
     lastBooked: '2 hours ago',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
@@ -231,6 +247,12 @@ Tickets are included so you never waste time in ticket queues, and the small gro
     reviewCount: 1634,
     category: 'food',
     badge: 'Top Rated',
+    primaryLocation: 'Bangkok',
+    tags: ['food', 'cooking', 'market', 'canal', 'culture'],
+    priceFrom: 1290,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '12 hours ago',
     ratingBreakdown: { 5: 1400, 4: 180, 3: 40, 2: 10, 1: 4 },
     images: [
@@ -377,6 +399,12 @@ Hotel pickup and return transfer is included so you never have to worry about na
     reviewCount: 3210,
     category: 'water',
     badge: 'Best Seller',
+    primaryLocation: 'Phuket',
+    tags: ['kayaking', 'sea cave', 'island', 'water', 'nature'],
+    priceFrom: 2890,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     spotsLeft: 2,
     lastBooked: '5 hours ago',
     ratingBreakdown: { 5: 2970, 4: 195, 3: 35, 2: 7, 1: 3 },
@@ -533,6 +561,13 @@ Hotel pickup and return transfers are included from all Phuket hotels.`,
     reviewCount: 892,
     category: 'cultural',
     badge: 'New',
+    primaryLocation: 'Phuket',
+    subLocation: 'Phuket Town',
+    tags: ['cultural', 'street food', 'architecture', 'temple', 'walking'],
+    priceFrom: 1190,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '12 hours ago',
     ratingBreakdown: { 5: 760, 4: 95, 3: 27, 2: 7, 1: 3 },
     images: [
@@ -666,6 +701,12 @@ Between sights, stop at eight local eateries and street stalls for tastings: sav
     reviewCount: 4120,
     category: 'nature',
     badge: 'Best Seller',
+    primaryLocation: 'Chiang Mai',
+    tags: ['elephant', 'ethical', 'nature', 'wildlife', 'sanctuary'],
+    priceFrom: 2890,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '1 hour ago',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     ratingBreakdown: { 5: 3920, 4: 160, 3: 30, 2: 7, 1: 3 },
@@ -818,6 +859,12 @@ After an hour of bathing alongside the elephants, enjoy a delicious traditional 
     reviewCount: 1876,
     category: 'nature',
     badge: 'Top Rated',
+    primaryLocation: 'Chiang Mai',
+    tags: ['nature', 'hiking', 'waterfall', 'hilltribe', 'national park'],
+    priceFrom: 1890,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '3 hours ago',
     ratingBreakdown: { 5: 1620, 4: 195, 3: 45, 2: 12, 1: 4 },
     images: [
@@ -963,6 +1010,12 @@ En route, visit a Karen hilltribe village where the local community maintains tr
     reviewCount: 2103,
     category: 'water',
     badge: 'Best Seller',
+    primaryLocation: 'Pattaya',
+    tags: ['snorkelling', 'island', 'beach', 'speedboat', 'water'],
+    priceFrom: 1590,
+    isFeatured: true,
+    isPopular: false,
+    instantConfirmation: true,
     lastBooked: '12 hours ago',
     ratingBreakdown: { 5: 1800, 4: 240, 3: 45, 2: 12, 1: 6 },
     images: [
@@ -1098,6 +1151,12 @@ The return speedboat deposits you back at Bali Hai Pier in time for a relaxing l
     rating: 4.7,
     reviewCount: 987,
     category: 'cultural',
+    primaryLocation: 'Pattaya',
+    tags: ['cultural', 'temple', 'architecture', 'city tour', 'history'],
+    priceFrom: 1090,
+    isFeatured: true,
+    isPopular: false,
+    instantConfirmation: true,
     lastBooked: '12 hours ago',
     ratingBreakdown: { 5: 820, 4: 120, 3: 35, 2: 8, 1: 4 },
     images: [
@@ -1226,6 +1285,13 @@ After the Sanctuary, continue to Wat Yansangwararam — a peaceful royal temple 
     reviewCount: 1543,
     category: 'water',
     badge: 'Best Seller',
+    primaryLocation: 'Krabi',
+    subLocation: 'Ao Nang',
+    tags: ['snorkelling', 'island', 'longtail boat', 'beach', 'water'],
+    priceFrom: 1290,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     spotsLeft: 2,
     lastBooked: '5 hours ago',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
@@ -1367,6 +1433,12 @@ An unhurried Thai-style buffet lunch is served on a shaded beach — fresh grill
     reviewCount: 764,
     category: 'adventure',
     badge: 'New',
+    primaryLocation: 'Krabi',
+    tags: ['adventure', 'hiking', 'kayaking', 'temple', 'mangrove'],
+    priceFrom: 890,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '6 hours ago',
     ratingBreakdown: { 5: 650, 4: 80, 3: 22, 2: 8, 1: 4 },
     images: [
@@ -1503,6 +1575,12 @@ The morning ends back at the river with fresh coconut water before your transfer
     reviewCount: 2431,
     category: 'cultural',
     badge: 'Best Seller',
+    primaryLocation: 'Chiang Rai',
+    tags: ['cultural', 'temple', 'history', 'day trip', 'golden triangle'],
+    priceFrom: 1790,
+    isFeatured: true,
+    isPopular: true,
+    instantConfirmation: true,
     lastBooked: '4 hours ago',
     ratingBreakdown: { 5: 2250, 4: 130, 3: 38, 2: 9, 1: 4 },
     frequentlyBookedWith: ['chiang-rai-hill-tribe-village-trekking'],
@@ -1650,6 +1728,12 @@ The Golden Triangle, where the Mekong River marks the border between three count
     rating: 4.7,
     reviewCount: 678,
     category: 'adventure',
+    primaryLocation: 'Chiang Rai',
+    tags: ['trekking', 'hilltribe', 'culture', 'forest', 'adventure'],
+    priceFrom: 1890,
+    isFeatured: true,
+    isPopular: false,
+    instantConfirmation: true,
     lastBooked: '12 hours ago',
     ratingBreakdown: { 5: 560, 4: 80, 3: 28, 2: 7, 1: 3 },
     images: [

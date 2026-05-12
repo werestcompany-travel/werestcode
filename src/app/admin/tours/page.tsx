@@ -33,6 +33,15 @@ interface TourRow {
   options:      any[];
   isActive:     boolean;
   sortOrder:    number;
+  // Extended fields
+  tags?:               string[];
+  primaryLocation?:    string;
+  isFeatured?:         boolean;
+  isPopular?:          boolean;
+  isTrending?:         boolean;
+  homepageVisible?:    boolean;
+  instantConfirmation?: boolean;
+  priceFrom?:          number;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -58,6 +67,10 @@ const BLANK_FORM = {
   addOns: '',
   adultPrice: '', childPrice: '',
   imageUrl: '',
+  // Extended fields
+  isFeatured: false,
+  isPopular: false,
+  homepageVisible: true,
 };
 
 export default function ToursPage() {
@@ -123,6 +136,10 @@ export default function ToursPage() {
       adultPrice:    String(tour.options?.[0]?.pricePerPerson ?? ''),
       childPrice:    String(tour.options?.[0]?.childPrice ?? ''),
       imageUrl:      tour.images?.[0] ?? '',
+      // Extended fields
+      isFeatured:    tour.isFeatured    ?? false,
+      isPopular:     tour.isPopular     ?? false,
+      homepageVisible: tour.homepageVisible ?? true,
     });
     setEditId(tour.id);
     setShowForm(true);
@@ -160,6 +177,9 @@ export default function ToursPage() {
     ],
     reviews:       [],
     isActive:      true,
+    isFeatured:    form.isFeatured,
+    isPopular:     form.isPopular,
+    homepageVisible: form.homepageVisible,
   });
 
   const handleSave = async () => {
@@ -271,6 +291,12 @@ export default function ToursPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="text-sm font-bold text-gray-900 truncate">{tour.title}</p>
+                      {tour.isFeatured && (
+                        <span title="Featured" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">⭐ Featured</span>
+                      )}
+                      {tour.isPopular && (
+                        <span title="Popular" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">🔥 Popular</span>
+                      )}
                       {tour.badge && (
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_COLORS[tour.badge] ?? 'bg-gray-100 text-gray-500'}`}>
                           {tour.badge}
@@ -279,8 +305,16 @@ export default function ToursPage() {
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[tour.category] ?? 'bg-gray-100 text-gray-500'}`}>
                         {tour.category}
                       </span>
+                      {tour.primaryLocation && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 flex items-center gap-0.5">
+                          <MapPin className="w-2.5 h-2.5" />{tour.primaryLocation}
+                        </span>
+                      )}
                       {!tour.isActive && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">inactive</span>
+                      )}
+                      {tour.homepageVisible === false && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">hidden from homepage</span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-[11px] text-gray-400 flex-wrap">
@@ -388,6 +422,30 @@ export default function ToursPage() {
               <FormField label="Meeting Point" value={form.meetingPoint} onChange={(v) => setForm({ ...form, meetingPoint: v })} placeholder="e.g. Hotel pickup included" />
               <TextareaField label="Important Info (one per line)" value={form.importantInfo} onChange={(v) => setForm({ ...form, importantInfo: v })} rows={3} />
               <FormField label="Add-ons (comma separated)" value={form.addOns} onChange={(v) => setForm({ ...form, addOns: v })} placeholder="e.g. Lunch, Entrance fee, Photo package" />
+              {/* Visibility toggles */}
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Visibility & Flags</label>
+                <div className="flex flex-wrap gap-4">
+                  <ToggleField
+                    label="Featured"
+                    description="Show as featured tour"
+                    value={form.isFeatured}
+                    onChange={(v) => setForm({ ...form, isFeatured: v })}
+                  />
+                  <ToggleField
+                    label="Popular"
+                    description="Mark as popular"
+                    value={form.isPopular}
+                    onChange={(v) => setForm({ ...form, isPopular: v })}
+                  />
+                  <ToggleField
+                    label="Homepage Visible"
+                    description="Include in homepage sections"
+                    value={form.homepageVisible}
+                    onChange={(v) => setForm({ ...form, homepageVisible: v })}
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Image URL</label>
                 <input
@@ -437,5 +495,32 @@ function TextareaField({ label, value, onChange, rows = 3 }: {
       <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows}
         className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 resize-none" />
     </div>
+  );
+}
+
+function ToggleField({ label, description, value, onChange }: {
+  label: string; description?: string; value: boolean; onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!value)}
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all ${
+        value ? 'bg-brand-50 border-brand-300 text-brand-700' : 'bg-gray-50 border-gray-200 text-gray-500'
+      }`}
+    >
+      {/* Toggle pill */}
+      <span
+        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${value ? 'bg-brand-600' : 'bg-gray-300'}`}
+      >
+        <span
+          className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform duration-200 ${value ? 'translate-x-4' : 'translate-x-0.5'}`}
+        />
+      </span>
+      <span>
+        <span className="block text-xs font-bold">{label}</span>
+        {description && <span className="block text-[10px] text-gray-400">{description}</span>}
+      </span>
+    </button>
   );
 }

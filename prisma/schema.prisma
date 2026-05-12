@@ -565,9 +565,33 @@ model Tour {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Categorization
+  tags               String[]
+  primaryLocation    String             @default("Bangkok")
+  subLocation        String?
+  multiCategories    String[]
+
+  // Pricing
+  priceFrom          Float              @default(0)
+  discountPrice      Float?
+
+  // Feature flags
+  isFeatured         Boolean            @default(false)
+  isPopular          Boolean            @default(false)
+  isTrending         Boolean            @default(false)
+  homepageVisible    Boolean            @default(true)
+  instantConfirmation Boolean           @default(true)
+  availabilityStatus  String            @default("available")
+
+  // SEO
+  metaTitle          String?
+  metaDesc           String?
+
   @@index([category])
   @@index([isActive])
   @@index([slug])
+  @@index([primaryLocation])
+  @@index([isFeatured])
 }
 
 // ─── Drivers & Vehicles ───────────────────────────────────────────────────────

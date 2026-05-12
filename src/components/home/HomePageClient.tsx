@@ -10,6 +10,7 @@ import WhatsAppCTA from '@/components/home/WhatsAppCTA';
 import BlogCard from '@/components/blog/BlogCard';
 import DestinationGrid from '@/components/home/DestinationGrid';
 import PopularThisMonth from '@/components/home/PopularThisMonth';
+import DynamicTourSections from '@/components/home/DynamicTourSections';
 import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -906,6 +907,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
       {/* Popular this month */}
       <PopularThisMonth />
+
+      {/* Dynamic tour sections — "Things to do in [City]" */}
+      <DynamicTourSections />
 
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase

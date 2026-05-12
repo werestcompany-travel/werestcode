@@ -5,11 +5,13 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TourGrid from '@/components/tours/TourGrid'
 import TourSearchInput from '@/components/tours/TourSearchInput'
-import TourSortSelect from '@/components/tours/TourSortSelect'
 import TourFilterBar from '@/components/tours/TourFilterBar'
-import { searchTours, tours as TOURS, type Tour } from '@/lib/tours'
+import TourFiltersClient from '@/components/tours/TourFiltersClient'
+import TourSidebarStatic from '@/components/tours/TourSidebarStatic'
+import { tours as TOURS, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
-import { Sparkles, X } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
+import type { FilterFacets } from '@/components/tours/TourFiltersClient'
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -22,37 +24,25 @@ export const metadata: Metadata = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const CATEGORIES = [
-  { key: '',          label: 'All Experiences' },
-  { key: 'day-trip',  label: 'Day Trips' },
-  { key: 'cultural',  label: 'Cultural' },
-  { key: 'food',      label: 'Food & Drink' },
-  { key: 'nature',    label: 'Nature' },
-  { key: 'water',     label: 'Water' },
-  { key: 'adventure', label: 'Adventure' },
-]
-
-const POPULAR_DESTINATIONS = [
-  'Bangkok', 'Chiang Mai', 'Phuket', 'Krabi', 'Pattaya',
-]
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-interface ToursPageProps {
-  searchParams: {
-    q?: string
-    destination?: string
-    category?: string
-    date?: string
-    type?: string
-    sort?: string
-    duration?: string
-    minPrice?: string
-    maxPrice?: string
-    groupSize?: string
-    language?: string
-  }
+const CATEGORY_MAP: Record<string, string> = {
+  'day-trip':  'Day Trips',
+  'cultural':  'Cultural',
+  'food':      'Food & Drink',
+  'adventure': 'Adventure',
+  'nature':    'Nature',
+  'water':     'Water',
 }
+
+const LOCATION_MAP: Record<string, string> = {
+  'bangkok':    'Bangkok',
+  'chiang-mai': 'Chiang Mai',
+  'phuket':     'Phuket',
+  'krabi':      'Krabi',
+  'pattaya':    'Pattaya',
+  'chiang-rai': 'Chiang Rai',
+}
+
+// ─── DB fetch ─────────────────────────────────────────────────────────────────
 
 async function getAllTours(): Promise<Tour[]> {
   try {
@@ -61,7 +51,6 @@ async function getAllTours(): Promise<Tour[]> {
       orderBy: { sortOrder: 'asc' },
     })
     if (dbTours.length > 0) {
-      // Map DB Tour fields to the Tour interface shape
       return dbTours.map(t => ({
         slug:          t.slug,
         title:         t.title,
@@ -90,37 +79,278 @@ async function getAllTours(): Promise<Tour[]> {
   } catch (err) {
     console.warn('[tours/page] DB fetch failed, falling back to static data:', err)
   }
-  // Fall back to hardcoded seed data
   return TOURS
+}
+
+// ─── Duration parser ──────────────────────────────────────────────────────────
+
+function parseDurationHours(duration: string): number | null {
+  const hourMatch = duration.match(/(\d+(?:\.\d+)?)\s*hour/i)
+  if (hourMatch) return parseFloat(hourMatch[1])
+  const dayMatch  = duration.match(/(\d+)\s*day/i)
+  if (dayMatch)   return parseInt(dayMatch[1]) * 8
+  return null
+}
+
+// ─── Filter function ──────────────────────────────────────────────────────────
+
+interface FilterParams {
+  q?:        string
+  category?: string
+  location?: string
+  duration?: string
+  minPrice?: string
+  maxPrice?: string
+  featured?: string
+  rating?:   string
+  sort?:     string
+}
+
+function filterTours(tours: Tour[], params: FilterParams): Tour[] {
+  let results = [...tours]
+
+  const { q, category, location, duration, minPrice, maxPrice, featured, rating, sort } = params
+
+  // Text search
+  if (q) {
+    const lower = q.toLowerCase()
+    results = results.filter(t =>
+      t.title.toLowerCase().includes(lower) ||
+      t.subtitle.toLowerCase().includes(lower) ||
+      t.location.toLowerCase().includes(lower) ||
+      t.cities.some(c => c.toLowerCase().includes(lower)) ||
+      t.category.toLowerCase().includes(lower) ||
+      t.highlights.some(h => h.toLowerCase().includes(lower))
+    )
+  }
+
+  // Category
+  if (category) {
+    results = results.filter(t => t.category === category)
+  }
+
+  // Location — match against cities[], location string, and known location aliases
+  if (location) {
+    const lower = location.toLowerCase()
+    // Support both slug form (e.g. "chiang-mai") and plain name (e.g. "Chiang Mai")
+    const normalized = lower.replace(/-/g, ' ')
+    results = results.filter(t =>
+      t.cities.some(c => c.toLowerCase().includes(normalized) || c.toLowerCase().includes(lower)) ||
+      t.location.toLowerCase().includes(normalized) ||
+      t.location.toLowerCase().includes(lower)
+    )
+  }
+
+  // Duration
+  if (duration) {
+    results = results.filter(t => {
+      const hours = parseDurationHours(t.duration)
+      const dStr  = t.duration.toLowerCase()
+      if (duration === 'half-day') return dStr.includes('hour') && hours !== null && hours < 5
+      if (duration === 'full-day') return (hours !== null && hours >= 5 && hours <= 10) || dStr.includes('full day')
+      if (duration === 'multi-day') {
+        const dayMatch = t.duration.match(/(\d+)\s*day/i)
+        return !!(dayMatch && parseInt(dayMatch[1]) > 1)
+      }
+      return true
+    })
+  }
+
+  // Price range
+  const minP = minPrice ? Number(minPrice) : undefined
+  const maxP = maxPrice ? Number(maxPrice) : undefined
+  if (minP !== undefined || maxP !== undefined) {
+    results = results.filter(t => {
+      if (t.options.length === 0) return true
+      const minOptionPrice = Math.min(...t.options.map(o => o.pricePerPerson))
+      if (minP !== undefined && minOptionPrice < minP) return false
+      if (maxP !== undefined && minOptionPrice > maxP) return false
+      return true
+    })
+  }
+
+  // Featured
+  if (featured === 'true') {
+    results = results.filter(t => t.badge === 'Best Seller' || t.badge === 'Top Rated')
+  }
+
+  // Rating
+  if (rating) {
+    const minRating = parseFloat(rating)
+    results = results.filter(t => t.rating >= minRating)
+  }
+
+  // Sort
+  if (sort === 'price-asc') {
+    results.sort((a, b) => {
+      const aMin = a.options.length ? Math.min(...a.options.map(o => o.pricePerPerson)) : 0
+      const bMin = b.options.length ? Math.min(...b.options.map(o => o.pricePerPerson)) : 0
+      return aMin - bMin
+    })
+  } else if (sort === 'price-desc') {
+    results.sort((a, b) => {
+      const aMin = a.options.length ? Math.min(...a.options.map(o => o.pricePerPerson)) : 0
+      const bMin = b.options.length ? Math.min(...b.options.map(o => o.pricePerPerson)) : 0
+      return bMin - aMin
+    })
+  } else if (sort === 'rating') {
+    results.sort((a, b) => b.rating - a.rating)
+  } else if (sort === 'popular') {
+    results.sort((a, b) => b.reviewCount - a.reviewCount)
+  } else if (sort === 'newest') {
+    results.reverse()
+  }
+
+  return results
+}
+
+// ─── Build facets ─────────────────────────────────────────────────────────────
+
+function buildFacets(allTours: Tour[], activeFilters: { category?: string; location?: string }): FilterFacets {
+  // For cross-filtering: if location is active, category counts reflect only those tours
+  // If category is active, location counts reflect only those tours
+
+  const baseForCategories = activeFilters.location
+    ? filterTours(allTours, { location: activeFilters.location })
+    : allTours
+
+  const baseForLocations = activeFilters.category
+    ? filterTours(allTours, { category: activeFilters.category })
+    : allTours
+
+  // Category facets
+  const categoryCounts = new Map<string, number>()
+  baseForCategories.forEach(t => {
+    categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1)
+  })
+  const categories = Object.entries(CATEGORY_MAP)
+    .map(([key, label]) => ({ key, label, count: categoryCounts.get(key) ?? 0 }))
+    .filter(c => c.count > 0)
+
+  // Location facets — match against cities[]
+  const locationCounts = new Map<string, number>()
+  const locationKeys   = Object.keys(LOCATION_MAP)
+  baseForLocations.forEach(t => {
+    locationKeys.forEach(locKey => {
+      const normalized = locKey.replace(/-/g, ' ')
+      if (
+        t.cities.some(c => c.toLowerCase().includes(normalized) || c.toLowerCase().includes(locKey)) ||
+        t.location.toLowerCase().includes(normalized) ||
+        t.location.toLowerCase().includes(locKey)
+      ) {
+        locationCounts.set(locKey, (locationCounts.get(locKey) ?? 0) + 1)
+      }
+    })
+  })
+  const locations = Object.entries(LOCATION_MAP)
+    .map(([key, label]) => ({ key, label, count: locationCounts.get(key) ?? 0 }))
+    .filter(l => l.count > 0)
+
+  // Duration facets
+  const durationCounts = { 'half-day': 0, 'full-day': 0, 'multi-day': 0 }
+  allTours.forEach(t => {
+    const hours = parseDurationHours(t.duration)
+    const dStr  = t.duration.toLowerCase()
+    if (dStr.includes('hour') && hours !== null && hours < 5)             durationCounts['half-day']++
+    else if ((hours !== null && hours >= 5 && hours <= 10) || dStr.includes('full day')) durationCounts['full-day']++
+    else {
+      const dayMatch = t.duration.match(/(\d+)\s*day/i)
+      if (dayMatch && parseInt(dayMatch[1]) > 1) durationCounts['multi-day']++
+    }
+  })
+  const durations = [
+    { key: 'half-day',  label: 'Half Day (< 5h)',  count: durationCounts['half-day'] },
+    { key: 'full-day',  label: 'Full Day (5–10h)', count: durationCounts['full-day'] },
+    { key: 'multi-day', label: 'Multi-Day',         count: durationCounts['multi-day'] },
+  ]
+
+  // Price range
+  let min = Infinity, max = 0
+  allTours.forEach(t => {
+    t.options.forEach(o => {
+      if (o.pricePerPerson < min) min = o.pricePerPerson
+      if (o.pricePerPerson > max) max = o.pricePerPerson
+    })
+  })
+
+  return {
+    categories,
+    locations,
+    durations,
+    priceRange: { min: min === Infinity ? 0 : min, max: max === 0 ? 10000 : max },
+    total: allTours.length,
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+interface ToursPageProps {
+  searchParams: {
+    q?:        string
+    category?: string
+    location?: string
+    sort?:     string
+    duration?: string
+    minPrice?: string
+    maxPrice?: string
+    featured?: string
+    rating?:   string
+    // Legacy params (kept for backwards compat)
+    destination?: string
+    type?:     string
+    groupSize?: string
+    language?: string
+    date?:     string
+  }
 }
 
 export default async function ToursPage({ searchParams }: ToursPageProps) {
   const {
-    q = '', destination = '', category = '', date = '', type = '', sort = '',
-    duration = '', minPrice = '', maxPrice = '', groupSize = '', language = '',
+    q        = '',
+    category = '',
+    location = '',
+    sort     = '',
+    duration = '',
+    minPrice = '',
+    maxPrice = '',
+    featured = '',
+    rating   = '',
+    // Legacy: map destination → location, type → category
+    destination = '',
+    type        = '',
   } = searchParams
 
+  // Resolve location/category from legacy params
+  const resolvedLocation = location || destination
+  const resolvedCategory = category || type
+
   const allTours = await getAllTours()
-  const tours = searchTours({
-    q, destination, category, type, sort, duration,
-    minPrice:   minPrice  ? Number(minPrice)  : undefined,
-    maxPrice:   maxPrice  ? Number(maxPrice)  : undefined,
-    groupSize:  groupSize ? Number(groupSize) : undefined,
-    language,
-  }, allTours)
-  const hasFilters = !!(q || destination || category || duration || minPrice || maxPrice || groupSize || language)
 
-  // Build a URL with the current params except what you want to change
-  const buildUrl = (overrides: Record<string, string>) => {
-    const p = new URLSearchParams()
-    const base = { q, destination, category, date, type, sort, duration, minPrice, maxPrice, groupSize, language }
-    const merged = { ...base, ...overrides }
-    Object.entries(merged).forEach(([k, v]) => { if (v) p.set(k, v) })
-    const s = p.toString()
-    return `/tours${s ? `?${s}` : ''}`
-  }
+  const filteredTours = filterTours(allTours, {
+    q,
+    category: resolvedCategory,
+    location: resolvedLocation,
+    sort,
+    duration,
+    minPrice,
+    maxPrice,
+    featured,
+    rating,
+  })
 
-  const clearAllUrl = '/tours'
+  const facets = buildFacets(allTours, {
+    category: resolvedCategory,
+    location: resolvedLocation,
+  })
+
+  const locationLabel = resolvedLocation
+    ? (LOCATION_MAP[resolvedLocation.toLowerCase()] ?? resolvedLocation)
+    : ''
+  const categoryLabel = resolvedCategory
+    ? (CATEGORY_MAP[resolvedCategory] ?? resolvedCategory)
+    : ''
+
+  const hasFilters = !!(q || resolvedCategory || resolvedLocation || duration || minPrice || maxPrice || featured || rating)
 
   return (
     <>
@@ -128,12 +358,11 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
 
       <main className="min-h-screen bg-gray-50">
 
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <section className="bg-[#2534ff] pt-24 pb-12">
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <section className="bg-[#2534ff] pt-24 pb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Title row + search input */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-5 h-5 text-white/70" />
@@ -155,151 +384,108 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
               </div>
             </div>
 
-            {/* Category pills */}
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(cat => {
-                const isActive = category === cat.key
-                const href = buildUrl({ category: cat.key })
-                return (
-                  <Link
-                    key={cat.key}
-                    href={href}
-                    className={[
-                      'px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
-                      isActive
-                        ? 'bg-white text-[#2534ff] border-white'
-                        : 'bg-white/15 text-white border-white/30 hover:bg-white/25',
-                    ].join(' ')}
-                  >
-                    {cat.label}
-                  </Link>
-                )
-              })}
-            </div>
           </div>
         </section>
 
-        {/* ── Filter bar ───────────────────────────────────────────────── */}
-        <section className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {/* ── Sticky Filter Bar (Klook-style pill row) ─────────────────────── */}
+        <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <Suspense>
               <TourFilterBar />
             </Suspense>
           </div>
-        </section>
+        </div>
 
-        {/* ── Results ──────────────────────────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* Sort dropdown */}
-          <div className="flex items-center justify-end mb-4">
-            <label className="text-xs text-gray-500 mr-2 shrink-0">Sort by</label>
+        {/* ── Desktop Horizontal Dropdown Filter Bar ────────────────────────── */}
+        <div className="hidden lg:block bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
             <Suspense>
-              <TourSortSelect />
+              <TourFiltersClient facets={facets} totalResults={filteredTours.length} />
             </Suspense>
           </div>
+        </div>
 
-          {/* Active filter chips + result summary */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Result count */}
-              <p className="text-sm text-gray-600">
-                {tours.length > 0 ? (
-                  <><span className="font-semibold text-gray-900">{tours.length}</span> experience{tours.length !== 1 ? 's' : ''}</>
+        {/* ── 2-Column Layout ───────────────────────────────────────────────── */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+          <div className="flex gap-8">
+
+            {/* Left sidebar — desktop only */}
+            <aside className="hidden lg:block w-72 shrink-0">
+              <div className="sticky top-40 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 className="text-sm font-bold text-gray-900 mb-4">Filter Results</h2>
+                <Suspense>
+                  <TourSidebarStatic facets={facets} />
+                </Suspense>
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <div className="flex-1 min-w-0">
+
+              {/* Result count + active context */}
+              <p className="text-sm text-gray-600 mb-5">
+                {filteredTours.length > 0 ? (
+                  <>
+                    <strong className="text-gray-900">{filteredTours.length}</strong>{' '}
+                    experience{filteredTours.length !== 1 ? 's' : ''}
+                    {locationLabel && (
+                      <> in <strong className="text-[#2534ff]">{locationLabel}</strong></>
+                    )}
+                    {categoryLabel && (
+                      <> · <strong>{categoryLabel}</strong></>
+                    )}
+                    {q && (
+                      <> matching &ldquo;<strong className="text-[#2534ff]">{q}</strong>&rdquo;</>
+                    )}
+                  </>
                 ) : (
-                  <span className="font-semibold text-gray-900">No experiences found</span>
+                  <strong className="text-gray-900">No experiences found</strong>
                 )}
-                {destination && <> near <span className="font-semibold text-[#2534ff]">{destination}</span></>}
-                {q && <> for &quot;<span className="font-semibold text-[#2534ff]">{q}</span>&quot;</>}
               </p>
 
-              {/* Active filter chips */}
-              {destination && (
-                <Link
-                  href={buildUrl({ destination: '' })}
-                  className="flex items-center gap-1 text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200 rounded-full px-2.5 py-1 hover:bg-brand-100 transition-colors"
-                >
-                  📍 {destination}
-                  <X className="w-3 h-3" />
-                </Link>
+              {/* Tour grid or empty state */}
+              {filteredTours.length === 0 ? (
+                <div className="text-center py-20">
+                  <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
+                  <p className="text-gray-500 mb-6">
+                    {q
+                      ? `We couldn't find experiences matching "${q}". Try different keywords.`
+                      : resolvedLocation
+                      ? `No experiences available in "${locationLabel}" yet.`
+                      : 'No experiences match these filters.'}
+                  </p>
+                  <Link
+                    href="/tours"
+                    className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#1e2ce6] transition-colors text-sm"
+                  >
+                    Browse all experiences
+                  </Link>
+                </div>
+              ) : (
+                <TourGrid tours={filteredTours} />
               )}
-              {category && (
-                <Link
-                  href={buildUrl({ category: '' })}
-                  className="flex items-center gap-1 text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200 rounded-full px-2.5 py-1 hover:bg-brand-100 transition-colors"
-                >
-                  🏷 {CATEGORIES.find(c => c.key === category)?.label ?? category}
-                  <X className="w-3 h-3" />
-                </Link>
+
+              {/* Popular destination shortcuts — only when no filters active */}
+              {!hasFilters && filteredTours.length > 0 && (
+                <div className="mt-12 pt-10 border-t border-gray-200">
+                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Browse by destination</p>
+                  <div className="flex flex-wrap gap-3">
+                    {Object.entries(LOCATION_MAP).map(([key, label]) => (
+                      <Link
+                        key={key}
+                        href={`/tours?location=${encodeURIComponent(key)}`}
+                        className="px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#2534ff] hover:text-[#2534ff] transition-colors shadow-sm"
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-
-            {/* Clear all */}
-            {hasFilters && (
-              <Link
-                href={clearAllUrl}
-                className="text-sm text-[#2534ff] hover:underline font-medium shrink-0"
-              >
-                Clear all filters
-              </Link>
-            )}
           </div>
-
-          {/* Tour grid */}
-          {tours.length === 0 ? (
-
-            <div className="text-center py-20">
-              <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
-              <p className="text-gray-500 mb-6">
-                {q
-                  ? `We couldn't find experiences matching "${q}". Try different keywords.`
-                  : destination
-                  ? `No experiences available near "${destination}" yet. Check back soon!`
-                  : 'No experiences available in this category yet.'}
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                <p className="w-full text-xs text-gray-400 mb-1">Try one of these destinations:</p>
-                {POPULAR_DESTINATIONS.map(d => (
-                  <Link
-                    key={d}
-                    href={buildUrl({ destination: d, q: '', category: '' })}
-                    className="px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:border-[#2534ff] hover:text-[#2534ff] bg-white transition-colors"
-                  >
-                    {d}
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/tours"
-                className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#1e2ce6] transition-colors text-sm"
-              >
-                Browse all experiences
-              </Link>
-            </div>
-          ) : (
-            <TourGrid tours={tours} />
-          )}
-
-          {/* Popular destination shortcuts — only when no filters active */}
-          {!hasFilters && tours.length > 0 && (
-            <div className="mt-12 pt-10 border-t border-gray-200">
-              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Browse by destination</p>
-              <div className="flex flex-wrap gap-3">
-                {POPULAR_DESTINATIONS.map(d => (
-                  <Link
-                    key={d}
-                    href={`/tours?destination=${encodeURIComponent(d)}`}
-                    className="px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#2534ff] hover:text-[#2534ff] transition-colors shadow-sm"
-                  >
-                    {d}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </section>
+        </div>
       </main>
 
       <Footer />

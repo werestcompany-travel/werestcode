@@ -22,7 +22,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const { title, subtitle, location, cities, duration, maxGroupSize, languages,
             rating, reviewCount, category, badge, images, highlights, description,
             includes, excludes, itinerary, options, meetingPoint, importantInfo,
-            reviews, isActive, sortOrder } = body;
+            reviews, isActive, sortOrder,
+            isFeatured, isPopular, isTrending, homepageVisible, instantConfirmation, priceFrom } = body;
 
     const tour = await prisma.tour.update({
       where: { id: params.id },
@@ -50,12 +51,46 @@ export async function PUT(req: NextRequest, { params }: Params) {
         reviews:      reviews    ?? [],
         isActive:     isActive   ?? true,
         sortOrder:    parseInt(sortOrder) || 0,
+        // Feature flag fields
+        ...(isFeatured         !== undefined && { isFeatured:          Boolean(isFeatured) }),
+        ...(isPopular          !== undefined && { isPopular:           Boolean(isPopular) }),
+        ...(isTrending         !== undefined && { isTrending:          Boolean(isTrending) }),
+        ...(homepageVisible    !== undefined && { homepageVisible:     Boolean(homepageVisible) }),
+        ...(instantConfirmation !== undefined && { instantConfirmation: Boolean(instantConfirmation) }),
+        ...(priceFrom          !== undefined && { priceFrom:           parseFloat(priceFrom) || 0 }),
       },
     });
 
     return NextResponse.json({ tour });
   } catch (err) {
     console.error('[admin/tours PUT]', err);
+    return NextResponse.json({ error: 'Server error.' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const admin = await getAdminFromCookies();
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const { isFeatured, isPopular, isTrending, homepageVisible, instantConfirmation, priceFrom } = body;
+
+    const tour = await prisma.tour.update({
+      where: { id: params.id },
+      data: {
+        ...(isFeatured          !== undefined && { isFeatured:          Boolean(isFeatured) }),
+        ...(isPopular           !== undefined && { isPopular:           Boolean(isPopular) }),
+        ...(isTrending          !== undefined && { isTrending:          Boolean(isTrending) }),
+        ...(homepageVisible     !== undefined && { homepageVisible:     Boolean(homepageVisible) }),
+        ...(instantConfirmation !== undefined && { instantConfirmation: Boolean(instantConfirmation) }),
+        ...(priceFrom           !== undefined && { priceFrom:           parseFloat(priceFrom) || 0 }),
+      },
+    });
+
+    return NextResponse.json({ tour });
+  } catch (err) {
+    console.error('[admin/tours PATCH]', err);
     return NextResponse.json({ error: 'Server error.' }, { status: 500 });
   }
 }

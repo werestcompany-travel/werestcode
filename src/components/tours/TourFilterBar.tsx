@@ -1,170 +1,152 @@
 'use client'
 
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
-import PriceRangeSlider from './PriceRangeSlider'
+import { X } from 'lucide-react'
 
-const DURATION_PILLS = [
-  { key: '',          label: '⏱ All Durations' },
-  { key: 'half-day',  label: '🌅 Half Day (< 5h)' },
-  { key: 'full-day',  label: '☀️ Full Day (5–10h)' },
-  { key: 'multi-day', label: '📅 Multi-Day' },
+// ─── Constants ─────────────────────────────────────────────────────────────────
+
+const CATEGORY_PILLS = [
+  { key: '',          label: 'All' },
+  { key: 'cultural',  label: 'Cultural' },
+  { key: 'day-trip',  label: 'Day Trips' },
+  { key: 'food',      label: 'Food & Drink' },
+  { key: 'adventure', label: 'Adventure' },
+  { key: 'nature',    label: 'Nature' },
+  { key: 'water',     label: 'Water' },
 ]
 
-const GROUP_SIZE_PILLS = [
-  { key: '',   label: 'Any group' },
-  { key: '1',  label: 'Solo' },
-  { key: '2',  label: 'Couple' },
-  { key: '6',  label: 'Small Group' },
-  { key: '7',  label: 'Large Group' },
+const SORT_OPTIONS = [
+  { value: '',           label: 'Recommended' },
+  { value: 'popular',   label: 'Most Popular' },
+  { value: 'price-asc', label: 'Price: Low → High' },
+  { value: 'price-desc',label: 'Price: High → Low' },
+  { value: 'rating',    label: 'Top Rated' },
+  { value: 'newest',    label: 'Newest' },
 ]
 
-const LANGUAGE_PILLS = [
-  { key: '',         label: 'All languages' },
-  { key: 'English',  label: '🇬🇧 English' },
-  { key: 'Thai',     label: '🇹🇭 Thai' },
-  { key: 'Chinese',  label: '🇨🇳 Chinese' },
-  { key: 'Japanese', label: '🇯🇵 Japanese' },
-  { key: 'French',   label: '🇫🇷 French' },
-  { key: 'German',   label: '🇩🇪 German' },
-  { key: 'Russian',  label: '🇷🇺 Russian' },
-]
-
-function buildUrl(sp: URLSearchParams, overrides: Record<string, string>) {
-  const p = new URLSearchParams(sp.toString())
-  Object.entries(overrides).forEach(([k, v]) => {
-    if (v) p.set(k, v)
-    else p.delete(k)
-  })
-  const s = p.toString()
-  return `/tours${s ? `?${s}` : ''}`
-}
+// ─── Inner (uses hooks) ────────────────────────────────────────────────────────
 
 function FilterBarInner() {
-  const sp = useSearchParams()
-  const currentDuration  = sp.get('duration')  ?? ''
-  const currentGroupSize = sp.get('groupSize')  ?? ''
-  const currentLanguage  = sp.get('language')   ?? ''
-  const currentDate      = sp.get('date')        ?? ''
+  const router = useRouter()
+  const sp     = useSearchParams()
 
-  const todayActive    = currentDate === 'today'
-  const tomorrowActive = currentDate === 'tomorrow'
+  const category = sp.get('category')  ?? ''
+  const sort     = sp.get('sort')      ?? ''
+  const location = sp.get('location')  ?? ''
+  const duration = sp.get('duration')  ?? ''
+  const featured = sp.get('featured')  ?? ''
+  const minPrice = sp.get('minPrice')  ?? ''
+  const maxPrice = sp.get('maxPrice')  ?? ''
+  const rating   = sp.get('rating')    ?? ''
+  const q        = sp.get('q')         ?? ''
+
+  const navigate = (overrides: Record<string, string>) => {
+    const p = new URLSearchParams(sp.toString())
+    Object.entries(overrides).forEach(([k, v]) => {
+      if (v) p.set(k, v)
+      else   p.delete(k)
+    })
+    router.push(`/tours${p.toString() ? `?${p.toString()}` : ''}`, { scroll: false })
+  }
+
+  // Active filter chips (excluding sort and q — those have dedicated UIs)
+  const activeChips: { label: string; clear: Record<string, string> }[] = []
+  if (location) activeChips.push({ label: `📍 ${location}`, clear: { location: '' } })
+  if (duration) activeChips.push({ label: `⏱ ${duration.replace('-', ' ')}`, clear: { duration: '' } })
+  if (minPrice || maxPrice) activeChips.push({
+    label: `฿${minPrice || '0'}–${maxPrice || '∞'}`,
+    clear: { minPrice: '', maxPrice: '' },
+  })
+  if (featured === 'true') activeChips.push({ label: '⭐ Featured', clear: { featured: '' } })
+  if (rating) activeChips.push({ label: `${rating}+ ★`, clear: { rating: '' } })
+
+  const hasActiveChips = activeChips.length > 0
 
   return (
-    <div className="space-y-4">
-      {/* ── Row 1: Available today/tomorrow quick filters ─────────────── */}
-      <div className="flex flex-wrap gap-2">
-        <Link
-          href={buildUrl(sp, { date: todayActive ? '' : 'today' })}
-          className={[
-            'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors',
-            todayActive
-              ? 'bg-[#2534ff] text-white border-[#2534ff]'
-              : 'bg-white text-gray-700 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff]',
-          ].join(' ')}
-        >
-          ✅ Available Today
-        </Link>
-        <Link
-          href={buildUrl(sp, { date: tomorrowActive ? '' : 'tomorrow' })}
-          className={[
-            'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors',
-            tomorrowActive
-              ? 'bg-[#2534ff] text-white border-[#2534ff]'
-              : 'bg-white text-gray-700 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff]',
-          ].join(' ')}
-        >
-          📆 Available Tomorrow
-        </Link>
-      </div>
-
-      {/* ── Row 2: Duration pills ─────────────────────────────────────── */}
-      <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Duration</p>
-        <div className="flex flex-wrap gap-1.5">
-          {DURATION_PILLS.map(pill => {
-            const active = currentDuration === pill.key
+    <div className="space-y-3">
+      {/* ── Row 1: Category quick-filter pills + Sort (right) ─────────────── */}
+      <div className="flex items-center gap-2">
+        {/* Horizontally scrollable pill row */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1 pb-0.5">
+          {CATEGORY_PILLS.map(pill => {
+            const active = category === pill.key
             return (
-              <Link
+              <button
                 key={pill.key}
-                href={buildUrl(sp, { duration: pill.key })}
+                type="button"
+                onClick={() => navigate({ category: pill.key })}
                 className={[
-                  'px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors',
+                  'px-4 py-1.5 rounded-full text-sm font-semibold border transition-all whitespace-nowrap flex-shrink-0',
                   active
-                    ? 'text-[#2534ff] border-[#2534ff] underline underline-offset-2'
-                    : 'text-gray-600 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff] bg-white',
+                    ? 'bg-[#2534ff] text-white border-[#2534ff]'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff]',
                 ].join(' ')}
               >
                 {pill.label}
-              </Link>
+              </button>
             )
           })}
         </div>
+
+        {/* Sort — always visible on right */}
+        <div className="relative flex-shrink-0 hidden lg:block">
+          <select
+            value={sort}
+            onChange={e => navigate({ sort: e.target.value })}
+            className="appearance-none border border-gray-200 rounded-xl px-3 py-1.5 pr-7 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] transition-all"
+          >
+            {SORT_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+        </div>
       </div>
 
-      {/* ── Row 3: Group size pills ───────────────────────────────────── */}
-      <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Group size</p>
-        <div className="flex flex-wrap gap-1.5">
-          {GROUP_SIZE_PILLS.map(pill => {
-            const active = currentGroupSize === pill.key
-            return (
-              <Link
-                key={pill.key}
-                href={buildUrl(sp, { groupSize: pill.key })}
-                className={[
-                  'px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors',
-                  active
-                    ? 'bg-[#2534ff] text-white border-[#2534ff]'
-                    : 'text-gray-600 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff] bg-white',
-                ].join(' ')}
+      {/* ── Row 2: Active filter chips ────────────────────────────────────── */}
+      {(hasActiveChips || q) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {q && (
+            <span className="flex items-center gap-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full px-2.5 py-1">
+              🔍 &quot;{q}&quot;
+              <button
+                type="button"
+                onClick={() => navigate({ q: '' })}
+                className="ml-0.5 hover:text-red-500 transition-colors"
+                aria-label="Remove search"
               >
-                {pill.label === 'Solo' ? 'Solo (1)' :
-                 pill.label === 'Couple' ? 'Couple (2)' :
-                 pill.label === 'Small Group' ? 'Small Group (3–6)' :
-                 pill.label === 'Large Group' ? 'Large Group (7+)' :
-                 pill.label}
-              </Link>
-            )
-          })}
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {activeChips.map(chip => (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={() => navigate(chip.clear)}
+              className="flex items-center gap-1 text-xs font-semibold bg-[#2534ff]/10 text-[#2534ff] rounded-full px-2.5 py-1 hover:bg-[#2534ff]/20 transition-colors"
+            >
+              {chip.label}
+              <X className="w-3 h-3" />
+            </button>
+          ))}
+          {(hasActiveChips || q) && (
+            <button
+              type="button"
+              onClick={() => router.push('/tours', { scroll: false })}
+              className="text-xs text-gray-500 hover:text-[#2534ff] font-medium transition-colors underline underline-offset-2"
+            >
+              Clear all
+            </button>
+          )}
         </div>
-      </div>
-
-      {/* ── Row 4: Language pills ─────────────────────────────────────── */}
-      <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Language</p>
-        <div className="flex flex-wrap gap-1.5">
-          {LANGUAGE_PILLS.map(pill => {
-            const active = currentLanguage === pill.key
-            return (
-              <Link
-                key={pill.key}
-                href={buildUrl(sp, { language: pill.key })}
-                className={[
-                  'px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors',
-                  active
-                    ? 'bg-[#2534ff] text-white border-[#2534ff]'
-                    : 'text-gray-600 border-gray-200 hover:border-[#2534ff] hover:text-[#2534ff] bg-white',
-                ].join(' ')}
-              >
-                {pill.label}
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── Row 5: Price range slider ─────────────────────────────────── */}
-      <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Price per person</p>
-        <Suspense>
-          <PriceRangeSlider />
-        </Suspense>
-      </div>
+      )}
     </div>
   )
 }
+
+// ─── Export ────────────────────────────────────────────────────────────────────
 
 export default function TourFilterBar() {
   return (
