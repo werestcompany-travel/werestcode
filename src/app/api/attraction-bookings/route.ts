@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromCookies } from '@/lib/user-auth';
 import { sendAttractionConfirmationEmail, sendAttractionBookingConfirmationEmail } from '@/lib/email';
+import { sendAttractionBookingToAdmin } from '@/lib/whatsapp';
 import { createAttractionBookingSchema } from '@/lib/validation/attraction';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 
@@ -97,6 +98,21 @@ export async function POST(req: NextRequest) {
       childQty:       booking.childQty,
       totalPrice:     booking.totalPrice,
     }).catch(console.error);
+
+    // Fire-and-forget WhatsApp admin alert
+    sendAttractionBookingToAdmin({
+      bookingRef:     booking.bookingRef,
+      attractionName: booking.attractionName,
+      packageName:    booking.packageName,
+      visitDate:      booking.visitDate,
+      adultQty:       booking.adultQty,
+      childQty:       booking.childQty,
+      totalPrice:     booking.totalPrice,
+      customerName:   booking.customerName,
+      customerPhone:  booking.customerPhone,
+      customerEmail:  booking.customerEmail,
+      notes:          booking.notes,
+    }).catch(err => console.error('[attraction-booking] whatsapp error:', err));
 
     // Fire-and-forget confirmation email (with slug + WhatsApp)
     sendAttractionBookingConfirmationEmail({

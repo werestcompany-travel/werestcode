@@ -2,8 +2,53 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromCookies } from '@/lib/user-auth';
 import { awardPoints } from '@/lib/loyalty';
-import { getTourBySlug } from '@/lib/tours';
+import { getTourBySlug, type Tour, type TourOption } from '@/lib/tours';
 import { sendTourBookingEmail, sendTourBookingConfirmationEmail } from '@/lib/email';
+import { sendTourBookingToAdmin } from '@/lib/whatsapp';
+
+// ─── Resolve tour from DB first, fall back to static catalogue ───────────────
+
+async function resolveTour(slug: string): Promise<Tour | null> {
+  try {
+    const dbTour = await prisma.tour.findUnique({ where: { slug, isActive: true } });
+    if (dbTour) {
+      return {
+        slug:               dbTour.slug,
+        title:              dbTour.title,
+        subtitle:           dbTour.subtitle ?? '',
+        location:           dbTour.location,
+        cities:             dbTour.cities,
+        duration:           dbTour.duration,
+        maxGroupSize:       dbTour.maxGroupSize,
+        languages:          dbTour.languages,
+        rating:             dbTour.rating,
+        reviewCount:        dbTour.reviewCount,
+        category:           dbTour.category as Tour['category'],
+        badge:              dbTour.badge as Tour['badge'],
+        images:             dbTour.images,
+        highlights:         dbTour.highlights,
+        description:        dbTour.description,
+        includes:           dbTour.includes,
+        excludes:           dbTour.excludes,
+        itinerary:          (dbTour.itinerary as unknown as Tour['itinerary']) ?? [],
+        options:            (dbTour.options  as unknown as TourOption[]) ?? [],
+        meetingPoint:       dbTour.meetingPoint ?? '',
+        importantInfo:      dbTour.importantInfo,
+        reviews:            (dbTour.reviews  as unknown as Tour['reviews']) ?? [],
+        primaryLocation:    dbTour.primaryLocation,
+        tags:               dbTour.tags,
+        priceFrom:          dbTour.priceFrom,
+        isFeatured:         dbTour.isFeatured,
+        isPopular:          dbTour.isPopular,
+        instantConfirmation: dbTour.instantConfirmation,
+      };
+    }
+  } catch {
+    // DB unavailable – fall through to static
+  }
+  // Fallback: static catalogue (until DB is fully seeded)
+  return getTourBySlug(slug) ?? null;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -48,8 +93,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'At least one participant required.' }, { status: 400 });
     }
 
-    // ── Validate tour + option ────────────────────────────────────────────────
-    const tour = getTourBySlug(tourSlug);
+    // ── Validate tour + option (DB-first, static fallback) ───────────────────
+    const tour = await resolveTour(tourSlug);
     if (!tour) return NextResponse.json({ error: 'Tour not found.' }, { status: 404 });
 
     const option = tour.options.find(o => o.id === tourOptionId);
@@ -110,6 +155,22 @@ export async function POST(req: NextRequest) {
         bookingRef,
       ).catch(() => {});
     }
+
+    // ── WhatsApp admin alert ──────────────────────────────────────────────────
+    sendTourBookingToAdmin({
+      bookingRef:    booking.bookingRef,
+      tourTitle:     booking.tourTitle,
+      bookingDate:   booking.bookingDate,
+      tourTime:      booking.tourTime,
+      optionLabel:   booking.optionLabel,
+      adultQty:      booking.adultQty,
+      childQty:      booking.childQty,
+      totalPrice:    booking.totalPrice,
+      customerName:  booking.customerName,
+      customerPhone: booking.customerPhone,
+      customerEmail: booking.customerEmail,
+      notes:         booking.notes,
+    }).catch(() => {});
 
     // ── Send confirmation email ────────────────────────────────────────────────
     sendTourBookingEmail({

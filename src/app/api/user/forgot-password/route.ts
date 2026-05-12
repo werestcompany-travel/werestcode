@@ -3,11 +3,11 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
 import { forgotPasswordSchema } from '@/lib/validation/auth';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`forgot-pw:${ip}`, LIMITS.forgotPw);
+  const rl = await rateLimitAsync(`forgot-pw:${ip}`, LIMITS.forgotPw);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

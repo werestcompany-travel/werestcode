@@ -3,11 +3,11 @@ import { prisma } from '@/lib/db';
 import { signAdminToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { adminLoginSchema } from '@/lib/validation/auth';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`admin-login:${ip}`, LIMITS.login);
+  const rl = await rateLimitAsync(`admin-login:${ip}`, LIMITS.login);
   if (!rl.allowed) {
     return NextResponse.json(
       { success: false, error: 'Too many login attempts. Please try again later.' },

@@ -3,11 +3,11 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { signUserToken } from '@/lib/user-auth';
 import { registerSchema } from '@/lib/validation/auth';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`register:${ip}`, LIMITS.register);
+  const rl = await rateLimitAsync(`register:${ip}`, LIMITS.register);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many registration attempts. Please try again later.' },

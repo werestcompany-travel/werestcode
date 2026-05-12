@@ -81,14 +81,6 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     badge:         'Premium',
     includes:      [...BASE_INCLUDES, 'Meet & greet service', 'Luxury amenities'],
   },
-  LUXURY_MPV: {
-    maxPassengers: 6,
-    maxLuggage:    6,
-    name:          'Luxury MPV',
-    description:   'Toyota Alphard or similar – premium comfort for VIP transfers',
-    emoji:         '🚘',
-    imageUrl:      '/images/minivan.png', // replace with Alphard image when available
-  },
 };
 
 /* ── Convenience helpers ─────────────────────────────────────────────────── */

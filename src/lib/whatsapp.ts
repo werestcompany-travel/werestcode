@@ -151,6 +151,107 @@ export async function sendStatusUpdate(
   });
 }
 
+// ─── Attraction booking admin alert ───────────────────────────────────────────
+
+export async function sendAttractionBookingToAdmin(params: {
+  bookingRef:     string;
+  attractionName: string;
+  packageName:    string;
+  visitDate:      Date | string;
+  adultQty:       number;
+  childQty:       number;
+  totalPrice:     number;
+  customerName:   string;
+  customerPhone:  string;
+  customerEmail:  string;
+  notes?:         string | null;
+}): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken   = process.env.WHATSAPP_ACCESS_TOKEN;
+  const adminPhone    = process.env.WHATSAPP_ADMIN_PHONE;
+  if (!phoneNumberId || !accessToken || !adminPhone) return;
+
+  const visitStr = typeof params.visitDate === 'string'
+    ? params.visitDate
+    : params.visitDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const message =
+    `🎫 *NEW ATTRACTION BOOKING – ${params.bookingRef}*\n\n` +
+    `🏛 *Attraction:* ${params.attractionName}\n` +
+    `🎟 *Package:* ${params.packageName}\n` +
+    `📅 *Visit Date:* ${visitStr}\n` +
+    `👥 *Adults:* ${params.adultQty}  👶 Children: ${params.childQty}\n` +
+    `💰 *TOTAL: THB ${params.totalPrice.toFixed(0)}*\n\n` +
+    `👤 *Customer:* ${params.customerName}\n` +
+    `📞 *Phone:* ${params.customerPhone}\n` +
+    `✉️ *Email:* ${params.customerEmail}\n` +
+    (params.notes ? `📝 *Notes:* ${params.notes}\n` : '') +
+    `\n🔗 Manage: ${process.env.NEXT_PUBLIC_APP_URL}/admin/attraction-bookings`;
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to: adminPhone, type: 'text', text: { body: message } }),
+    });
+    if (!res.ok) console.error('[WhatsApp] Attraction admin alert failed:', await res.text());
+  } catch (err) {
+    console.error('[WhatsApp] sendAttractionBookingToAdmin error:', err);
+  }
+}
+
+// ─── Tour booking admin alert ─────────────────────────────────────────────────
+
+export async function sendTourBookingToAdmin(params: {
+  bookingRef:    string;
+  tourTitle:     string;
+  bookingDate:   Date | string;
+  tourTime?:     string | null;
+  optionLabel?:  string | null;
+  adultQty:      number;
+  childQty:      number;
+  totalPrice:    number;
+  customerName:  string;
+  customerPhone: string;
+  customerEmail: string;
+  notes?:        string | null;
+}): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken   = process.env.WHATSAPP_ACCESS_TOKEN;
+  const adminPhone    = process.env.WHATSAPP_ADMIN_PHONE;
+  if (!phoneNumberId || !accessToken || !adminPhone) return;
+
+  const dateStr = typeof params.bookingDate === 'string'
+    ? params.bookingDate
+    : params.bookingDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const timeStr = params.tourTime ? ` at ${params.tourTime}` : '';
+  const labelStr = params.optionLabel ? ` (${params.optionLabel})` : '';
+
+  const message =
+    `🗺 *NEW TOUR BOOKING – ${params.bookingRef}*\n\n` +
+    `🎯 *Tour:* ${params.tourTitle}${labelStr}\n` +
+    `📅 *Date:* ${dateStr}${timeStr}\n` +
+    `👥 *Adults:* ${params.adultQty}  👶 Children: ${params.childQty}\n` +
+    `💰 *TOTAL: THB ${params.totalPrice.toFixed(0)}*\n\n` +
+    `👤 *Customer:* ${params.customerName}\n` +
+    `📞 *Phone:* ${params.customerPhone}\n` +
+    `✉️ *Email:* ${params.customerEmail}\n` +
+    (params.notes ? `📝 *Notes:* ${params.notes}\n` : '') +
+    `\n🔗 Manage: ${process.env.NEXT_PUBLIC_APP_URL}/admin/tour-bookings`;
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to: adminPhone, type: 'text', text: { body: message } }),
+    });
+    if (!res.ok) console.error('[WhatsApp] Tour admin alert failed:', await res.text());
+  } catch (err) {
+    console.error('[WhatsApp] sendTourBookingToAdmin error:', err);
+  }
+}
+
 /**
  * Send a WhatsApp template message (for outbound to customers outside 24h session).
  * The templateName must be pre-approved at business.facebook.com.
