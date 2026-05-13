@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -42,7 +42,7 @@ export default function KlookCategorySection({ category, tours }: Props) {
   const [canRight, setCanRight]   = useState(false)
 
   /* ── Measure container → derive exact card width ── */
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!wrapperRef.current) return
     const update = () => {
       const w = wrapperRef.current?.clientWidth ?? 0
