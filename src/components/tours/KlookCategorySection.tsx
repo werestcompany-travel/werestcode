@@ -25,7 +25,7 @@ const BADGE_STYLES: Record<string, string> = {
   'New':         'bg-[#2534ff]',
 }
 
-const SCROLL_BY = 560 // px per arrow click (~2 cards)
+// Scroll by the full visible width so one click reveals the next set of cards
 
 export default function KlookCategorySection({ category, tours }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -54,7 +54,9 @@ export default function KlookCategorySection({ category, tours }: Props) {
   }, [sync])
 
   const scroll = (dir: 'left' | 'right') => {
-    scrollRef.current?.scrollBy({ left: dir === 'left' ? -SCROLL_BY : SCROLL_BY, behavior: 'smooth' })
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir === 'left' ? -el.clientWidth : el.clientWidth, behavior: 'smooth' })
   }
 
   return (
@@ -94,7 +96,7 @@ export default function KlookCategorySection({ category, tours }: Props) {
             <Link
               key={tour.slug}
               href={`/tours/${tour.slug}`}
-              className="group shrink-0 w-[260px] flex flex-col rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
+              className="group shrink-0 w-[220px] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-9px)] flex flex-col rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
             >
               {/* Image */}
               <div className="relative h-[160px] overflow-hidden shrink-0">
@@ -103,7 +105,7 @@ export default function KlookCategorySection({ category, tours }: Props) {
                     src={tour.images[0]}
                     alt={tour.title}
                     fill
-                    sizes="260px"
+                    sizes="(max-width: 640px) 220px, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     unoptimized
                   />
