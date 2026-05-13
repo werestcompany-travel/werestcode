@@ -997,7 +997,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   className="shrink-0 w-[55vw] max-w-[220px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-1 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-1" style={{ height: 'clamp(130px, 30vw, 338px)' }}>
+                  <div className="relative w-full mb-1" style={{ height: 'clamp(90px, 14vw, 150px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
