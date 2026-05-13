@@ -107,17 +107,13 @@ const PROMO_BANNERS = [
   { img: '/images/promos/promo5.avif', tag: 'Airport Special', title: 'Airport Pickup from ฿900', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
 ];
 
-/* ── Get-inspired destination cards ─────────────────────────────────────── */
+/* ── Where to next — destination cards ─────────────────────────────────── */
 const INSPIRED_DESTS = [
-  { id: 'anywhere',  name: 'Anywhere',    sub: 'Explore all of Thailand',  haul: null,           img: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600&q=80', wide: true  },
-  { id: 'bangkok',   name: 'Bangkok',     sub: 'City tours & transfers',   haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80', wide: false },
-  { id: 'phuket',    name: 'Phuket',      sub: 'Beach & island trips',     haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80', wide: false },
-  { id: 'chiangmai', name: 'Chiang Mai',  sub: 'Cultural experiences',     haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&q=80', wide: false },
-  { id: 'krabi',     name: 'Krabi',       sub: 'Nature & adventure',       haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80',   wide: false },
-  { id: 'pattaya',   name: 'Pattaya',     sub: 'Day trips & beach',        haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1595435934349-8d929fbb7bc5?w=600&q=80', wide: false },
-  { id: 'huahin',    name: 'Hua Hin',     sub: 'Beaches & royal town',     haul: 'Medium haul',  img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80', wide: false },
-  { id: 'samui',     name: 'Koh Samui',   sub: 'Island paradise',          haul: 'Medium haul',  img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=600&q=80', wide: false },
-  { id: 'ayutthaya', name: 'Ayutthaya',   sub: 'Ancient temples & ruins',  haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=600&q=80', wide: false },
+  { id: 'bangkok',   name: 'Bangkok',    activities: 45, img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
+  { id: 'phuket',    name: 'Phuket',     activities: 38, img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80' },
+  { id: 'chiangmai', name: 'Chiang Mai', activities: 24, img: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=600&q=80' },
+  { id: 'krabi',     name: 'Krabi',      activities: 18, img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80'   },
+  { id: 'pattaya',   name: 'Pattaya',    activities: 22, img: 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=600&q=80' },
 ];
 
 
@@ -161,11 +157,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   const [sidebarPinned,  setSidebarPinned]  = useState(true);
   const [sidebarHover,   setSidebarHover]   = useState(false);
   const [hoveredSidebarTab, setHoveredSidebarTab] = useState<string | null>(null);
-  const [selectedDest,   setSelectedDest]   = useState('anywhere');
+  const [selectedDest,   setSelectedDest]   = useState('bangkok');
   const { isWishlisted, toggle, isLoggedIn } = useWishlist();
   const inspiredSliderRef                   = useRef<HTMLDivElement>(null);
-  const [sliderCanLeft,  setSliderCanLeft]  = useState(false);
-  const [sliderCanRight, setSliderCanRight] = useState(true);
+  const [inspiredShowLeft,  setInspiredShowLeft]  = useState(false);
+  const [inspiredShowRight, setInspiredShowRight] = useState(false);
   const [placesVisible,  setPlacesVisible]  = useState(true);
   const [navHidden,      setNavHidden]      = useState(false);
   const sidebarVisible = sidebarPinned || sidebarHover;
@@ -188,6 +184,28 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     const timer = setTimeout(() => setPlacesVisible(true), 220);
     return () => clearTimeout(timer);
   }, [selectedDest]);
+
+  /* ── Inspired slider arrows ── */
+  useEffect(() => {
+    const el = inspiredSliderRef.current;
+    if (!el) return;
+    const sync = () => {
+      setInspiredShowLeft(el.scrollLeft > 4);
+      setInspiredShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    el.addEventListener('scroll', sync, { passive: true });
+    return () => { ro.disconnect(); el.removeEventListener('scroll', sync); };
+  }, []);
+
+  const scrollInspired = (dir: 1 | -1) => {
+    const el = inspiredSliderRef.current;
+    if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
 
   /* ── Promo slider ── */
   const sliderRef    = useRef<HTMLDivElement>(null);
@@ -667,98 +685,91 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
 
       {/* ════════════════════════════════════════════════════════════
-          GET INSPIRED — destination card carousel (smooth scroll)
+          WHERE TO NEXT — portrait city card row
       ════════════════════════════════════════════════════════════ */}
       <section aria-labelledby="inspired-heading" className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">Get inspired for your next trip</h2>
+
+          {/* Section header */}
+          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">Where to next?</h2>
+
+          {/* Portrait card row */}
           <div className="relative">
 
-            {/* Scrollable track — hidden scrollbar, 5 rectangle cards visible */}
-            <div
-              ref={inspiredSliderRef}
-              className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              onScroll={() => {
-                const el = inspiredSliderRef.current;
-                if (!el) return;
-                setSliderCanLeft(el.scrollLeft > 2);
-                setSliderCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
-              }}
-            >
-              {INSPIRED_DESTS.map((dest) => {
-                const isSelected = selectedDest === dest.id;
-                return (
-                  <button
-                    key={dest.id}
-                    type="button"
-                    onClick={() => setSelectedDest(dest.id)}
-                    className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none h-[140px] sm:h-[160px] transition-all duration-200 shrink-0 w-[calc(40%_-_6px)] sm:w-[calc(25%_-_9px)] lg:w-[calc(20%_-_9.6px)]"
-                  >
-                    {/* Photo */}
-                    <Image
-                      src={dest.img}
-                      alt={dest.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 20vw"
-                      unoptimized
-                    />
-
-                    {/* Bottom gradient — always on for text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-
-                    {/* Brand overlay — fades in only when selected */}
-                    <div
-                      className="absolute inset-0 transition-opacity duration-300"
-                      style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.3 : 0 }}
-                    />
-
-                    {/* Text */}
-                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
-                      <p className="font-bold text-white text-[13px] leading-tight drop-shadow-sm">{dest.name}</p>
-                      <p className="text-white/80 text-[11px] mt-0.5 leading-snug">{dest.sub}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Left arrow */}
-            {sliderCanLeft && (
-              <button
-                type="button"
-                onClick={() => {
-                  const el = inspiredSliderRef.current;
-                  if (!el) return;
-                  const card = el.firstElementChild as HTMLElement;
-                  const step = card ? (card.offsetWidth + 12) * 2 : el.clientWidth / 5 * 2;
-                  el.scrollBy({ left: -step, behavior: 'smooth' });
-                }}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                aria-label="Previous destinations"
-              >
-                <ChevronRight className="w-4 h-4 text-gray-700 rotate-180" />
-              </button>
+            {/* ── Left arrow ── */}
+            {inspiredShowLeft && (
+              <div className="absolute left-0 top-0 bottom-0 w-14 bg-gradient-to-r from-white via-white/70 to-transparent z-10 pointer-events-none flex items-center">
+                <button
+                  type="button"
+                  onClick={() => scrollInspired(-1)}
+                  className="pointer-events-auto ml-1 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
+                  aria-label="Scroll left"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                </button>
+              </div>
             )}
 
-            {/* Right arrow */}
-            {sliderCanRight && (
-              <button
-                type="button"
-                onClick={() => {
-                  const el = inspiredSliderRef.current;
-                  if (!el) return;
-                  const card = el.firstElementChild as HTMLElement;
-                  const step = card ? (card.offsetWidth + 12) * 2 : el.clientWidth / 5 * 2;
-                  el.scrollBy({ left: step, behavior: 'smooth' });
-                }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                aria-label="Next destinations"
-              >
-                <ChevronRight className="w-4 h-4 text-gray-700" />
-              </button>
-            )}
+          <div
+            ref={inspiredSliderRef}
+            className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {INSPIRED_DESTS.map((dest) => {
+              const isSelected = selectedDest === dest.id;
+              return (
+                <button
+                  key={dest.id}
+                  type="button"
+                  onClick={() => setSelectedDest(dest.id)}
+                  className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none shrink-0 w-[45vw] max-w-[210px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] h-[260px] transition-all duration-200"
+                >
+                  {/* Photo */}
+                  <Image
+                    src={dest.img}
+                    alt={dest.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
+                    unoptimized
+                  />
+
+                  {/* Selected brand overlay */}
+                  <div
+                    className="absolute inset-0 transition-opacity duration-300"
+                    style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.28 : 0 }}
+                  />
+
+                  {/* Selected ring */}
+                  {isSelected && (
+                    <div className="absolute inset-0 rounded-2xl ring-2 ring-brand-500 ring-offset-0" />
+                  )}
+
+                  {/* City text */}
+                  <div className="absolute bottom-0 left-0 px-4 pb-4 text-left">
+                    <p className="font-bold text-white text-[18px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{dest.name}</p>
+                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">{dest.activities} activities</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+
+            {/* ── Right arrow ── */}
+            {inspiredShowRight && (
+              <div className="absolute right-0 top-0 bottom-0 w-14 bg-gradient-to-l from-white via-white/70 to-transparent z-10 pointer-events-none flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => scrollInspired(1)}
+                  className="pointer-events-auto mr-1 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+          </div>{/* end relative */}
+
         </div>
       </section>
 
@@ -767,11 +778,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       ════════════════════════════════════════════════════════════ */}
       <DynamicTourSections
         selectedDest={selectedDest}
-        cityName={
-          selectedDest === 'anywhere'
-            ? 'Thailand'
-            : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')
-        }
+        cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
       />
 
 {/* ════════════════════════════════════════════════════════════

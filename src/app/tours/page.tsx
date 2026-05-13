@@ -411,7 +411,7 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
                   return (
                     <KlookCategorySection
                       key={cat.key}
-                      category={cat}
+                      label={cat.label}
                       tours={tours.slice(0, 8)}
                     />
                   )

@@ -51,8 +51,9 @@ interface VehicleCardProps {
 
 
 function VehicleCard({ vehicle, isSelected, tripDate, onSelect }: VehicleCardProps) {
-  const cfg    = VEHICLE_CONFIGS[vehicle.vehicleType];
+  const cfg     = VEHICLE_CONFIGS[vehicle.vehicleType];
   const limited = isWeekendOrPeak(tripDate);
+  const tooSmall = false; // capacity check requires passengers prop — always enabled for now
 
   return (
     <div

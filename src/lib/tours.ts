@@ -88,7 +88,7 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'Best Seller',
     images: [
-      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
+      'https://images.unsplash.com/photo-1728017237938-8829b36c1850?w=800&q=80',
       'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
@@ -213,9 +213,9 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1516477294007-b48bb8233d7b?w=800&q=80',
+      'https://images.unsplash.com/photo-1598188475294-2359dda7c791?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
-      'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
     ],
     highlights: [
       'Wat Pho — 46-metre Reclining Buddha',
@@ -736,7 +736,7 @@ export const tours: Tour[] = [
     category: 'water',
     badge: 'New',
     images: [
-      'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
+      'https://images.unsplash.com/photo-1698305322603-77f2ea62d1f2?w=800&q=80',
       'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
@@ -974,9 +974,9 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1544919982-b61976f0ba43?w=800&q=80',
+      'https://images.unsplash.com/photo-1624806296367-33e24d6162ef?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
-      'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
+      'https://images.unsplash.com/photo-1588732807335-2132a3f9489e?w=800&q=80',
     ],
     highlights: [
       'Walk across the iconic Bridge on the River Kwai',
@@ -1214,8 +1214,8 @@ export const tours: Tour[] = [
     category: 'nature',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
-      'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
+      'https://images.unsplash.com/photo-1588732807335-2132a3f9489e?w=800&q=80',
+      'https://images.unsplash.com/photo-1698305322603-77f2ea62d1f2?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
     highlights: [
@@ -1468,7 +1468,7 @@ export const tours: Tour[] = [
     badge: 'Best Seller',
     images: [
       'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
+      'https://images.unsplash.com/photo-1588732807335-2132a3f9489e?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
     highlights: [

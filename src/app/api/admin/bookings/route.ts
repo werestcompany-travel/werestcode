@@ -29,15 +29,16 @@ export async function GET() {
     });
 
     // Aggregate stats
+    type BookingRow = { currentStatus: string; totalPrice: number };
     const total     = bookings.length;
-    const pending   = bookings.filter((b) => b.currentStatus === 'PENDING').length;
-    const active    = bookings.filter((b) =>
+    const pending   = bookings.filter((b: BookingRow) => b.currentStatus === 'PENDING').length;
+    const active    = bookings.filter((b: BookingRow) =>
       ['DRIVER_CONFIRMED', 'DRIVER_STANDBY', 'DRIVER_PICKED_UP'].includes(b.currentStatus),
     ).length;
-    const completed = bookings.filter((b) => b.currentStatus === 'COMPLETED').length;
+    const completed = bookings.filter((b: BookingRow) => b.currentStatus === 'COMPLETED').length;
     const revenue   = bookings
-      .filter((b) => b.currentStatus !== 'CANCELLED')
-      .reduce((sum, b) => sum + b.totalPrice, 0);
+      .filter((b: BookingRow) => b.currentStatus !== 'CANCELLED')
+      .reduce((sum: number, b: BookingRow) => sum + b.totalPrice, 0);
 
     return NextResponse.json({
       success: true,
