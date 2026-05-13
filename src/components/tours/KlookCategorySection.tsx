@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -25,14 +25,38 @@ const BADGE_STYLES: Record<string, string> = {
   'New':         'bg-[#2534ff]',
 }
 
-// Scroll by the full visible width so one click reveals the next set of cards
+const GAP = 12 // gap-3 in px
+
+function cardsToShow(containerW: number): number {
+  if (containerW >= 900) return 4
+  if (containerW >= 640) return 3
+  if (containerW >= 400) return 2
+  return 1
+}
 
 export default function KlookCategorySection({ category, tours }: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [canLeft,  setCanLeft]  = useState(false)
-  const [canRight, setCanRight] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const scrollRef  = useRef<HTMLDivElement>(null)
+  const [cardWidth, setCardWidth] = useState(260)   // initial SSR-safe default
+  const [canLeft,  setCanLeft]    = useState(false)
+  const [canRight, setCanRight]   = useState(false)
 
-  /* ── Update arrow visibility on scroll / mount ── */
+  /* ── Measure container → derive exact card width ── */
+  useLayoutEffect(() => {
+    if (!wrapperRef.current) return
+    const update = () => {
+      const w = wrapperRef.current?.clientWidth ?? 0
+      if (!w) return
+      const n = cardsToShow(w)
+      setCardWidth(Math.floor((w - (n - 1) * GAP) / n))
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(wrapperRef.current)
+    return () => ro.disconnect()
+  }, [])
+
+  /* ── Arrow visibility ── */
   const sync = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
@@ -45,13 +69,12 @@ export default function KlookCategorySection({ category, tours }: Props) {
     if (!el) return
     sync()
     el.addEventListener('scroll', sync, { passive: true })
-    // also re-sync on window resize
     window.addEventListener('resize', sync, { passive: true })
     return () => {
       el.removeEventListener('scroll', sync)
       window.removeEventListener('resize', sync)
     }
-  }, [sync])
+  }, [sync, cardWidth])   // re-sync after cardWidth changes
 
   const scroll = (dir: 'left' | 'right') => {
     const el = scrollRef.current
@@ -60,7 +83,7 @@ export default function KlookCategorySection({ category, tours }: Props) {
   }
 
   return (
-    <div className="mb-8 relative">
+    <div ref={wrapperRef} className="mb-8 relative">
 
       {/* ── Left fade + arrow ── */}
       {canLeft && (
@@ -89,14 +112,14 @@ export default function KlookCategorySection({ category, tours }: Props) {
           const catLabel = tour.category.replace(/-/g, ' ')
             .replace(/\b\w/g, c => c.toUpperCase())
 
-          // Use first 2 highlights as deal tags
           const dealTags = tour.highlights?.slice(0, 2) ?? []
 
           return (
             <Link
               key={tour.slug}
               href={`/tours/${tour.slug}`}
-              className="group shrink-0 w-[220px] sm:w-[calc(33.333%-8px)] lg:w-[calc(25%-9px)] flex flex-col rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
+              style={{ width: cardWidth, minWidth: cardWidth }}
+              className="group shrink-0 flex flex-col rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
             >
               {/* Image */}
               <div className="relative h-[160px] overflow-hidden shrink-0">
@@ -105,7 +128,7 @@ export default function KlookCategorySection({ category, tours }: Props) {
                     src={tour.images[0]}
                     alt={tour.title}
                     fill
-                    sizes="(max-width: 640px) 220px, (max-width: 1024px) 33vw, 25vw"
+                    sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     unoptimized
                   />
