@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star, ChevronRight } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { type Tour, formatTHB } from '@/lib/tours'
 
 interface CategoryConfig {
@@ -26,26 +26,7 @@ const BADGE_STYLES: Record<string, string> = {
 
 export default function KlookCategorySection({ category, tours }: Props) {
   return (
-    <div className="rounded-2xl p-5 mb-5" style={{ background: category.bg }}>
-
-      {/* ── Section header ──────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex items-center justify-center shrink-0 text-lg"
-            style={{ width: 36, height: 36, background: category.iconBg, borderRadius: 10 }}
-          >
-            <span role="img" aria-label={category.label}>{category.emoji}</span>
-          </div>
-          <span className="font-bold text-gray-900 text-base">{category.label}</span>
-        </div>
-        <Link
-          href={`/tours?category=${encodeURIComponent(category.key)}`}
-          className="text-[13px] text-gray-500 underline underline-offset-2 flex items-center gap-0.5 hover:text-gray-800 transition-colors"
-        >
-          See all <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
+    <div className="mb-8">
 
       {/* ── Horizontal card row ─────────────────────────────────────── */}
       <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
