@@ -120,50 +120,6 @@ const INSPIRED_DESTS = [
   { id: 'ayutthaya', name: 'Ayutthaya',   sub: 'Ancient temples & ruins',  haul: 'Short haul',   img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=600&q=80', wide: false },
 ];
 
-/* ── Places you may like data (per destination) ─────────────────────────── */
-type PlaceEntry = {
-  name: string; category: string; sub: string; img: string;
-  price: string; rating: number; reviews: number; booked: string;
-  badge?: string; originalPrice?: string; deals?: string[];
-};
-const PLACES_BY_DEST: Record<string, PlaceEntry[]> = {
-  anywhere: [
-    { name: 'Grand Palace & Emerald Buddha', category: 'Attraction', sub: 'Bangkok',    img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 18200, booked: '500K+', badge: 'Best seller',  originalPrice: '฿600',   deals: ['10% off', 'Audio guide'] },
-    { name: 'Phi Phi Islands Speedboat',     category: 'Day Trip',   sub: 'Phuket',    img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=400&q=80', price: '฿3,200',     rating: 4.9, reviews: 7846,  booked: '300K+', badge: 'Likely to sell out', deals: ['Buy 4 get 25% off'] },
-    { name: 'Airport Transfer BKK → City',  category: 'Transfer',   sub: 'Bangkok',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80', price: 'From ฿900', rating: 4.9, reviews: 15426, booked: '1M+',   badge: 'Top rated',   deals: ['Free waiting time'] },
-    { name: 'Elephant Sanctuary Day Trip',  category: 'Tour',       sub: 'Chiang Mai',img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,500',     rating: 4.8, reviews: 3200,  booked: '200K+', badge: 'Eco-friendly', deals: ['Lunch included'] },
-  ],
-  bangkok: [
-    { name: 'Grand Palace & Wat Phra Kaew',    category: 'Attraction', sub: 'Old Town',    img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 18200, booked: '500K+', badge: 'Best seller',  originalPrice: '฿600', deals: ['10% off'] },
-    { name: 'Damnoen Saduak Floating Market',  category: 'Day Trip',   sub: 'Ratchaburi',  img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80', price: '฿1,800',     rating: 4.8, reviews: 5400,  booked: '150K+',                         deals: ['Breakfast included'] },
-    { name: 'Suvarnabhumi Airport Transfer',   category: 'Transfer',   sub: 'BKK Airport', img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80', price: 'From ฿900', rating: 4.9, reviews: 15426, booked: '1M+',   badge: 'Top rated',   deals: ['Free waiting time'] },
-    { name: 'Bangkok Night Tour & Street Food',category: 'Tour',       sub: 'City Centre', img: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80', price: '฿2,200',     rating: 4.7, reviews: 2100,  booked: '80K+',  badge: 'New',          deals: ['Dinner included'] },
-  ],
-  phuket: [
-    { name: 'Phi Phi Islands Speedboat',   category: 'Day Trip', sub: 'Andaman Sea',  img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=400&q=80', price: '฿3,200',     rating: 4.9, reviews: 7846, booked: '300K+', badge: 'Likely to sell out', deals: ['Buy 4 get 25% off'] },
-    { name: 'Phuket Airport Transfer',     category: 'Transfer', sub: 'HKT Airport',  img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: 'From ฿800', rating: 4.9, reviews: 9200, booked: '400K+', badge: 'Top rated',           deals: ['Free waiting time'] },
-    { name: 'James Bond Island Tour',      category: 'Day Trip', sub: 'Phang Nga Bay',img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿2,800',     rating: 4.8, reviews: 4300, booked: '200K+', badge: 'Likely to sell out' },
-    { name: 'Old Phuket Town Exploration', category: 'Tour',     sub: 'Phuket Town',  img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: '฿1,200',     rating: 4.7, reviews: 1800, booked: '60K+' },
-  ],
-  chiangmai: [
-    { name: 'Elephant Nature Park',        category: 'Tour',     sub: 'Mae Taeng',   img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,500',     rating: 4.9, reviews: 3200, booked: '200K+', badge: 'Eco-friendly', deals: ['Lunch included'] },
-    { name: 'Chiang Mai Airport Transfer', category: 'Transfer', sub: 'CNX Airport', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: 'From ฿400', rating: 4.9, reviews: 5100, booked: '180K+', badge: 'Top rated',   deals: ['Free waiting time'] },
-    { name: 'Doi Inthanon National Park',  category: 'Day Trip', sub: 'Chom Thong',  img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80', price: '฿2,200',     rating: 4.8, reviews: 2800, booked: '100K+' },
-    { name: 'Night Bazaar & Street Food',  category: 'Tour',     sub: 'Old City',    img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80', price: '฿1,500',     rating: 4.7, reviews: 1400, booked: '50K+',                         deals: ['Dinner included'] },
-  ],
-  krabi: [
-    { name: '4 Islands Snorkeling Trip', category: 'Day Trip',   sub: 'Andaman Sea', img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿1,800',     rating: 4.9, reviews: 6200, booked: '250K+', badge: 'Best seller', deals: ['Lunch included'] },
-    { name: 'Krabi → Phuket Airport',   category: 'Transfer',   sub: 'HKT Airport', img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80', price: 'From ฿2,400',rating: 4.8, reviews: 2100, booked: '80K+',                        deals: ['Free waiting time'] },
-    { name: 'Ao Nang & Railay Cave',    category: 'Attraction', sub: 'Ao Nang',     img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿200',       rating: 4.7, reviews: 3400, booked: '120K+',                       originalPrice: '฿250', deals: ['20% off'] },
-    { name: 'Tiger Cave Temple Hike',   category: 'Tour',       sub: 'Krabi Town',  img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=80', price: '฿1,200',     rating: 4.8, reviews: 1900, booked: '70K+' },
-  ],
-  pattaya: [
-    { name: 'Sanctuary of Truth Tour',    category: 'Attraction', sub: 'Pattaya',          img: 'https://images.unsplash.com/photo-1562802378-063ec186a863?w=400&q=80', price: '฿500',       rating: 4.9, reviews: 4800, booked: '180K+', badge: 'Best seller', originalPrice: '฿600', deals: ['10% off'] },
-    { name: 'Bangkok → Pattaya Transfer', category: 'Transfer',   sub: 'BKK → Pattaya',   img: 'https://images.unsplash.com/photo-1548625361-58a9d86b0e5b?w=400&q=80', price: 'From ฿1,800',rating: 4.8, reviews: 7200, booked: '350K+', badge: 'Top rated',   deals: ['Free waiting time'] },
-    { name: 'Coral Island Day Trip',      category: 'Day Trip',   sub: 'Gulf of Thailand', img: 'https://images.unsplash.com/photo-1595435934349-8d929fbb7bc5?w=400&q=80', price: '฿2,200',     rating: 4.7, reviews: 2900, booked: '100K+',                      deals: ['Lunch included'] },
-    { name: 'Pattaya City & Temple Tour', category: 'Tour',       sub: 'City Centre',      img: 'https://images.unsplash.com/photo-1548625361-58a9d86b0e5b?w=400&q=80', price: '฿1,500',     rating: 4.8, reviews: 1600, booked: '55K+',                       deals: ['Guide included'] },
-  ],
-};
 
 /* ── Car classes ─────────────────────────────────────────────────────────── */
 const CAR_CLASSES = [
@@ -807,148 +763,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          THINGS TO DO IN [CITY]
+          THINGS TO DO IN [CITY] — powered by DynamicTourSections
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="places-heading" className="py-10 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <h2 id="places-heading" className="text-xl font-bold text-gray-900">
-                Things to do in{' '}
-                <span key={selectedDest} className="text-brand-600 animate-fade-in">
-                  {selectedDest === 'anywhere'
-                    ? 'Thailand'
-                    : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')}
-                </span>
-              </h2>
-              <p className="text-gray-400 text-sm mt-0.5">Handpicked experiences — book instantly</p>
-            </div>
-            <Link
-              href="/attractions"
-              className="hidden lg:flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0"
-            >
-              See all <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Cards grid */}
-          <div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-300"
-            style={{ opacity: placesVisible ? 1 : 0 }}
-          >
-            {(PLACES_BY_DEST[selectedDest] ?? PLACES_BY_DEST.anywhere).map((place) => (
-              <div key={place.name} className="relative group flex flex-col">
-                {/* Card — full-height link */}
-                <Link
-                  href={`/results?pickup_address=${encodeURIComponent(place.category === 'Transfer' ? '' : place.sub)}`}
-                  className="flex flex-col h-full rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
-                >
-                  {/* Image */}
-                  <div className="relative h-32 lg:h-44 overflow-hidden shrink-0">
-                    <Image
-                      src={place.img}
-                      alt={place.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 50vw, 25vw"
-                      unoptimized
-                    />
-                    {/* Badge — top-left */}
-                    {place.badge && (
-                      <div className="absolute top-2.5 left-2.5 z-10">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md text-white shadow-sm ${
-                          place.badge === 'Likely to sell out' ? 'bg-amber-500' :
-                          place.badge === 'New'                ? 'bg-green-600' :
-                          place.badge === 'Eco-friendly'       ? 'bg-emerald-700' :
-                          'bg-brand-600'
-                        }`}>
-                          {place.badge}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-3 flex flex-col flex-1">
-                    {/* Category · Location */}
-                    <p className="text-gray-400 text-[11px] mb-1.5">
-                      {place.category} · {place.sub}
-                    </p>
-
-                    {/* Title */}
-                    <p className="font-bold text-gray-900 text-[14px] leading-snug line-clamp-2 group-hover:text-brand-700 transition-colors mb-1.5 flex-1">
-                      {place.name}
-                    </p>
-
-                    {/* Availability */}
-                    <p className="text-[11px] text-green-600 font-medium mb-1.5">
-                      Book now for today
-                    </p>
-
-                    {/* Rating + booked count */}
-                    <div className="flex items-center flex-wrap gap-x-1 gap-y-0.5 mb-2">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
-                      <span className="text-[11px] font-bold text-gray-800">{place.rating}</span>
-                      <span className="text-[11px] text-gray-400">({place.reviews.toLocaleString()})</span>
-                      <span className="text-[11px] text-gray-300">·</span>
-                      <span className="text-[11px] text-gray-400">{place.booked} booked</span>
-                    </div>
-
-                    {/* Price row */}
-                    <div className="flex items-baseline gap-1.5 mb-2">
-                      <span className="font-bold text-gray-900 text-[15px]">{place.price}</span>
-                      {place.originalPrice && (
-                        <span className="text-[12px] text-gray-400 line-through">{place.originalPrice}</span>
-                      )}
-                    </div>
-
-                    {/* Deal tags */}
-                    {place.deals && place.deals.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {place.deals.map(deal => (
-                          <span
-                            key={deal}
-                            className="text-[10px] font-bold bg-brand-50 text-brand-700 border border-brand-200 px-1.5 py-0.5 rounded"
-                          >
-                            {deal}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-
-                {/* Heart / wishlist — outside <Link> to avoid nested interactive elements */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!isLoggedIn) { openModal('email'); return; }
-                    await toggle({ itemId: `place:${place.name}`, itemName: place.name, itemUrl: '/attractions', itemType: 'attraction' });
-                  }}
-                  className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors z-10"
-                  aria-label={isWishlisted(`place:${place.name}`) ? 'Remove from wishlist' : 'Add to wishlist'}
-                >
-                  <Heart className={`w-3.5 h-3.5 transition-colors ${isWishlisted(`place:${place.name}`) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile — see all link */}
-          <div className="lg:hidden mt-5 text-center">
-            <Link
-              href="/attractions"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
-            >
-              See all experiences <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Dynamic tour sections — "Things to do in [City]" */}
-      <DynamicTourSections />
+      <DynamicTourSections
+        selectedDest={selectedDest}
+        cityName={
+          selectedDest === 'anywhere'
+            ? 'Thailand'
+            : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')
+        }
+      />
 
       {/* ════════════════════════════════════════════════════════════
           DISCOVER THE WONDERS OF THAILAND — full-width banner
