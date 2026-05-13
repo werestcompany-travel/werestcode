@@ -40,7 +40,7 @@ export default function SearchTabs({
     <div className="relative w-full">
 
       {/* ── Floating pill tab bar — hidden on mobile (replaced by hero circular icons), visible sm+ ── */}
-      <div className="relative z-10 hidden sm:flex justify-center overflow-x-auto [&::-webkit-scrollbar]:hidden px-4 sm:px-0">
+      <div className="relative z-10 hidden lg:flex justify-center overflow-x-auto [&::-webkit-scrollbar]:hidden px-4 lg:px-0">
         <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full">
           {TABS.map(({ id, label, Icon, badge, href }) => {
             const isActive = activeTab === id;
@@ -75,8 +75,8 @@ export default function SearchTabs({
       </div>
 
       {/* ── White search card — on mobile: no overlap margin; on sm+: overlaps under the pill tab bar ── */}
-      <div className="mt-0 sm:-mt-5 relative z-0 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-        <div className="pt-4 sm:pt-7">
+      <div className="mt-0 lg:-mt-5 relative z-0 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+        <div className="pt-4 lg:pt-7">
           {activeTab === 'private-ride' && <PrivateRideForm prefillRoute={prefillRoute} />}
           {activeTab === 'tours'        && <ToursForm />}
           {activeTab === 'tickets'      && <TicketsForm />}

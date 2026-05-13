@@ -26,36 +26,12 @@ function buildSections(): TourSection[] {
       seeAllHref: '/tours?location=bangkok',
     },
     {
-      title: 'Phuket Experiences',
-      subtitle: 'Island adventures and beach escapes',
-      filterKey: 'location',
-      filterValue: 'phuket',
-      filterType: 'location',
-      seeAllHref: '/tours?location=phuket',
-    },
-    {
-      title: 'Cultural Tours',
-      subtitle: 'Immerse yourself in Thai history and tradition',
-      filterKey: 'category',
-      filterValue: 'cultural',
-      filterType: 'category',
-      seeAllHref: '/tours?category=cultural',
-    },
-    {
       title: 'Day Trips & Excursions',
       subtitle: 'Explore beyond the city on a full-day adventure',
       filterKey: 'category',
       filterValue: 'day-trip',
       filterType: 'category',
       seeAllHref: '/tours?category=day-trip',
-    },
-    {
-      title: 'Top Rated Experiences',
-      subtitle: 'Highest-rated tours loved by travellers',
-      filterKey: 'sort',
-      filterValue: 'rating',
-      filterType: 'featured',
-      seeAllHref: '/tours?sort=rating',
     },
   ]
 

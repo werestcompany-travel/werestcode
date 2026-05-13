@@ -1,17 +1,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Suspense } from 'react'
+import { LayoutGrid, ChevronRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TourGrid from '@/components/tours/TourGrid'
-import TourSearchInput from '@/components/tours/TourSearchInput'
-import TourFilterBar from '@/components/tours/TourFilterBar'
-import TourFiltersClient from '@/components/tours/TourFiltersClient'
-import TourSidebarStatic from '@/components/tours/TourSidebarStatic'
+import TripHeroSearch from '@/components/tours/TripHeroSearch'
+import KlookCategorySection from '@/components/tours/KlookCategorySection'
 import { tours as TOURS, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
-import { Sparkles } from 'lucide-react'
-import type { FilterFacets } from '@/components/tours/TourFiltersClient'
+
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -41,6 +40,15 @@ const LOCATION_MAP: Record<string, string> = {
   'pattaya':    'Pattaya',
   'chiang-rai': 'Chiang Rai',
 }
+
+const CATEGORY_CONFIGS = [
+  { key: 'day-trip',  label: 'Day trips',   emoji: '🗓',  iconBg: '#FF5722', bg: '#FFF3EC' },
+  { key: 'cultural',  label: 'Cultural',    emoji: '🏛️',  iconBg: '#7C3AED', bg: '#F3E5F5' },
+  { key: 'adventure', label: 'Adventure',   emoji: '⛺',  iconBg: '#16A34A', bg: '#ECFDF5' },
+  { key: 'food',      label: 'Food & Drink',emoji: '🍽️',  iconBg: '#D97706', bg: '#FFFBEB' },
+  { key: 'nature',    label: 'Nature',      emoji: '🌿',  iconBg: '#15803D', bg: '#F0FDF4' },
+  { key: 'water',     label: 'Water',       emoji: '🌊',  iconBg: '#1D4ED8', bg: '#EFF6FF' },
+] as const
 
 // ─── DB fetch ─────────────────────────────────────────────────────────────────
 
@@ -204,84 +212,6 @@ function filterTours(tours: Tour[], params: FilterParams): Tour[] {
   return results
 }
 
-// ─── Build facets ─────────────────────────────────────────────────────────────
-
-function buildFacets(allTours: Tour[], activeFilters: { category?: string; location?: string }): FilterFacets {
-  // For cross-filtering: if location is active, category counts reflect only those tours
-  // If category is active, location counts reflect only those tours
-
-  const baseForCategories = activeFilters.location
-    ? filterTours(allTours, { location: activeFilters.location })
-    : allTours
-
-  const baseForLocations = activeFilters.category
-    ? filterTours(allTours, { category: activeFilters.category })
-    : allTours
-
-  // Category facets
-  const categoryCounts = new Map<string, number>()
-  baseForCategories.forEach(t => {
-    categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1)
-  })
-  const categories = Object.entries(CATEGORY_MAP)
-    .map(([key, label]) => ({ key, label, count: categoryCounts.get(key) ?? 0 }))
-    .filter(c => c.count > 0)
-
-  // Location facets — match against cities[]
-  const locationCounts = new Map<string, number>()
-  const locationKeys   = Object.keys(LOCATION_MAP)
-  baseForLocations.forEach(t => {
-    locationKeys.forEach(locKey => {
-      const normalized = locKey.replace(/-/g, ' ')
-      if (
-        t.cities.some(c => c.toLowerCase().includes(normalized) || c.toLowerCase().includes(locKey)) ||
-        t.location.toLowerCase().includes(normalized) ||
-        t.location.toLowerCase().includes(locKey)
-      ) {
-        locationCounts.set(locKey, (locationCounts.get(locKey) ?? 0) + 1)
-      }
-    })
-  })
-  const locations = Object.entries(LOCATION_MAP)
-    .map(([key, label]) => ({ key, label, count: locationCounts.get(key) ?? 0 }))
-    .filter(l => l.count > 0)
-
-  // Duration facets
-  const durationCounts = { 'half-day': 0, 'full-day': 0, 'multi-day': 0 }
-  allTours.forEach(t => {
-    const hours = parseDurationHours(t.duration)
-    const dStr  = t.duration.toLowerCase()
-    if (dStr.includes('hour') && hours !== null && hours < 5)             durationCounts['half-day']++
-    else if ((hours !== null && hours >= 5 && hours <= 10) || dStr.includes('full day')) durationCounts['full-day']++
-    else {
-      const dayMatch = t.duration.match(/(\d+)\s*day/i)
-      if (dayMatch && parseInt(dayMatch[1]) > 1) durationCounts['multi-day']++
-    }
-  })
-  const durations = [
-    { key: 'half-day',  label: 'Half Day (< 5h)',  count: durationCounts['half-day'] },
-    { key: 'full-day',  label: 'Full Day (5–10h)', count: durationCounts['full-day'] },
-    { key: 'multi-day', label: 'Multi-Day',         count: durationCounts['multi-day'] },
-  ]
-
-  // Price range
-  let min = Infinity, max = 0
-  allTours.forEach(t => {
-    t.options.forEach(o => {
-      if (o.pricePerPerson < min) min = o.pricePerPerson
-      if (o.pricePerPerson > max) max = o.pricePerPerson
-    })
-  })
-
-  return {
-    categories,
-    locations,
-    durations,
-    priceRange: { min: min === Infinity ? 0 : min, max: max === 0 ? 10000 : max },
-    total: allTours.length,
-  }
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface ToursPageProps {
@@ -338,9 +268,12 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
     rating,
   })
 
-  const facets = buildFacets(allTours, {
-    category: resolvedCategory,
-    location: resolvedLocation,
+  // Group all tours by category for Klook sections
+  const categoryGroups = new Map<string, Tour[]>()
+  allTours.forEach(t => {
+    const arr = categoryGroups.get(t.category) ?? []
+    arr.push(t)
+    categoryGroups.set(t.category, arr)
   })
 
   const locationLabel = resolvedLocation
@@ -358,117 +291,184 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
 
       <main className="min-h-screen bg-gray-50">
 
-        {/* ── Hero ────────────────────────────────────────────────────────── */}
-        <section className="bg-[#2534ff] pt-24 pb-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ── Trip.com-style Hero ───────────────────────────────────────── */}
+        <section className="relative overflow-hidden" style={{ minHeight: 355 }}>
 
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-5 h-5 text-white/70" />
-                  <p className="text-white/70 text-sm font-semibold uppercase tracking-wider">Curated Experiences</p>
-                </div>
-                <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-                  Experiences & Day Trips
-                </h1>
-                <p className="text-white/70 text-base mt-2 max-w-xl">
-                  Hand-picked tours across Thailand — expert guides, free cancellation, instant confirmation.
-                </p>
-              </div>
-
-              {/* Search input */}
-              <div className="sm:w-72 shrink-0">
-                <Suspense>
-                  <TourSearchInput />
-                </Suspense>
-              </div>
-            </div>
-
+          {/* Mountain landscape background */}
+          <div className="absolute inset-0">
+            <Image
+              src="https://images.unsplash.com/photo-1531210483974-4f8c1f33fd35?w=1920&q=80"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+            {/* Dark gradient overlay — heavier on left for text legibility */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(105deg, rgba(15,10,55,0.72) 0%, rgba(30,20,80,0.55) 45%, rgba(60,40,120,0.28) 100%)' }}
+            />
           </div>
+
+          {/* Hero content */}
+          <div
+            className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pb-12"
+            style={{ paddingTop: 112 }}
+          >
+            {/* Title with orange dot */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-2 drop-shadow">
+              Attractions &amp; Tours
+              <span style={{ color: '#FF6D00' }}>.</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-white/80 text-base sm:text-lg font-normal mb-6">
+              Discover places and things to do
+            </p>
+
+            {/* Trip.com-style search bar */}
+            <Suspense fallback={
+              <div
+                className="flex items-center bg-white rounded-xl overflow-hidden shadow-xl"
+                style={{ height: 56, maxWidth: 780 }}
+              >
+                <div className="flex-1 h-5 mx-5 rounded bg-gray-100" />
+                <div className="w-28 h-full shrink-0" style={{ background: '#1677FF' }} />
+              </div>
+            }>
+              <TripHeroSearch />
+            </Suspense>
+          </div>
+
+          {/* White curved bottom — slides content up smoothly */}
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-white"
+            style={{ height: 32, borderRadius: '32px 32px 0 0' }}
+          />
         </section>
 
-        {/* ── Sticky Filter Bar (Klook-style pill row) ─────────────────────── */}
-        <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <Suspense>
-              <TourFilterBar />
-            </Suspense>
-          </div>
-        </div>
+        {/* ── Tour listing ──────────────────────────────────────────────────── */}
+        <div className="bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* ── Desktop Horizontal Dropdown Filter Bar ────────────────────────── */}
-        <div className="hidden lg:block bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
-            <Suspense>
-              <TourFiltersClient facets={facets} totalResults={filteredTours.length} />
-            </Suspense>
-          </div>
-        </div>
+            {hasFilters ? (
+              /* ── Filtered view ── */
+              <div className="py-8 pb-24">
+                {/* Result count */}
+                <p className="text-sm text-gray-600 mb-5">
+                  {filteredTours.length > 0 ? (
+                    <>
+                      <strong className="text-gray-900">{filteredTours.length}</strong>{' '}
+                      experience{filteredTours.length !== 1 ? 's' : ''}
+                      {locationLabel && (
+                        <> in <strong className="text-[#2534ff]">{locationLabel}</strong></>
+                      )}
+                      {categoryLabel && (
+                        <> · <strong>{categoryLabel}</strong></>
+                      )}
+                      {q && (
+                        <> matching &ldquo;<strong className="text-[#2534ff]">{q}</strong>&rdquo;</>
+                      )}
+                    </>
+                  ) : (
+                    <strong className="text-gray-900">No experiences found</strong>
+                  )}
+                </p>
 
-        {/* ── 2-Column Layout ───────────────────────────────────────────────── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
-          <div className="flex gap-8">
-
-            {/* Left sidebar — desktop only */}
-            <aside className="hidden lg:block w-72 shrink-0">
-              <div className="sticky top-40 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h2 className="text-sm font-bold text-gray-900 mb-4">Filter Results</h2>
-                <Suspense>
-                  <TourSidebarStatic facets={facets} />
-                </Suspense>
-              </div>
-            </aside>
-
-            {/* Main content */}
-            <div className="flex-1 min-w-0">
-
-              {/* Result count + active context */}
-              <p className="text-sm text-gray-600 mb-5">
-                {filteredTours.length > 0 ? (
-                  <>
-                    <strong className="text-gray-900">{filteredTours.length}</strong>{' '}
-                    experience{filteredTours.length !== 1 ? 's' : ''}
-                    {locationLabel && (
-                      <> in <strong className="text-[#2534ff]">{locationLabel}</strong></>
-                    )}
-                    {categoryLabel && (
-                      <> · <strong>{categoryLabel}</strong></>
-                    )}
-                    {q && (
-                      <> matching &ldquo;<strong className="text-[#2534ff]">{q}</strong>&rdquo;</>
-                    )}
-                  </>
+                {/* Tour grid or empty state */}
+                {filteredTours.length === 0 ? (
+                  <div className="text-center py-20">
+                    <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
+                    <p className="text-gray-500 mb-6">
+                      {q
+                        ? `We couldn't find experiences matching "${q}". Try different keywords.`
+                        : resolvedLocation
+                        ? `No experiences available in "${locationLabel}" yet.`
+                        : 'No experiences match these filters.'}
+                    </p>
+                    <Link
+                      href="/tours"
+                      className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#1e2ce6] transition-colors text-sm"
+                    >
+                      Browse all experiences
+                    </Link>
+                  </div>
                 ) : (
-                  <strong className="text-gray-900">No experiences found</strong>
+                  <TourGrid tours={filteredTours} />
                 )}
-              </p>
+              </div>
+            ) : (
+              /* ── Klook grouped sections view ── */
+              <div className="py-10">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Unmissable experiences</h2>
 
-              {/* Tour grid or empty state */}
-              {filteredTours.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
-                  <p className="text-gray-500 mb-6">
-                    {q
-                      ? `We couldn't find experiences matching "${q}". Try different keywords.`
-                      : resolvedLocation
-                      ? `No experiences available in "${locationLabel}" yet.`
-                      : 'No experiences match these filters.'}
-                  </p>
+                {/* Category panels */}
+                {CATEGORY_CONFIGS.map(cat => {
+                  const tours = categoryGroups.get(cat.key) ?? []
+                  if (!tours.length) return null
+                  return (
+                    <KlookCategorySection
+                      key={cat.key}
+                      category={cat}
+                      tours={tours.slice(0, 8)}
+                    />
+                  )
+                })}
+
+                {/* Explore all button */}
+                <div className="flex justify-center mt-4 mb-10">
                   <Link
-                    href="/tours"
-                    className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#1e2ce6] transition-colors text-sm"
+                    href="/tours?sort=popular"
+                    className="flex items-center gap-2 border border-gray-300 rounded-full px-8 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    Browse all experiences
+                    <LayoutGrid className="w-4 h-4" />
+                    Explore all experiences
+                    <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
-              ) : (
-                <TourGrid tours={filteredTours} />
-              )}
 
-              {/* Popular destination shortcuts — only when no filters active */}
-              {!hasFilters && filteredTours.length > 0 && (
-                <div className="mt-12 pt-10 border-t border-gray-200">
+                {/* Promo codes section */}
+                <div className="border border-gray-100 rounded-2xl p-5 mb-8">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <p className="font-bold text-gray-900 text-[15px]">
+                        <span className="mr-1.5">⚡</span>Promo codes
+                      </p>
+                      <p className="text-gray-400 text-[13px] mt-0.5">Redeem and save on bookings</p>
+                    </div>
+                    <Link
+                      href="/tours"
+                      className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
+                    >
+                      View all
+                    </Link>
+                  </div>
+
+                  {/* Promo pills */}
+                  <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                    {[
+                      { top: '10% off',   bottom: 'No min. spend' },
+                      { top: '6% off',    bottom: 'Min. ฿3,000' },
+                      { top: '5% off',    bottom: 'Min. ฿1,500' },
+                      { top: 'Free cancel', bottom: 'On select tours' },
+                      { top: '฿200 off',  bottom: 'Min. ฿5,000' },
+                    ].map((pill) => (
+                      <div
+                        key={pill.top + pill.bottom}
+                        className="border border-red-200 rounded-lg px-3 py-2 text-center shrink-0 w-[110px]"
+                      >
+                        <p className="text-red-500 font-bold text-sm">{pill.top}</p>
+                        <p className="text-gray-400 text-[11px] mt-0.5">{pill.bottom}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Browse by destination */}
+                <div className="mt-4 pt-10 border-t border-gray-200 mb-8">
                   <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Browse by destination</p>
                   <div className="flex flex-wrap gap-3">
                     {Object.entries(LOCATION_MAP).map(([key, label]) => (
@@ -482,8 +482,9 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
           </div>
         </div>
       </main>

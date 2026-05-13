@@ -246,7 +246,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     function measure() {
       if (!sliderRef.current) return;
       const w   = sliderRef.current.offsetWidth;
-      const ipv = window.innerWidth >= 640 ? 3 : 1;
+      const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
       setSliderStep((w + 12) / ipv); // 12 = gap-3
     }
     measure();
@@ -255,7 +255,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   }, []);
 
   useEffect(() => {
-    const ipv = window.innerWidth >= 640 ? 3 : 1;
+    const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
     const max = PROMO_BANNERS.length - ipv;
     const t = setInterval(() => setSliderIdx(i => i >= max ? 0 : i + 1), 3000);
     return () => clearInterval(t);
@@ -286,7 +286,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     if (trackRef.current) trackRef.current.style.transition = 'transform 500ms ease-in-out';
     if (!isDragging.current) return;
     const delta = touchOffset.current;
-    const ipv   = window.innerWidth >= 640 ? 3 : 1;
+    const ipv   = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
     const max   = PROMO_BANNERS.length - ipv;
     let newIdx  = sliderIdx;
     if (delta < -50 && sliderIdx < max) newIdx = sliderIdx + 1;
@@ -434,14 +434,14 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Hero" className="mb-0 sm:mb-[30px]">
+      <section aria-label="Hero" className="mb-0 lg:mb-[30px]">
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden md:overflow-hidden pt-16 relative bg-white sm:bg-transparent min-h-0 sm:min-h-[500px] md:min-h-[580px]"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px]"
         >
           {/* Background landscape — hidden on mobile, visible sm+ */}
-          <div className="hidden sm:block absolute inset-0">
+          <div className="hidden lg:block absolute inset-0">
             <Image
               src="/images/hero-bg.jpg"
               alt=""
@@ -452,9 +452,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             />
           </div>
           {/* Blue gradient overlay — hidden on mobile, visible sm+ */}
-          <div className="hidden sm:block absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
+          <div className="hidden lg:block absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
           {/* Mobile: Trip.com-style icon grid (4-column, 2-row) */}
-          <div className="relative z-10 md:hidden w-full px-3 pt-[18px] pb-0 shrink-0">
+          <div className="relative z-10 lg:hidden w-full px-3 pt-[18px] pb-0 shrink-0">
             <div className="grid grid-cols-4 gap-y-5">
               {SERVICE_TABS.map((tab, idx) => {
                 const Icon   = tab.icon;
@@ -466,13 +466,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 const circleClass = isPrimary
                   ? 'bg-[#2534ff]'
                   : active
-                    ? 'bg-gray-200 ring-2 ring-brand-300 sm:bg-white/30 sm:backdrop-blur-sm sm:ring-white/60'
-                    : 'bg-gray-100 border border-gray-200 sm:bg-white/15 sm:backdrop-blur-sm sm:border-white/30';
+                    ? 'bg-gray-200 ring-2 ring-brand-300 lg:bg-white/30 lg:backdrop-blur-sm lg:ring-white/60'
+                    : 'bg-gray-100 border border-gray-200 lg:bg-white/15 lg:backdrop-blur-sm lg:border-white/30';
 
                 const content = (
                   <>
                     <div className={`relative w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto transition-all duration-200 ${circleClass}`}>
-                      <Icon className={`w-[26px] h-[26px] ${isPrimary ? 'text-white' : 'text-brand-600 sm:text-white'}`} />
+                      <Icon className={`w-[26px] h-[26px] ${isPrimary ? 'text-white' : 'text-brand-600 lg:text-white'}`} />
                       {tab.badge && (
                         <span className={`absolute -top-0.5 -right-0.5 text-[8px] font-black px-1 py-0.5 rounded-full leading-none ${
                           tab.badgeColor === 'red'   ? 'bg-red-500 text-white'   :
@@ -482,7 +482,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                         }`}>{tab.badge}</span>
                       )}
                     </div>
-                    <p className="mt-2 text-[11px] font-semibold leading-tight text-center text-gray-700 sm:text-white/90 px-0.5">
+                    <p className="mt-2 text-[11px] font-semibold leading-tight text-center text-gray-700 lg:text-white/90 px-0.5">
                       {tab.label}
                     </p>
                   </>
@@ -502,10 +502,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           {/* Central content — desktop only */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-0 sm:py-8 md:py-12 flex flex-col items-center gap-3 sm:gap-5 text-center">
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 lg:px-6 py-0 lg:py-12 flex flex-col items-center gap-3 lg:gap-5 text-center">
 
             {/* Title — hidden on mobile */}
-            <h1 className="hidden sm:block text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+            <h1 className="hidden lg:block text-2xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
               {activeService === 'transfer'    && <><span className="block">Your Thailand Journey</span><span className="block">Starts Here</span></>}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
@@ -516,21 +516,21 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             </h1>
 
             {/* Trust badges — hidden on mobile */}
-            <div className="hidden sm:flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-5 gap-y-1 text-white/80 text-[11px] sm:text-[13px] font-medium">
+            <div className="hidden lg:flex flex-wrap items-center justify-center gap-x-3 lg:gap-x-5 gap-y-1 text-white/80 text-[11px] lg:text-[13px] font-medium">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Secure booking</span>
-              <span className="text-white/30 hidden sm:block">|</span>
+              <span className="text-white/30 hidden lg:block">|</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Support in approx. 30s</span>
-              <span className="text-white/30 hidden sm:block">|</span>
+              <span className="text-white/30 hidden lg:block">|</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Free cancellation</span>
             </div>
 
             {/* Search container — hidden on mobile, visible on sm+ */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="hidden sm:block w-full my-3 sm:my-[30px]">
+              <div className="hidden lg:block w-full my-3 lg:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
               </div>
             ) : (
-              <div className="hidden sm:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
+              <div className="hidden lg:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
                 {activeService === 'dinner'  && <Ship     className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'group'   && <Users    className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'rewards' && <Gift     className="w-12 h-12 text-amber-400 mx-auto mb-4" />}
@@ -563,16 +563,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           2. NEW USER EXCLUSIVE
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 sm:pt-7">
+      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 lg:pt-7">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
           {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 lg:grid lg:grid-cols-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {NEW_USER_CARDS.map((c) => {
-              const mobileCard = 'shrink-0 w-[75vw] max-w-[264px] snap-start sm:w-auto sm:max-w-none';
+              const mobileCard = 'shrink-0 w-[75vw] max-w-[264px] snap-start lg:w-auto lg:max-w-none';
               const cls = c.highlight
-                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px] sm:min-h-[148px] ${mobileCard}`
-                : `group flex flex-col justify-between rounded-2xl p-4 sm:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] sm:min-h-[148px] bg-white ${mobileCard}`;
+                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 lg:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px] ${mobileCard}`
+                : `group flex flex-col justify-between rounded-2xl p-4 lg:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] bg-white ${mobileCard}`;
 
               const inner = c.highlight ? (
                 <>
@@ -609,7 +609,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               );
             })}
             {/* Trailing spacer so last card doesn't flush against screen edge on mobile */}
-            <div className="shrink-0 w-1 sm:hidden" aria-hidden="true" />
+            <div className="shrink-0 w-1 lg:hidden" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -626,7 +626,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               type="button"
               aria-label="Previous"
               onClick={() => {
-                const ipv = window.innerWidth >= 640 ? 3 : 1;
+                const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
                 const max = PROMO_BANNERS.length - ipv;
                 setSliderIdx(i => i <= 0 ? max : i - 1);
               }}
@@ -640,7 +640,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               type="button"
               aria-label="Next"
               onClick={() => {
-                const ipv = window.innerWidth >= 640 ? 3 : 1;
+                const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
                 const max = PROMO_BANNERS.length - ipv;
                 setSliderIdx(i => i >= max ? 0 : i + 1);
               }}
@@ -825,7 +825,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             </div>
             <Link
               href="/attractions"
-              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0"
+              className="hidden lg:flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0"
             >
               See all <ArrowRight className="w-4 h-4" />
             </Link>
@@ -833,7 +833,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
           {/* Cards grid */}
           <div
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4 transition-opacity duration-300"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-300"
             style={{ opacity: placesVisible ? 1 : 0 }}
           >
             {(PLACES_BY_DEST[selectedDest] ?? PLACES_BY_DEST.anywhere).map((place) => (
@@ -844,7 +844,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   className="flex flex-col h-full rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-brand-100 transition-all duration-300"
                 >
                   {/* Image */}
-                  <div className="relative h-32 sm:h-44 overflow-hidden shrink-0">
+                  <div className="relative h-32 lg:h-44 overflow-hidden shrink-0">
                     <Image
                       src={place.img}
                       alt={place.name}
@@ -935,7 +935,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           {/* Mobile — see all link */}
-          <div className="sm:hidden mt-5 text-center">
+          <div className="lg:hidden mt-5 text-center">
             <Link
               href="/attractions"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
@@ -976,14 +976,14 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 sm:py-8 bg-white">
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="text-center mb-2 sm:mb-4">
+          <div className="text-center mb-2 lg:mb-6">
             <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-3 py-0 sm:px-6 sm:py-2">
-          <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible sm:gap-8 lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="bg-white rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
+          <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -993,7 +993,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[55vw] max-w-[220px] snap-start sm:w-auto sm:max-w-none flex flex-col items-center text-center py-1 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[55vw] max-w-[220px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-1 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
                   <div className="relative w-full mb-1" style={{ height: 'clamp(130px, 30vw, 338px)' }}>
