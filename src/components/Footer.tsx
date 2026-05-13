@@ -29,9 +29,10 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Services</h3>
             <ul className="space-y-2 text-sm">
-              <li><span className="text-gray-400">Private Transfers</span></li>
-              <li className="flex items-center gap-1.5"><span className="text-gray-500">Tours</span> <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">Soon</span></li>
-              <li className="flex items-center gap-1.5"><span className="text-gray-500">Attraction Tickets</span> <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">Soon</span></li>
+              <li><Link href="/transfers" className="hover:text-white transition-colors">Private Transfers</Link></li>
+              <li><Link href="/airport-transfers" className="hover:text-white transition-colors">Airport Transfers</Link></li>
+              <li><Link href="/tours" className="hover:text-white transition-colors">Tours &amp; Day Trips</Link></li>
+              <li><Link href="/attractions" className="hover:text-white transition-colors">Attraction Tickets</Link></li>
             </ul>
           </div>
 
@@ -41,9 +42,10 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors">Travel Blog</Link></li>
-              <li><Link href="/attractions" className="hover:text-white transition-colors">Attractions</Link></li>
+              <li><Link href="/booking" className="hover:text-white transition-colors">Book a Transfer</Link></li>
               <li><Link href="/tracking" className="hover:text-white transition-colors">Track Booking</Link></li>
               <li><Link href="/deals" className="hover:text-white transition-colors">Deals &amp; Offers</Link></li>
+              <li><Link href="/inquiry" className="hover:text-white transition-colors">Contact Us</Link></li>
               <li><Link href="/partners" className="hover:text-white transition-colors">Partner Program</Link></li>
               <li><Link href="/corporate" className="hover:text-white transition-colors">For Business / Corporate</Link></li>
               <li><Link href="/gift-vouchers" className="hover:text-white transition-colors">Gift Vouchers</Link></li>
