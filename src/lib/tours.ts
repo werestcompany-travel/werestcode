@@ -88,8 +88,8 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'Best Seller',
     images: [
-      'https://images.unsplash.com/photo-1563492065-74e5b4b17f6d?w=800&q=80',
-      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
+      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
     highlights: [
@@ -213,8 +213,8 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
-      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
+      'https://images.unsplash.com/photo-1516477294007-b48bb8233d7b?w=800&q=80',
+      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
       'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
     ],
     highlights: [
@@ -974,7 +974,7 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+      'https://images.unsplash.com/photo-1544919982-b61976f0ba43?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
       'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
     ],
@@ -1107,7 +1107,7 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'New',
     images: [
-      'https://images.unsplash.com/photo-1602190697742-a9b85e89b4f7?w=800&q=80',
+      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
       'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=800&q=80',
       'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800&q=80',
     ],
@@ -1467,7 +1467,7 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Best Seller',
     images: [
-      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80',
+      'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80',
       'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
