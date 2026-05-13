@@ -167,7 +167,9 @@ export default function Navbar({
   }, []);
 
   const handleLogout = async () => {
-    await fetch('/api/user/logout', { method: 'DELETE' });
+    try {
+      await fetch('/api/user/logout', { method: 'DELETE' });
+    } catch {}
     setUser(null);
     setUserMenuOpen(false);
     window.location.href = '/';
@@ -484,7 +486,7 @@ export default function Navbar({
                       <BookOpen className="w-4 h-4" /> {t('nav.bookings')}
                     </Link>
                     <div className="border-t border-gray-100 mt-1 pt-1">
-                      <button onClick={handleLogout}
+                      <button onClick={async () => { setUserMenuOpen(false); await handleLogout(); }}
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
                         <LogOut className="w-4 h-4" /> {t('nav.logout')}
                       </button>
@@ -705,7 +707,7 @@ export default function Navbar({
               </button>
 
               {user && (
-                <button type="button" onClick={() => { handleLogout(); closeMobileMenu(); }}
+                <button type="button" onClick={async () => { closeMobileMenu(); await handleLogout(); }}
                   className="flex items-center gap-3 w-full py-4 active:bg-red-50">
                   <LogOut className="w-5 h-5 text-red-500 shrink-0" />
                   <span className="flex-1 text-left text-[15px] text-red-500 font-medium">Sign out</span>

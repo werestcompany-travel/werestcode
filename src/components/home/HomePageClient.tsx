@@ -976,13 +976,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 sm:py-16 bg-white">
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 sm:py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="text-center mb-4 sm:mb-12">
+          <div className="text-center mb-2 sm:mb-4">
             <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-3 py-4 sm:px-6 sm:py-8">
+          <div className="bg-white rounded-2xl px-3 py-0 sm:px-6 sm:py-2">
           <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible sm:gap-8 lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
@@ -993,10 +993,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[55vw] max-w-[220px] snap-start sm:w-auto sm:max-w-none flex flex-col items-center text-center py-6 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[55vw] max-w-[220px] snap-start sm:w-auto sm:max-w-none flex flex-col items-center text-center py-1 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-3 sm:mb-5" style={{ height: 'clamp(130px, 23vw, 260px)' }}>
+                  <div className="relative w-full mb-1" style={{ height: 'clamp(130px, 30vw, 338px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
@@ -1008,7 +1008,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     />
                   </div>
                   <p className="text-base sm:text-lg font-semibold text-gray-800">{cls.name}</p>
-                  <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-brand-600">
+                  <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-brand-600">
                     <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                     Up to {cls.maxPax} passengers
                   </div>
