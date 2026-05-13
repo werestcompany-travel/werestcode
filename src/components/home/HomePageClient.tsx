@@ -25,8 +25,9 @@ const SERVICE_TABS = [
   {
     id: 'transfer', icon: Car, label: 'Private Transfers', badge: null, badgeColor: '', href: undefined, s: 1,
     children: [
-      { id: 'airport', icon: Plane, label: 'Airport Transfer', href: '/results' },
-      { id: 'charter', icon: Clock, label: 'Charter Rental',   href: '#' },
+      { id: 'airport',       icon: Plane,          label: 'Airport Transfer', href: '/airport-transfers' },
+      { id: 'city-to-city',  icon: ArrowLeftRight, label: 'City-to-City',     href: '/transfers' },
+      { id: 'charter',       icon: Clock,          label: 'Charter Rental',   href: '#' },
     ],
   },
   { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
