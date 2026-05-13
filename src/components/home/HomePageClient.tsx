@@ -10,6 +10,7 @@ import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { type BlogPostSummary } from '@/lib/blog';
+import DynamicTourSections from '@/components/home/DynamicTourSections'
 import {
   Star, CheckCircle2, BookOpen, Heart,
   Car, Plane, Users, ArrowRight,
@@ -760,6 +761,18 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          THINGS TO DO — wired to city selector
+      ════════════════════════════════════════════════════════════ */}
+      <DynamicTourSections
+        selectedDest={selectedDest}
+        cityName={
+          selectedDest === 'anywhere'
+            ? 'Thailand'
+            : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')
+        }
+      />
 
 {/* ════════════════════════════════════════════════════════════
           DISCOVER THE WONDERS OF THAILAND — full-width banner
