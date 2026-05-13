@@ -1,8 +1,9 @@
 'use client'
 
+import { useRef, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star } from 'lucide-react'
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
 import { type Tour, formatTHB } from '@/lib/tours'
 
 interface CategoryConfig {
@@ -24,12 +25,59 @@ const BADGE_STYLES: Record<string, string> = {
   'New':         'bg-[#2534ff]',
 }
 
+const SCROLL_BY = 560 // px per arrow click (~2 cards)
+
 export default function KlookCategorySection({ category, tours }: Props) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canLeft,  setCanLeft]  = useState(false)
+  const [canRight, setCanRight] = useState(false)
+
+  /* ── Update arrow visibility on scroll / mount ── */
+  const sync = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanLeft(el.scrollLeft > 4)
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    sync()
+    el.addEventListener('scroll', sync, { passive: true })
+    // also re-sync on window resize
+    window.addEventListener('resize', sync, { passive: true })
+    return () => {
+      el.removeEventListener('scroll', sync)
+      window.removeEventListener('resize', sync)
+    }
+  }, [sync])
+
+  const scroll = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -SCROLL_BY : SCROLL_BY, behavior: 'smooth' })
+  }
+
   return (
-    <div className="mb-8">
+    <div className="mb-8 relative">
+
+      {/* ── Left fade + arrow ── */}
+      {canLeft && (
+        <div className="absolute left-0 top-0 bottom-1 w-14 bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 flex items-center pointer-events-none">
+          <button
+            onClick={() => scroll('left')}
+            className="pointer-events-auto ml-1 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── Horizontal card row ─────────────────────────────────────── */}
-      <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+      >
         {tours.map((tour) => {
           const minPrice = tour.options.length
             ? Math.min(...tour.options.map(o => o.pricePerPerson))
@@ -124,6 +172,20 @@ export default function KlookCategorySection({ category, tours }: Props) {
           )
         })}
       </div>
+
+      {/* ── Right fade + arrow ── */}
+      {canRight && (
+        <div className="absolute right-0 top-0 bottom-1 w-14 bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 flex items-center justify-end pointer-events-none">
+          <button
+            onClick={() => scroll('right')}
+            className="pointer-events-auto mr-1 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
     </div>
   )
 }
