@@ -16,12 +16,9 @@ import {
   Clock,
   Users,
   Briefcase,
-  ArrowRight,
   Pencil,
   MapPin,
-  CheckCircle2,
   Zap,
-  Check,
 } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import TripEditPanel from '@/components/booking/TripEditPanel';
@@ -43,91 +40,52 @@ function isWeekendOrPeak(dateStr: string): boolean {
   return dow === 0 || dow === 6;
 }
 
-function getBadgeStyle(badge: string): string {
-  if (badge === 'Most Popular') return 'bg-orange-500 text-white';
-  if (badge === 'Best Value')   return 'bg-green-600 text-white';
-  if (badge === 'Premium')      return 'bg-yellow-500 text-white';
-  return 'bg-gray-500 text-white';
-}
-
-function getBadgeEmoji(badge: string): string {
-  if (badge === 'Most Popular') return '🔥';
-  if (badge === 'Best Value')   return '💰';
-  if (badge === 'Premium')      return '👑';
-  return '';
-}
-
-/* ── Vehicle photo panel ── */
-interface PhotoTabsProps {
-  vehicleType: VehicleType;
-  name: string;
-}
-
-function PhotoTabs({ vehicleType, name }: PhotoTabsProps) {
-  const cfg = VEHICLE_CONFIGS[vehicleType];
-
-  return (
-    <div className="relative w-full sm:w-[260px] shrink-0">
-      <div className="relative h-[180px] sm:h-full min-h-[180px] overflow-hidden rounded-t-2xl sm:rounded-l-2xl sm:rounded-tr-none bg-slate-100">
-        <Image
-          src={cfg.exteriorImage}
-          alt={name}
-          fill
-          sizes="(max-width: 640px) 100vw, 260px"
-          className="object-cover"
-          priority={false}
-        />
-      </div>
-    </div>
-  );
-}
 
 /* ── Single vehicle result card ── */
 interface VehicleCardProps {
   vehicle: PricingRule;
   isSelected: boolean;
-  passengers: number;
-  luggage: number;
   tripDate: string;
-  onSelect: (v: VehicleType) => void;
+  onSelect: (v: VehicleType | null) => void;
 }
 
-function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSelect }: VehicleCardProps) {
-  const cfg = VEHICLE_CONFIGS[vehicle.vehicleType];
-  const tooSmall = vehicle.maxPassengers < passengers || vehicle.maxLuggage < luggage;
-  const limited  = isWeekendOrPeak(tripDate);
+
+function VehicleCard({ vehicle, isSelected, tripDate, onSelect }: VehicleCardProps) {
+  const cfg    = VEHICLE_CONFIGS[vehicle.vehicleType];
+  const limited = isWeekendOrPeak(tripDate);
 
   return (
     <div
-      className={`relative flex flex-col sm:flex-row rounded-2xl border-2 overflow-hidden transition-all duration-200 bg-white ${
+      role="button"
+      tabIndex={tooSmall ? -1 : 0}
+      onClick={() => onSelect(isSelected ? null : vehicle.vehicleType)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onSelect(isSelected ? null : vehicle.vehicleType); }}
+      className={`relative flex flex-col sm:flex-row rounded-2xl border-2 overflow-hidden transition-all duration-200 bg-white cursor-pointer ${
         isSelected
           ? 'border-[#2534ff] shadow-[0_0_0_4px_rgba(37,52,255,0.10)]'
-          : tooSmall
-            ? 'border-gray-100 opacity-50'
-            : 'border-gray-200 hover:border-[#2534ff]/50 hover:shadow-md'
+          : 'border-gray-200 hover:border-[#2534ff]/50 hover:shadow-md'
       }`}
     >
-      {/* Badge — top-right absolute */}
-      {cfg.badge && (
-        <div
-          className={`absolute top-3 right-3 z-10 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full shadow ${getBadgeStyle(cfg.badge)}`}
-        >
-          <span>{getBadgeEmoji(cfg.badge)}</span>
-          <span>{cfg.badge}</span>
+      {/* Photo panel — full height left column */}
+      <div className="relative w-full sm:w-[260px] shrink-0 flex flex-col">
+        <div className="relative flex-1 min-h-[180px] overflow-hidden rounded-t-2xl sm:rounded-l-2xl sm:rounded-tr-none bg-white">
+          <Image
+            src={cfg.exteriorImage}
+            alt={vehicle.name}
+            fill
+            sizes="(max-width: 640px) 100vw, 260px"
+            className={`object-center ${
+              vehicle.vehicleType === 'SEDAN'       ? 'object-contain scale-[0.85]' :
+              vehicle.vehicleType === 'MINIVAN'     ? 'object-cover scale-[0.90]'   :
+              vehicle.vehicleType === 'SUV'         ? 'object-cover scale-[1.00]'   :
+                                                      'object-cover scale-[0.85]'
+            }`}
+            priority={false}
+          />
         </div>
-      )}
+      </div>
 
-      {/* Too small badge */}
-      {tooSmall && (
-        <div className="absolute top-3 left-3 z-10 text-[10px] bg-red-500 text-white px-2 py-1 rounded-full font-bold">
-          Too small
-        </div>
-      )}
-
-      {/* Photo tabs — left panel */}
-      <PhotoTabs vehicleType={vehicle.vehicleType} name={vehicle.name} />
-
-      {/* Right info panel */}
+      {/* Info panel */}
       <div className="flex-1 flex flex-col p-5 gap-3">
 
         {/* Name + capacity */}
@@ -144,33 +102,14 @@ function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSel
           </div>
         </div>
 
-        {/* Free cancellation */}
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-green-700">
-          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-          Free cancellation up to 48 hours before departure
-        </p>
-
-        {/* What's included — 2-column grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
-          {cfg.includes.map((item) => (
-            <p key={item} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <Check className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
-              {item}
-            </p>
-          ))}
-        </div>
-
         {/* Availability + price + CTA */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-auto pt-2 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row items-end justify-end gap-3 mt-auto">
 
-          {/* Availability — limited warning only */}
-          <div>
-            {limited && (
-              <p className="flex items-center gap-1 text-xs font-semibold text-amber-600">
-                <Zap className="w-3.5 h-3.5 shrink-0" /> Limited availability
-              </p>
-            )}
-          </div>
+          {limited && (
+            <p className="flex items-center gap-1 text-xs font-semibold text-amber-600 mr-auto">
+              <Zap className="w-3.5 h-3.5 shrink-0" /> Limited availability
+            </p>
+          )}
 
           {/* Price + CTA */}
           <div className="flex items-center gap-4">
@@ -181,7 +120,7 @@ function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSel
             <button
               type="button"
               disabled={tooSmall}
-              onClick={() => !tooSmall && onSelect(vehicle.vehicleType)}
+              onClick={(e) => { e.stopPropagation(); onSelect(isSelected ? null : vehicle.vehicleType); }}
               className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0 ${
                 isSelected
                   ? 'bg-[#2534ff] text-white'
@@ -190,7 +129,7 @@ function VehicleCard({ vehicle, isSelected, passengers, luggage, tripDate, onSel
                     : 'bg-[#2534ff] text-white hover:bg-[#1420cc]'
               }`}
             >
-              {isSelected ? 'Selected ✓' : 'Select This Vehicle'}
+              {isSelected ? 'Selected ✓' : 'Select'}
             </button>
           </div>
         </div>
@@ -339,12 +278,10 @@ function ResultsPageInner() {
     router.push(`/add-experiences?${p.toString()}`);
   };
 
-  // Sort vehicles: put viable ones first, too-small last
-  const sortedVehicles = [...vehicles].sort((a, b) => {
-    const aSmall = a.maxPassengers < passengers || a.maxLuggage < luggage ? 1 : 0;
-    const bSmall = b.maxPassengers < passengers || b.maxLuggage < luggage ? 1 : 0;
-    return aSmall - bSmall;
-  });
+  // Only show vehicles that can accommodate the requested passengers + luggage
+  const sortedVehicles = [...vehicles]
+    .filter(v => v.maxPassengers >= passengers && v.maxLuggage >= luggage)
+    .sort((a, b) => a.baseFare - b.baseFare);
 
   const whatsappMessage = `Hi, I need help choosing a vehicle for my trip from ${pickupAddress || 'my pickup'} to ${dropoffAddress || 'my destination'}.`;
 
@@ -376,13 +313,14 @@ function ResultsPageInner() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
+
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Select your ride</h2>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
             {/* ── LEFT: vehicles + add-ons ── */}
             <div className="lg:col-span-2 space-y-4">
-
-              <h2 className="text-xl font-bold text-gray-900">Select your ride</h2>
 
               {loadingPricing ? (
                 <div className="bg-white rounded-2xl border border-gray-200 p-10 flex items-center justify-center gap-3 text-gray-400">
@@ -396,8 +334,6 @@ function ResultsPageInner() {
                       key={v.vehicleType}
                       vehicle={v}
                       isSelected={selectedVehicle === v.vehicleType}
-                      passengers={passengers}
-                      luggage={luggage}
                       tripDate={tripDate}
                       onSelect={setSelectedVehicle}
                     />

@@ -8,6 +8,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'flagcdn.com' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       { protocol: 'https', hostname: 'storage.googleapis.com' },
+      { protocol: 'https', hostname: 'www.toyota.co.th' },
     ],
   },
 

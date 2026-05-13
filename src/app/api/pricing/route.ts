@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { VEHICLE_CONFIGS, VEHICLE_TYPES } from '@/lib/vehicles';
+import type { VehicleType } from '@/types';
 
 const FALLBACK_VEHICLES = VEHICLE_TYPES.map((type) => ({
   id: type,
@@ -36,7 +37,15 @@ export async function GET() {
     ]);
 
     if (vehicles.length > 0) {
-      return NextResponse.json({ success: true, vehicles, addOns });
+      // Always override name/description from VEHICLE_CONFIGS so vehicles.ts
+      // is the single source of truth — DB rows never go stale.
+      const enriched = vehicles.map(v => {
+        const cfg = VEHICLE_CONFIGS[v.vehicleType as VehicleType];
+        return cfg
+          ? { ...v, name: cfg.name, description: cfg.description }
+          : v;
+      });
+      return NextResponse.json({ success: true, vehicles: enriched, addOns });
     }
     // DB connected but empty — return fallback data
     return NextResponse.json({ success: true, vehicles: FALLBACK_VEHICLES, addOns: FALLBACK_ADDONS });
