@@ -213,8 +213,8 @@ export const tours: Tour[] = [
     category: 'cultural',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1569569970363-df7b6160d111?w=800&q=80',
       'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
       'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
     ],
     highlights: [
@@ -335,8 +335,8 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Best Seller',
     images: [
-      'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=800&q=80',
-      'https://images.unsplash.com/photo-1563492065-74e5b4b17f6d?w=800&q=80',
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80',
+      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
     highlights: [
@@ -974,8 +974,8 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Top Rated',
     images: [
-      'https://images.unsplash.com/photo-1583417267826-aebc4d1542e1?w=800&q=80',
-      'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=800&q=80',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
       'https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&q=80',
     ],
     highlights: [
@@ -1467,7 +1467,7 @@ export const tours: Tour[] = [
     category: 'day-trip',
     badge: 'Best Seller',
     images: [
-      'https://images.unsplash.com/photo-1543069190-9c54d27a7a50?w=800&q=80',
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80',
       'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
       'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
     ],
