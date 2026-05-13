@@ -6,7 +6,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SearchTabs from '@/components/search/SearchTabs';
 import BlogCard from '@/components/blog/BlogCard';
-import DynamicTourSections from '@/components/home/DynamicTourSections';
 import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -762,19 +761,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════
-          THINGS TO DO IN [CITY] — powered by DynamicTourSections
-      ════════════════════════════════════════════════════════════ */}
-      <DynamicTourSections
-        selectedDest={selectedDest}
-        cityName={
-          selectedDest === 'anywhere'
-            ? 'Thailand'
-            : (INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand')
-        }
-      />
-
-      {/* ════════════════════════════════════════════════════════════
+{/* ════════════════════════════════════════════════════════════
           DISCOVER THE WONDERS OF THAILAND — full-width banner
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="Discover Thailand" className="hidden sm:block relative w-full overflow-hidden" style={{ height: 200 }}>
