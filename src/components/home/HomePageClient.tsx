@@ -781,6 +781,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
       />
 
+
 {/* ════════════════════════════════════════════════════════════
           DISCOVER THE WONDERS OF THAILAND — full-width banner
       ════════════════════════════════════════════════════════════ */}

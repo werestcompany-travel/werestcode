@@ -13,11 +13,12 @@ const BADGE_BG: Record<string, string> = {
 }
 
 interface Props {
-  label: string
-  tours: Tour[]
+  label:    string
+  tours:    Tour[]
+  bgColor?: string   /* parent background — used to tint scroll-fade gradients */
 }
 
-export default function KlookCategorySection({ label, tours }: Props) {
+export default function KlookCategorySection({ label, tours, bgColor = '#f9fafb' }: Props) {
   const trackRef           = useRef<HTMLDivElement>(null)
   const [showLeft,  setShowLeft]  = useState(false)
   const [showRight, setShowRight] = useState(false)
@@ -64,7 +65,7 @@ export default function KlookCategorySection({ label, tours }: Props) {
 
         {/* ── Left fade + arrow ── */}
         {showLeft && (
-          <div className="absolute left-0 top-0 bottom-2 w-14 bg-gradient-to-r from-gray-50 via-gray-50/70 to-transparent z-10 pointer-events-none flex items-center">
+          <div className="absolute left-0 top-0 bottom-2 w-14 z-10 pointer-events-none flex items-center" style={{ background: `linear-gradient(to right, ${bgColor}, transparent)` }}>
             <button
               type="button"
               onClick={() => scrollTrack(-1)}
@@ -162,7 +163,7 @@ export default function KlookCategorySection({ label, tours }: Props) {
 
         {/* ── Right fade + arrow ── */}
         {showRight && (
-          <div className="absolute right-0 top-0 bottom-2 w-14 bg-gradient-to-l from-gray-50 via-gray-50/70 to-transparent z-10 pointer-events-none flex items-center justify-end">
+          <div className="absolute right-0 top-0 bottom-2 w-14 z-10 pointer-events-none flex items-center justify-end" style={{ background: `linear-gradient(to left, ${bgColor}, transparent)` }}>
             <button
               type="button"
               onClick={() => scrollTrack(1)}

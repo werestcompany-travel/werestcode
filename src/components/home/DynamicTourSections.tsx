@@ -8,7 +8,7 @@ import KlookCategorySection from '@/components/tours/KlookCategorySection'
 /* ── Category display config ─────────────────────────────────────────────── */
 const CATEGORIES = [
   { key: 'day-trip',  label: 'Day Trips'    },
-  { key: 'cultural',  label: 'Cultural'     },
+  { key: 'cultural',  label: 'Cruises'      },
   { key: 'adventure', label: 'Adventure'    },
   { key: 'food',      label: 'Food & Drink' },
   { key: 'nature',    label: 'Nature'       },
@@ -52,8 +52,10 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
     ? `/tours?location=${encodeURIComponent(cityFilter.toLowerCase())}`
     : '/tours'
 
+  const FLASH_YELLOW = '#feee8c'
+
   return (
-    <section className="py-10 bg-gray-50">
+    <section className="py-10 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Header ── */}
@@ -75,52 +77,58 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
           </Link>
         </div>
 
-        {hasAny ? (
-          <>
-            {CATEGORIES.map(({ key, label }) => {
-              const tours = grouped.get(key)
-              if (!tours?.length) return null
-              return (
-                <KlookCategorySection
-                  key={key}
-                  label={label}
-                  tours={tours.slice(0, 10)}
-                />
-              )
-            })}
+        {/* ── Yellow Flash Express container ── */}
+        <div className="rounded-[15px] px-6 pt-6 pb-2" style={{ backgroundColor: FLASH_YELLOW }}>
 
-            {/* ── Explore all button ── */}
-            <div className="flex justify-center mt-2 mb-4">
+          {hasAny ? (
+            <>
+              {CATEGORIES.map(({ key, label }) => {
+                const tours = grouped.get(key)
+                if (!tours?.length) return null
+                return (
+                  <KlookCategorySection
+                    key={key}
+                    label={label}
+                    tours={tours.slice(0, 10)}
+                    bgColor={FLASH_YELLOW}
+                  />
+                )
+              })}
+
+              {/* ── Explore all button ── */}
+              <div className="flex justify-center mt-2 mb-4">
+                <Link
+                  href={toursHref}
+                  className="inline-flex items-center gap-2 bg-white/80 hover:bg-white border border-yellow-300 rounded-full px-7 py-2.5 text-sm font-semibold text-gray-800 transition-colors"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  Explore all experiences in {cityName}
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </>
+          ) : (
+            /* ── No tours yet ── */
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-5xl mb-4">🗺️</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Coming soon to {cityName}
+              </h3>
+              <p className="text-gray-600 text-sm max-w-xs mb-6">
+                We&apos;re curating the best experiences in {cityName}. In the
+                meantime, explore our Bangkok tours.
+              </p>
               <Link
-                href={toursHref}
-                className="inline-flex items-center gap-2 border border-gray-300 rounded-full px-7 py-2.5 text-sm font-semibold text-gray-700 hover:bg-white transition-colors"
+                href="/tours"
+                className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
               >
-                <LayoutGrid className="w-4 h-4" />
-                Explore all experiences in {cityName}
+                Browse all experiences
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-          </>
-        ) : (
-          /* ── No tours yet ── */
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-5xl mb-4">🗺️</p>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Coming soon to {cityName}
-            </h3>
-            <p className="text-gray-400 text-sm max-w-xs mb-6">
-              We&apos;re curating the best experiences in {cityName}. In the
-              meantime, explore our Bangkok tours.
-            </p>
-            <Link
-              href="/tours"
-              className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
-            >
-              Browse all experiences
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+          )}
+
+        </div>{/* end yellow box */}
 
       </div>
     </section>

@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import AdminShell from '@/components/admin/AdminShell';
 import {
-  Plus, Search, Edit2, Trash2, X, ChevronDown, ChevronUp,
-  MapPin, Clock, Users, Star, RefreshCw,
+  Plus, Search, Edit2, Trash2, ChevronDown, ChevronUp,
+  MapPin, Clock, Users, Star, RefreshCw, ListChecks, PenSquare,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -33,7 +33,6 @@ interface TourRow {
   options:      any[];
   isActive:     boolean;
   sortOrder:    number;
-  // Extended fields
   tags?:               string[];
   primaryLocation?:    string;
   isFeatured?:         boolean;
@@ -67,18 +66,19 @@ const BLANK_FORM = {
   addOns: '',
   adultPrice: '', childPrice: '',
   imageUrl: '',
-  // Extended fields
   isFeatured: false,
   isPopular: false,
   homepageVisible: true,
 };
+
+type Tab = 'list' | 'form';
 
 export default function ToursPage() {
   const [tours,     setTours]     = useState<TourRow[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [search,    setSearch]    = useState('');
   const [filterCat, setFilterCat] = useState('ALL');
-  const [showForm,  setShowForm]  = useState(false);
+  const [tab,       setTab]       = useState<Tab>('list');
   const [editId,    setEditId]    = useState<string | null>(null);
   const [expanded,  setExpanded]  = useState<string | null>(null);
   const [form,      setForm]      = useState({ ...BLANK_FORM });
@@ -101,8 +101,8 @@ export default function ToursPage() {
   useEffect(() => { fetchTours(); }, [fetchTours]);
 
   const filtered = tours.filter((t) => {
-    const q       = search.toLowerCase();
-    const matchQ  = !q || t.title.toLowerCase().includes(q) || t.location.toLowerCase().includes(q);
+    const q        = search.toLowerCase();
+    const matchQ   = !q || t.title.toLowerCase().includes(q) || t.location.toLowerCase().includes(q);
     const matchCat = filterCat === 'ALL' || t.category === filterCat;
     return matchQ && matchCat;
   });
@@ -110,7 +110,7 @@ export default function ToursPage() {
   const openAdd = () => {
     setForm({ ...BLANK_FORM });
     setEditId(null);
-    setShowForm(true);
+    setTab('form');
   };
 
   const openEdit = (tour: TourRow) => {
@@ -136,13 +136,18 @@ export default function ToursPage() {
       adultPrice:    String(tour.options?.[0]?.pricePerPerson ?? ''),
       childPrice:    String(tour.options?.[0]?.childPrice ?? ''),
       imageUrl:      tour.images?.[0] ?? '',
-      // Extended fields
       isFeatured:    tour.isFeatured    ?? false,
       isPopular:     tour.isPopular     ?? false,
       homepageVisible: tour.homepageVisible ?? true,
     });
     setEditId(tour.id);
-    setShowForm(true);
+    setTab('form');
+  };
+
+  const cancelForm = () => {
+    setTab('list');
+    setEditId(null);
+    setForm({ ...BLANK_FORM });
   };
 
   const buildPayload = () => ({
@@ -172,7 +177,6 @@ export default function ToursPage() {
     meetingPoint:  form.meetingPoint || null,
     importantInfo: [
       ...form.importantInfo.split('\n').filter(Boolean),
-      // Add-ons stored as a note in importantInfo
       ...(form.addOns.trim() ? [`Available add-ons: ${form.addOns.trim()}`] : []),
     ],
     reviews:       [],
@@ -201,7 +205,9 @@ export default function ToursPage() {
         return;
       }
       toast.success(editId ? 'Tour updated' : 'Tour added');
-      setShowForm(false);
+      setTab('list');
+      setEditId(null);
+      setForm({ ...BLANK_FORM });
       fetchTours();
     } catch {
       toast.error('Failed to save tour');
@@ -225,10 +231,10 @@ export default function ToursPage() {
   return (
     <AdminShell title="Tours" subtitle="Manage tour listings and add new tours">
 
-      {/* Top stats */}
+      {/* ── Stats row ── */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          { label: 'Total Tours',  value: tours.length },
+          { label: 'Total Tours', value: tours.length },
           { label: 'Categories',  value: [...new Set(tours.map((t) => t.category))].length },
           { label: 'Avg Rating',  value: tours.length ? (tours.reduce((s, t) => s + t.rating, 0) / tours.length).toFixed(1) : '–' },
         ].map((s) => (
@@ -239,156 +245,217 @@ export default function ToursPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-gray-50">
-          <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-1 min-w-[160px] max-w-xs">
-            <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tours…"
-              className="bg-transparent text-xs text-gray-700 outline-none flex-1 placeholder:text-gray-400" />
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {['ALL','day-trip','cultural','adventure','food','nature','water'].map((c) => (
-              <button key={c} onClick={() => setFilterCat(c)}
-                className={`text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-                  filterCat === c ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}>
-                {c === 'ALL' ? 'All' : c}
-              </button>
-            ))}
-          </div>
-          <button onClick={fetchTours}
-            className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={openAdd}
-            className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0">
-            <Plus className="w-3.5 h-3.5" /> Add New Tour
-          </button>
-        </div>
-
-        {/* List */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading tours…</div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <p className="text-sm">No tours found.</p>
-            <button onClick={openAdd} className="mt-3 text-xs text-brand-600 font-semibold hover:underline">Add your first tour</button>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {filtered.map((tour) => (
-              <div key={tour.id}>
-                <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 shrink-0 overflow-hidden">
-                    {tour.images[0] && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={tour.images[0]} alt="" className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="text-sm font-bold text-gray-900 truncate">{tour.title}</p>
-                      {tour.isFeatured && (
-                        <span title="Featured" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">⭐ Featured</span>
-                      )}
-                      {tour.isPopular && (
-                        <span title="Popular" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">🔥 Popular</span>
-                      )}
-                      {tour.badge && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_COLORS[tour.badge] ?? 'bg-gray-100 text-gray-500'}`}>
-                          {tour.badge}
-                        </span>
-                      )}
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[tour.category] ?? 'bg-gray-100 text-gray-500'}`}>
-                        {tour.category}
-                      </span>
-                      {tour.primaryLocation && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 flex items-center gap-0.5">
-                          <MapPin className="w-2.5 h-2.5" />{tour.primaryLocation}
-                        </span>
-                      )}
-                      {!tour.isActive && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">inactive</span>
-                      )}
-                      {tour.homepageVisible === false && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">hidden from homepage</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-[11px] text-gray-400 flex-wrap">
-                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{tour.location}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{tour.duration}</span>
-                      <span className="flex items-center gap-1"><Users className="w-3 h-3" />Max {tour.maxGroupSize}</span>
-                      <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400" />{tour.rating} ({tour.reviewCount})</span>
-                      {tour.options?.[0]?.pricePerPerson && (
-                        <span className="font-semibold text-brand-700">฿{tour.options[0].pricePerPerson.toLocaleString()} / person</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={() => setExpanded(expanded === tour.id ? null : tour.id)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
-                      {expanded === tour.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => openEdit(tour)}
-                      className="p-1.5 rounded-lg hover:bg-brand-50 hover:text-brand-600 text-gray-400 transition-colors">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(tour.id, tour.title)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 text-gray-400 transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                {expanded === tour.id && (
-                  <div className="px-5 pb-4 bg-gray-50/50 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
-                    <div>
-                      <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider mb-1.5">Highlights</p>
-                      <ul className="space-y-1">
-                        {tour.highlights.map((h) => <li key={h} className="flex gap-1.5 items-start"><span className="text-brand-500 mt-0.5">•</span>{h}</li>)}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider mb-1.5">Includes</p>
-                      <ul className="space-y-1">
-                        {tour.includes.map((i) => <li key={i} className="flex gap-1.5 items-start"><span className="text-green-500 mt-0.5">✓</span>{i}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="px-5 py-3 border-t border-gray-50 text-[10px] text-gray-400">
-          Showing {filtered.length} of {tours.length} tours
-        </div>
+      {/* ── Tab bar ── */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1 mb-6 w-fit">
+        <button
+          onClick={() => setTab('list')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            tab === 'list'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <ListChecks className="w-4 h-4" />
+          Tour List
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+            tab === 'list' ? 'bg-brand-100 text-brand-700' : 'bg-gray-200 text-gray-500'
+          }`}>
+            {tours.length}
+          </span>
+        </button>
+        <button
+          onClick={openAdd}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            tab === 'form'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <PenSquare className="w-4 h-4" />
+          {tab === 'form' && editId ? 'Edit Tour' : 'Add New Tour'}
+        </button>
       </div>
 
-      {/* Add / Edit modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-base font-bold text-gray-900">{editId ? 'Edit Tour' : 'Add New Tour'}</h2>
-              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-xl hover:bg-gray-100 flex items-center justify-center">
-                <X className="w-4 h-4" />
+      {/* ══════════ TAB: LIST ══════════ */}
+      {tab === 'list' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-gray-50">
+            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-1 min-w-[160px] max-w-xs">
+              <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search tours…"
+                className="bg-transparent text-xs text-gray-700 outline-none flex-1 placeholder:text-gray-400"
+              />
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {['ALL','day-trip','cultural','adventure','food','nature','water'].map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setFilterCat(c)}
+                  className={`text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                    filterCat === c ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {c === 'ALL' ? 'All' : c}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={fetchTours}
+              className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={openAdd}
+              className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add New Tour
+            </button>
+          </div>
+
+          {/* List */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading tours…</div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <p className="text-sm">No tours found.</p>
+              <button onClick={openAdd} className="mt-3 text-xs text-brand-600 font-semibold hover:underline">
+                Add your first tour
               </button>
             </div>
-            <div className="p-6 space-y-4">
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {filtered.map((tour) => (
+                <div key={tour.id}>
+                  <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 shrink-0 overflow-hidden">
+                      {tour.images[0] && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={tour.images[0]} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <p className="text-sm font-bold text-gray-900 truncate">{tour.title}</p>
+                        {tour.isFeatured && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">⭐ Featured</span>
+                        )}
+                        {tour.isPopular && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">🔥 Popular</span>
+                        )}
+                        {tour.badge && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_COLORS[tour.badge] ?? 'bg-gray-100 text-gray-500'}`}>
+                            {tour.badge}
+                          </span>
+                        )}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[tour.category] ?? 'bg-gray-100 text-gray-500'}`}>
+                          {tour.category}
+                        </span>
+                        {!tour.isActive && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">inactive</span>
+                        )}
+                        {tour.homepageVisible === false && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">hidden from homepage</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-[11px] text-gray-400 flex-wrap">
+                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{tour.location}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{tour.duration}</span>
+                        <span className="flex items-center gap-1"><Users className="w-3 h-3" />Max {tour.maxGroupSize}</span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400" />{tour.rating} ({tour.reviewCount})</span>
+                        {tour.options?.[0]?.pricePerPerson && (
+                          <span className="font-semibold text-brand-700">฿{tour.options[0].pricePerPerson.toLocaleString()} / person</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setExpanded(expanded === tour.id ? null : tour.id)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                      >
+                        {expanded === tour.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => openEdit(tour)}
+                        className="p-1.5 rounded-lg hover:bg-brand-50 hover:text-brand-600 text-gray-400 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tour.id, tour.title)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 text-gray-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {expanded === tour.id && (
+                    <div className="px-5 pb-4 bg-gray-50/50 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+                      <div>
+                        <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider mb-1.5">Highlights</p>
+                        <ul className="space-y-1">
+                          {tour.highlights.map((h) => <li key={h} className="flex gap-1.5 items-start"><span className="text-brand-500 mt-0.5">•</span>{h}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider mb-1.5">Includes</p>
+                        <ul className="space-y-1">
+                          {tour.includes.map((i) => <li key={i} className="flex gap-1.5 items-start"><span className="text-green-500 mt-0.5">✓</span>{i}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="px-5 py-3 border-t border-gray-50 text-[10px] text-gray-400">
+            Showing {filtered.length} of {tours.length} tours
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ TAB: FORM ══════════ */}
+      {tab === 'form' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+
+          {/* Form header */}
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">{editId ? 'Edit Tour' : 'Add New Tour'}</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{editId ? 'Update the tour details below' : 'Fill in the details to create a new tour listing'}</p>
+            </div>
+            <button
+              onClick={cancelForm}
+              className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100"
+            >
+              ← Back to list
+            </button>
+          </div>
+
+          {/* Form body */}
+          <div className="p-6 space-y-6">
+
+            {/* Section: Basic Info */}
+            <FormSection title="Basic Info">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Tour Title *" value={form.title} onChange={(v) => setForm({ ...form, title: v })} placeholder="e.g. Bangkok Temples Day Trip" />
-                <FormField label="Location *" value={form.location} onChange={(v) => setForm({ ...form, location: v })} placeholder="e.g. Bangkok, Thailand" />
+                <FormField label="Tour Title *"    value={form.title}    onChange={(v) => setForm({ ...form, title: v })}    placeholder="e.g. Bangkok Temples Day Trip" />
+                <FormField label="Location *"      value={form.location} onChange={(v) => setForm({ ...form, location: v })} placeholder="e.g. Bangkok, Thailand" />
               </div>
               <FormField label="Subtitle" value={form.subtitle} onChange={(v) => setForm({ ...form, subtitle: v })} placeholder="Short description" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Category *</label>
-                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 bg-white">
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 bg-white"
+                  >
                     {['day-trip','cultural','adventure','food','nature','water'].map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
@@ -396,8 +463,11 @@ export default function ToursPage() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Badge</label>
-                  <select value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 bg-white">
+                  <select
+                    value={form.badge}
+                    onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 bg-white"
+                  >
                     <option value="">None</option>
                     <option value="Best Seller">Best Seller</option>
                     <option value="Top Rated">Top Rated</option>
@@ -405,47 +475,39 @@ export default function ToursPage() {
                   </select>
                 </div>
               </div>
+            </FormSection>
+
+            {/* Section: Pricing & Capacity */}
+            <FormSection title="Pricing & Capacity">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <FormField label="Duration"        value={form.duration}      onChange={(v) => setForm({ ...form, duration: v })}     placeholder="e.g. 8 hours" />
-                <FormField label="Max Group"       value={form.maxGroupSize}  onChange={(v) => setForm({ ...form, maxGroupSize: v })} placeholder="15" type="number" />
-                <FormField label="Adult Price (฿)" value={form.adultPrice}    onChange={(v) => setForm({ ...form, adultPrice: v })}   placeholder="1200" type="number" />
-                <FormField label="Child Price (฿)" value={form.childPrice}    onChange={(v) => setForm({ ...form, childPrice: v })}   placeholder="900" type="number" />
+                <FormField label="Duration"        value={form.duration}     onChange={(v) => setForm({ ...form, duration: v })}     placeholder="e.g. 8 hours" />
+                <FormField label="Max Group"       value={form.maxGroupSize} onChange={(v) => setForm({ ...form, maxGroupSize: v })} placeholder="15" type="number" />
+                <FormField label="Adult Price (฿)" value={form.adultPrice}   onChange={(v) => setForm({ ...form, adultPrice: v })}   placeholder="1200" type="number" />
+                <FormField label="Child Price (฿)" value={form.childPrice}   onChange={(v) => setForm({ ...form, childPrice: v })}   placeholder="900"  type="number" />
               </div>
+            </FormSection>
+
+            {/* Section: Logistics */}
+            <FormSection title="Logistics">
               <FormField label="Cities (comma-separated)"    value={form.cities}    onChange={(v) => setForm({ ...form, cities: v })}    placeholder="Bangkok, Pattaya, Hua Hin" />
               <FormField label="Languages (comma-separated)" value={form.languages} onChange={(v) => setForm({ ...form, languages: v })} placeholder="English, Thai" />
+              <FormField label="Meeting Point"               value={form.meetingPoint} onChange={(v) => setForm({ ...form, meetingPoint: v })} placeholder="e.g. Hotel pickup included" />
+            </FormSection>
+
+            {/* Section: Content */}
+            <FormSection title="Content">
               <TextareaField label="Description"               value={form.description}   onChange={(v) => setForm({ ...form, description: v })}   rows={4} />
               <TextareaField label="Highlights (one per line)" value={form.highlights}    onChange={(v) => setForm({ ...form, highlights: v })}    rows={4} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TextareaField label="Includes (one per line)" value={form.includes} onChange={(v) => setForm({ ...form, includes: v })} rows={4} />
                 <TextareaField label="Excludes (one per line)" value={form.excludes} onChange={(v) => setForm({ ...form, excludes: v })} rows={4} />
               </div>
-              <FormField label="Meeting Point" value={form.meetingPoint} onChange={(v) => setForm({ ...form, meetingPoint: v })} placeholder="e.g. Hotel pickup included" />
               <TextareaField label="Important Info (one per line)" value={form.importantInfo} onChange={(v) => setForm({ ...form, importantInfo: v })} rows={3} />
               <FormField label="Add-ons (comma separated)" value={form.addOns} onChange={(v) => setForm({ ...form, addOns: v })} placeholder="e.g. Lunch, Entrance fee, Photo package" />
-              {/* Visibility toggles */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Visibility & Flags</label>
-                <div className="flex flex-wrap gap-4">
-                  <ToggleField
-                    label="Featured"
-                    description="Show as featured tour"
-                    value={form.isFeatured}
-                    onChange={(v) => setForm({ ...form, isFeatured: v })}
-                  />
-                  <ToggleField
-                    label="Popular"
-                    description="Mark as popular"
-                    value={form.isPopular}
-                    onChange={(v) => setForm({ ...form, isPopular: v })}
-                  />
-                  <ToggleField
-                    label="Homepage Visible"
-                    description="Include in homepage sections"
-                    value={form.homepageVisible}
-                    onChange={(v) => setForm({ ...form, homepageVisible: v })}
-                  />
-                </div>
-              </div>
+            </FormSection>
+
+            {/* Section: Media */}
+            <FormSection title="Media">
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Image URL</label>
                 <input
@@ -455,22 +517,75 @@ export default function ToursPage() {
                   onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 placeholder:text-gray-300"
                 />
-                <p className="text-xs text-gray-400 mt-1">Paste a direct image URL (Unsplash, Supabase Storage, etc.)</p>
+                {form.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={form.imageUrl} alt="preview" className="mt-3 h-40 w-full object-cover rounded-xl border border-gray-100" />
+                )}
+                <p className="text-xs text-gray-400 mt-1.5">Paste a direct image URL (Unsplash, Supabase Storage, etc.)</p>
               </div>
-            </div>
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex gap-3 justify-end">
-              <button onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 font-semibold transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleSave} disabled={saving}
-                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold transition-colors">
-                {saving ? 'Saving…' : editId ? 'Save Changes' : 'Add Tour'}
-              </button>
-            </div>
+            </FormSection>
+
+            {/* Section: Visibility */}
+            <FormSection title="Visibility & Flags">
+              <div className="flex flex-wrap gap-4">
+                <ToggleField
+                  label="Featured"
+                  description="Show as featured tour"
+                  value={form.isFeatured}
+                  onChange={(v) => setForm({ ...form, isFeatured: v })}
+                />
+                <ToggleField
+                  label="Popular"
+                  description="Mark as popular"
+                  value={form.isPopular}
+                  onChange={(v) => setForm({ ...form, isPopular: v })}
+                />
+                <ToggleField
+                  label="Homepage Visible"
+                  description="Include in homepage sections"
+                  value={form.homepageVisible}
+                  onChange={(v) => setForm({ ...form, homepageVisible: v })}
+                />
+              </div>
+            </FormSection>
+
+          </div>
+
+          {/* Form footer */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+            <button
+              onClick={cancelForm}
+              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 font-semibold transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-7 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold transition-colors"
+            >
+              {saving ? 'Saving…' : editId ? 'Save Changes' : 'Add Tour'}
+            </button>
           </div>
         </div>
       )}
+
     </AdminShell>
+  );
+}
+
+/* ── Shared sub-components ──────────────────────────────────────────────── */
+
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+        <span className="flex-1 border-t border-gray-100" />
+        {title}
+        <span className="flex-1 border-t border-gray-100" />
+      </p>
+      <div className="space-y-4">{children}</div>
+    </div>
   );
 }
 
@@ -480,8 +595,13 @@ function FormField({ label, value, onChange, placeholder, type = 'text' }: {
   return (
     <div>
       <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 placeholder:text-gray-300" />
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 placeholder:text-gray-300"
+      />
     </div>
   );
 }
@@ -492,8 +612,12 @@ function TextareaField({ label, value, onChange, rows = 3 }: {
   return (
     <div>
       <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 resize-none" />
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 resize-none"
+      />
     </div>
   );
 }
@@ -509,13 +633,8 @@ function ToggleField({ label, description, value, onChange }: {
         value ? 'bg-brand-50 border-brand-300 text-brand-700' : 'bg-gray-50 border-gray-200 text-gray-500'
       }`}
     >
-      {/* Toggle pill */}
-      <span
-        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${value ? 'bg-brand-600' : 'bg-gray-300'}`}
-      >
-        <span
-          className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform duration-200 ${value ? 'translate-x-4' : 'translate-x-0.5'}`}
-        />
+      <span className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${value ? 'bg-brand-600' : 'bg-gray-300'}`}>
+        <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform duration-200 ${value ? 'translate-x-4' : 'translate-x-0.5'}`} />
       </span>
       <span>
         <span className="block text-xs font-bold">{label}</span>

@@ -1,86 +1,202 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Phone, Mail, MapPin } from 'lucide-react';
-import FooterNewsletter from '@/components/FooterNewsletter';
+import Link from 'next/link'
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+const CONTACT_LINKS = [
+  { label: 'Customer support',  href: '/inquiry'  },
+  { label: 'Service Guarantee', href: '/about'    },
+  { label: 'More service info', href: '/about'    },
+]
+
+const ABOUT_LINKS = [
+  { label: 'About Werest',          href: '/about',            blue: false },
+  { label: 'Travel Blog',           href: '/blog',             blue: false },
+  { label: 'Careers',               href: '/careers',          blue: false },
+  { label: 'Terms of Service',      href: '/terms-of-service', blue: false },
+  { label: 'Privacy Policy',        href: '/privacy-policy',   blue: false },
+  { label: 'Cookie Policy',         href: '/cookie-policy',    blue: false },
+  { label: 'About Werest Group',    href: '/about',            blue: true  },
+]
+
+const OTHER_LINKS = [
+  { label: 'Corporate Travel',  href: '/corporate',      blue: false },
+  { label: 'Werest Rewards',    href: '/rewards',        blue: true  },
+  { label: 'Partner Program',   href: '/partners',       blue: true  },
+  { label: 'Host Agencies',     href: '/host-agencies',  blue: true  },
+  { label: 'List your service', href: '/partners',       blue: false },
+  { label: 'Become a supplier', href: '/partners',       blue: false },
+  { label: 'Gift Vouchers',     href: '/gift-vouchers',  blue: false },
+]
+
+/* Payment icon data — bg / text colour */
+const PAYMENTS: { label: string; bg: string; color: string }[] = [
+  { label: 'VISA',      bg: '#1a1f71', color: '#fff'    },
+  { label: 'MC',        bg: '#eb001b', color: '#fff'    },
+  { label: 'AMEX',      bg: '#007bc1', color: '#fff'    },
+  { label: 'JCB',       bg: '#003087', color: '#fff'    },
+  { label: 'UnionPay',  bg: '#c0392b', color: '#fff'    },
+  { label: 'Discover',  bg: '#ff6600', color: '#fff'    },
+  { label: 'PromptPay', bg: '#4b2d80', color: '#fff'    },
+  { label: 'TrueMoney', bg: '#f37021', color: '#fff'    },
+  { label: 'G Pay',     bg: '#fff',    color: '#5f6368' },
+  { label: 'PayPal',    bg: '#003087', color: '#fff'    },
+]
+
+
+/* Social icon wrapper */
+function Social({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-80"
+      style={{ backgroundColor: '#596578' }}
+    >
+      {children}
+    </a>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <FooterNewsletter />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <div className="mb-4">
-              <Image
-                src="/images/logo.png"
-                alt="Werest Travel"
-                height={36}
-                width={119}
-                className="object-contain brightness-0 invert"
-              />
+    <footer style={{ backgroundColor: '#f5f6f8' }} className="text-gray-700">
+
+      {/* ══ Main 4-column grid ══ */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          {/* ── Col 1: Contact us ── */}
+          <div>
+            <p className="font-semibold text-[15px] text-gray-900 mb-4">Contact us</p>
+            <ul className="space-y-2.5 mb-6">
+              {CONTACT_LINKS.map(l => (
+                <li key={l.label}>
+                  <Link href={l.href} className="text-[13px] text-[#1677ff] hover:underline">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Social icons */}
+            <div className="flex items-center gap-2">
+              {/* Facebook */}
+              <Social href="https://facebook.com" label="Facebook">
+                <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] fill-current">
+                  <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                </svg>
+              </Social>
+              {/* Instagram */}
+              <Social href="https://instagram.com" label="Instagram">
+                <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] fill-none stroke-current stroke-[1.8]">
+                  <rect x="2" y="2" width="20" height="20" rx="5"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="white"/>
+                </svg>
+              </Social>
+              {/* X / Twitter */}
+              <Social href="https://x.com" label="X">
+                <svg viewBox="0 0 24 24" className="w-[13px] h-[13px] fill-current">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </Social>
+              {/* YouTube */}
+              <Social href="https://youtube.com" label="YouTube">
+                <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] fill-current">
+                  <path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.95C5.12 20 12 20 12 20s6.88 0 8.59-.47a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/>
+                </svg>
+              </Social>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Your premium travel partner in Thailand. Reliable private transfers across the country.
-            </p>
           </div>
 
-          {/* Services */}
+          {/* ── Col 2: About ── */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Services</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/transfers" className="hover:text-white transition-colors">Private Transfers</Link></li>
-              <li><Link href="/airport-transfers" className="hover:text-white transition-colors">Airport Transfers</Link></li>
-              <li><Link href="/tours" className="hover:text-white transition-colors">Tours &amp; Day Trips</Link></li>
-              <li><Link href="/attractions" className="hover:text-white transition-colors">Attraction Tickets</Link></li>
+            <p className="font-semibold text-[15px] text-gray-900 mb-4">About</p>
+            <ul className="space-y-2.5">
+              {ABOUT_LINKS.map(l => (
+                <li key={l.label}>
+                  <Link
+                    href={l.href}
+                    className={`text-[13px] hover:underline ${l.blue ? 'text-[#1677ff]' : 'text-gray-500 hover:text-gray-800'}`}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Links */}
+          {/* ── Col 3: Other services ── */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Travel Blog</Link></li>
-              <li><Link href="/booking" className="hover:text-white transition-colors">Book a Transfer</Link></li>
-              <li><Link href="/tracking" className="hover:text-white transition-colors">Track Booking</Link></li>
-              <li><Link href="/deals" className="hover:text-white transition-colors">Deals &amp; Offers</Link></li>
-              <li><Link href="/inquiry" className="hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/partners" className="hover:text-white transition-colors">Partner Program</Link></li>
-              <li><Link href="/corporate" className="hover:text-white transition-colors">For Business / Corporate</Link></li>
-              <li><Link href="/gift-vouchers" className="hover:text-white transition-colors">Gift Vouchers</Link></li>
-              <li><Link href="/group-booking" className="hover:text-white transition-colors">Group Bookings</Link></li>
+            <p className="font-semibold text-[15px] text-gray-900 mb-4">Other services</p>
+            <ul className="space-y-2.5">
+              {OTHER_LINKS.map(l => (
+                <li key={l.label}>
+                  <Link
+                    href={l.href}
+                    className={`text-[13px] hover:underline ${l.blue ? 'text-[#1677ff]' : 'text-gray-500 hover:text-gray-800'}`}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* ── Col 4: Payment methods + Our partners ── */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-brand-400 shrink-0" />
-                <span>{process.env.NEXT_PUBLIC_COMPANY_PHONE ?? '+66 XX XXX XXXX'}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-brand-400 shrink-0" />
-                <span>hello@werest.travel</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-brand-400 shrink-0 mt-0.5" />
-                <span>Bangkok, Thailand</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+            <p className="font-semibold text-[15px] text-gray-900 mb-4">Payment methods</p>
+            <div className="grid grid-cols-5 gap-1.5 mb-6">
+              {PAYMENTS.map(p => (
+                <span
+                  key={p.label}
+                  className="flex items-center justify-center h-7 rounded text-[9px] font-bold border border-gray-200"
+                  style={{ backgroundColor: p.bg, color: p.color }}
+                >
+                  {p.label}
+                </span>
+              ))}
+            </div>
 
-        <div className="border-t border-gray-700 pt-6 flex flex-wrap justify-between items-center gap-4 text-sm text-gray-400 mt-10">
-          <p>© {new Date().getFullYear()} Werest Travel. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
+            <p className="font-semibold text-[15px] text-gray-900 mb-3">Our partners</p>
+            <div className="flex items-center gap-4">
+              {/* Google text logo */}
+              <span className="text-[18px] font-medium tracking-tight" style={{ fontFamily: 'sans-serif' }}>
+                <span style={{ color: '#4285F4' }}>G</span>
+                <span style={{ color: '#EA4335' }}>o</span>
+                <span style={{ color: '#FBBC05' }}>o</span>
+                <span style={{ color: '#4285F4' }}>g</span>
+                <span style={{ color: '#34A853' }}>l</span>
+                <span style={{ color: '#EA4335' }}>e</span>
+              </span>
+              {/* Tripadvisor */}
+              <span className="flex items-center gap-1">
+                <span className="text-[18px]">🦉</span>
+                <span className="text-[13px] font-semibold text-[#00aa6c]">Tripadvisor</span>
+              </span>
+            </div>
           </div>
+
         </div>
       </div>
+
+
+      {/* ══ Bottom copyright ══ */}
+      <div className="border-t border-gray-200">
+        <div className="py-4 text-center">
+          <p className="text-[12px] text-gray-500">
+            Copyright © {new Date().getFullYear()} Werest Travel Co., Ltd. All rights reserved.
+          </p>
+          <p className="text-[12px] text-gray-400 mt-0.5">
+            Service Operator: <span className="text-[#1677ff]">Werest Travel Co., Ltd.</span>
+          </p>
+        </div>
+      </div>
+
     </footer>
-  );
+  )
 }
