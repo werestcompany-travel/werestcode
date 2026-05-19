@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, X, ChevronLeft } from 'lucide-react';
+import { Loader2, Plus, X, ChevronLeft, ImagePlus, Bold, Italic, Link2, Heading2, Heading3, List, ListOrdered, Minus } from 'lucide-react';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 export interface BlogPost {
@@ -95,6 +95,57 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
       : '',
   );
   const [relatedSlugs, setRelatedSlugs] = useState((initialData?.relatedSlugs ?? []).join(', '));
+
+  // Image insert panel
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const [showImgPanel, setShowImgPanel] = useState(false);
+  const [imgUrl,       setImgUrl]       = useState('');
+  const [imgCaption,   setImgCaption]   = useState('');
+
+  // Insert text at cursor position in the content textarea
+  const insertAtCursor = useCallback((text: string) => {
+    const ta = contentRef.current;
+    if (!ta) { setContent(prev => prev + '\n\n' + text + '\n\n'); return; }
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const before = content.substring(0, start);
+    const after  = content.substring(end);
+    const newVal = before + '\n\n' + text + '\n\n' + after;
+    setContent(newVal);
+    setTimeout(() => {
+      ta.focus();
+      ta.selectionStart = ta.selectionEnd = start + text.length + 4;
+    }, 0);
+  }, [content]);
+
+  // Wrap selected text with prefix/suffix (for bold, italic, etc.)
+  const wrapSelection = useCallback((prefix: string, suffix: string, placeholder: string) => {
+    const ta = contentRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const selected = content.substring(start, end) || placeholder;
+    const before = content.substring(0, start);
+    const after  = content.substring(end);
+    const newVal = before + prefix + selected + suffix + after;
+    setContent(newVal);
+    setTimeout(() => {
+      ta.focus();
+      ta.selectionStart = start + prefix.length;
+      ta.selectionEnd   = start + prefix.length + selected.length;
+    }, 0);
+  }, [content]);
+
+  function handleInsertImage() {
+    if (!imgUrl.trim()) return;
+    const figure = imgCaption.trim()
+      ? `<figure>\n<img src="${imgUrl.trim()}" alt="${imgCaption.trim()}" loading="lazy">\n<figcaption>${imgCaption.trim()}</figcaption>\n</figure>`
+      : `<figure>\n<img src="${imgUrl.trim()}" alt="" loading="lazy">\n</figure>`;
+    insertAtCursor(figure);
+    setImgUrl('');
+    setImgCaption('');
+    setShowImgPanel(false);
+  }
 
   // Content blocks
   const [faqs, setFaqs] = useState<{ q: string; a: string }[]>(
@@ -281,14 +332,125 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
 
           {/* Content */}
           <div>
-            <Label>Content * (HTML or plain text)</Label>
+            <Label>Content *</Label>
+
+            {/* ── Toolbar ── */}
+            <div className="flex flex-wrap items-center gap-0.5 border border-gray-200 border-b-0 rounded-t-xl bg-gray-50 px-2 py-1.5">
+              {/* Heading buttons */}
+              <button type="button" title="Heading 2" onClick={() => wrapSelection('## ', '', 'Section heading')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Heading2 className="w-4 h-4" />
+              </button>
+              <button type="button" title="Heading 3" onClick={() => wrapSelection('### ', '', 'Sub-heading')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Heading3 className="w-4 h-4" />
+              </button>
+
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+
+              {/* Inline formatting */}
+              <button type="button" title="Bold" onClick={() => wrapSelection('**', '**', 'bold text')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Bold className="w-4 h-4" />
+              </button>
+              <button type="button" title="Italic" onClick={() => wrapSelection('*', '*', 'italic text')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Italic className="w-4 h-4" />
+              </button>
+              <button type="button" title="Link" onClick={() => wrapSelection('[', '](https://)', 'link text')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Link2 className="w-4 h-4" />
+              </button>
+
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+
+              {/* Lists */}
+              <button type="button" title="Bullet list" onClick={() => insertAtCursor('- Item 1\n- Item 2\n- Item 3')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <List className="w-4 h-4" />
+              </button>
+              <button type="button" title="Numbered list" onClick={() => insertAtCursor('1. First\n2. Second\n3. Third')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <ListOrdered className="w-4 h-4" />
+              </button>
+              <button type="button" title="Horizontal rule" onClick={() => insertAtCursor('---')}
+                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+                <Minus className="w-4 h-4" />
+              </button>
+
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+
+              {/* Insert image */}
+              <button
+                type="button"
+                title="Insert image"
+                onClick={() => setShowImgPanel((v) => !v)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${showImgPanel ? 'bg-[#2534ff] text-white' : 'text-[#2534ff] hover:bg-[#2534ff]/10'}`}
+              >
+                <ImagePlus className="w-4 h-4" />
+                Insert Image
+              </button>
+            </div>
+
+            {/* ── Image insert panel ── */}
+            {showImgPanel && (
+              <div className="border border-gray-200 border-b-0 bg-blue-50/50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-end gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Image URL *</p>
+                  <input
+                    value={imgUrl}
+                    onChange={(e) => setImgUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white font-mono"
+                    onKeyDown={(e) => e.key === 'Enter' && handleInsertImage()}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Caption (optional)</p>
+                  <input
+                    value={imgCaption}
+                    onChange={(e) => setImgCaption(e.target.value)}
+                    placeholder="e.g. Bangkok skyline at sunset"
+                    className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white"
+                    onKeyDown={(e) => e.key === 'Enter' && handleInsertImage()}
+                  />
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {imgUrl && (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imgUrl} alt="preview" className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }} />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleInsertImage}
+                    disabled={!imgUrl.trim()}
+                    className="flex items-center gap-1.5 bg-[#2534ff] disabled:opacity-40 hover:bg-[#1a26e0] text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors"
+                  >
+                    <ImagePlus className="w-3.5 h-3.5" /> Insert
+                  </button>
+                  <button type="button" onClick={() => setShowImgPanel(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-xl transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Textarea ── */}
             <textarea
+              ref={contentRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your full article here. HTML tags like <h2>, <p>, <ul>, <strong> are supported."
-              rows={20}
-              className={`${inputCls} font-mono text-xs leading-relaxed`}
+              placeholder="Write your article here using Markdown. Use the toolbar above to format text and insert images."
+              rows={22}
+              className="border border-gray-200 rounded-b-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white font-mono leading-relaxed text-gray-700 resize-y"
             />
+            <p className="text-xs text-gray-400 mt-1">
+              Supports <strong>Markdown</strong>: # Heading, **bold**, *italic*, - list, [link](url). Use toolbar for quick inserts.
+            </p>
           </div>
 
           {/* Featured Image */}
