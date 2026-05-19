@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { BLOG_CATEGORIES, type BlogPostSummary, formatBlogDate } from '@/lib/blog'
+import { prisma } from '@/lib/db'
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -21,8 +22,6 @@ export const metadata: Metadata = {
   },
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
-
 const FALLBACK_BG: Record<string, string> = {
   BANGKOK:  'from-[#2534ff] to-indigo-600',
   PATTAYA:  'from-emerald-400 to-teal-600',
@@ -31,17 +30,31 @@ const FALLBACK_BG: Record<string, string> = {
   KRABI:    'from-orange-400 to-amber-600',
 }
 
+const LIMIT = 12
+
 async function fetchPosts(page = 1) {
-  const params = new URLSearchParams({ limit: '12', page: String(page) })
   try {
-    const res = await fetch(`${SITE_URL}/api/blog?${params.toString()}`, {
-      next: { revalidate: 60 },
-    })
-    if (!res.ok) return { posts: [], total: 0, pages: 1 }
-    const json = await res.json()
-    return json.data as { posts: BlogPostSummary[]; total: number; pages: number }
+    const skip = (page - 1) * LIMIT
+    const where = { status: 'PUBLISHED' as const }
+    const [posts, total] = await Promise.all([
+      prisma.blogPost.findMany({
+        where,
+        orderBy: { publishedAt: 'desc' },
+        skip,
+        take: LIMIT,
+        select: {
+          id: true, slug: true, title: true, excerpt: true,
+          featuredImage: true, category: true, tags: true,
+          publishedAt: true, readingTimeMin: true,
+          authorName: true, authorTitle: true,
+          seoTitle: true, seoDescription: true,
+        },
+      }),
+      prisma.blogPost.count({ where }),
+    ])
+    return { posts: posts as BlogPostSummary[], total, pages: Math.ceil(total / LIMIT) }
   } catch {
-    return { posts: [], total: 0, pages: 1 }
+    return { posts: [] as BlogPostSummary[], total: 0, pages: 1 }
   }
 }
 
