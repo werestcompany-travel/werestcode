@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import {
-  Plus, X, ChevronRight, Pencil, Trash2, Check,
+  Plus, X, Pencil, Trash2, Check,
   ToggleLeft, ToggleRight, Package, ChevronDown, ChevronUp, AlertTriangle,
   Image as ImageIcon, ListChecks, HelpCircle, MapPin, Info, Star,
 } from 'lucide-react';
+import AdminShell from '@/components/admin/AdminShell';
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 interface AttractionPackage {
@@ -302,23 +302,17 @@ export default function AdminAttractionsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminShell title="Manage Attractions" subtitle="Add, edit and manage attraction listings">
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-gray-400 hover:text-gray-600 text-sm flex items-center gap-1">
-            Admin <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-          <span className="text-gray-900 font-bold">Attraction Management</span>
-        </div>
+      {/* Action button */}
+      <div className="flex justify-end mb-5">
         <button onClick={openNew}
           className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors">
           <Plus className="w-4 h-4" /> Add new attraction
         </button>
-      </header>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
@@ -909,6 +903,6 @@ export default function AdminAttractionsPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminShell>
   );
 }

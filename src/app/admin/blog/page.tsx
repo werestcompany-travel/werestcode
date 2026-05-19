@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Plus, Pencil, Trash2, ChevronRight, FileText, Eye, Archive,
-  Search, Loader2, BookOpen, LayoutDashboard, Tag, Ticket, Package,
+  Plus, Pencil, Trash2, FileText, Eye, Archive,
+  Search, Loader2, BookOpen,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import AdminShell from '@/components/admin/AdminShell';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface BlogPost {
@@ -44,15 +45,6 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   PUBLISHED: <Eye className="w-3 h-3" />,
   ARCHIVED:  <Archive className="w-3 h-3" />,
 };
-
-/* ─── Nav links ─────────────────────────────────────────────────────────── */
-const NAV_LINKS = [
-  { href: '/admin',                  label: 'Dashboard',          icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
-  { href: '/admin/blog',             label: 'Blog',               icon: <BookOpen className="w-3.5 h-3.5" /> },
-  { href: '/admin/attractions',      label: 'Attractions',        icon: <Package className="w-3.5 h-3.5" /> },
-  { href: '/admin/attraction-bookings', label: 'Attraction Bookings', icon: <Ticket className="w-3.5 h-3.5" /> },
-  { href: '/admin/discount-codes',   label: 'Discount Codes',     icon: <Tag className="w-3.5 h-3.5" /> },
-];
 
 /* ─── Skeleton row ──────────────────────────────────────────────────────── */
 function SkeletonRow() {
@@ -134,50 +126,19 @@ export default function AdminBlogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminShell title="Blog Posts" subtitle="Create, edit and manage all blog content">
 
-      {/* Header nav */}
-      <div className="bg-[#2534ff] text-white">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-              <span className="font-bold text-sm">W</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-blue-200" />
-              <span className="font-semibold">Blog Posts</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {NAV_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-              >
-                {l.icon} {l.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+      {/* Action button */}
+      <div className="flex justify-end mb-5">
+        <Link
+          href="/admin/blog/new"
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
+        >
+          <Plus className="w-4 h-4" /> New Post
+        </Link>
       </div>
 
-      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
-        {/* Breadcrumb + action */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/admin" className="hover:text-gray-700 transition-colors">Admin</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 font-semibold">Blog Posts</span>
-          </div>
-          <Link
-            href="/admin/blog/new"
-            className="flex items-center gap-2 bg-[#2534ff] hover:bg-[#1a26e0] text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
-          >
-            <Plus className="w-4 h-4" /> New Post
-          </Link>
-        </div>
+      <div className="space-y-5">
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
@@ -347,7 +308,7 @@ export default function AdminBlogPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Delete confirmation modal */}
       {confirmId && (
@@ -381,6 +342,6 @@ export default function AdminBlogPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminShell>
   );
 }

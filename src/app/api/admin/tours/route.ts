@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
@@ -9,7 +10,8 @@ export async function GET() {
   const tours = await prisma.tour.findMany({
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
   });
-  return NextResponse.json({ tours });
+  const totalBookings = await prisma.tourBooking.count().catch(() => 0);
+  return NextResponse.json({ tours, totalBookings });
 }
 
 export async function POST(req: NextRequest) {

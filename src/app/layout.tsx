@@ -6,9 +6,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
+import FloatingWidgets from '@/components/FloatingWidgets';
 import CookieConsent from '@/components/CookieConsent';
-import ChatWidget from '@/components/chat/ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -84,8 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthModalProvider>
               <ChatProvider>
                 {children}
-                <WhatsAppFloat />
-                <ChatWidget />
+                <FloatingWidgets />
                 <CookieConsent />
                 <Toaster
                   position="top-center"

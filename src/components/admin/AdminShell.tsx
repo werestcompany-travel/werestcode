@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Car, MapPin, Ticket, Package,
-  Tag, FileText, LogOut, Search, Bell, Settings, Inbox, Users, Star, BookOpen, Mail,
+  Tag, FileText, LogOut, Bell, Settings, Inbox, Users, Star, BookOpen, Mail,
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -13,20 +14,20 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin',                    icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/admin/transfers',          icon: Car,             label: 'Transfers' },
-      { href: '/admin/drivers',            icon: Users,           label: 'Drivers' },
-      { href: '/admin/tours',              icon: MapPin,          label: 'Tours' },
       { href: '/admin/tour-bookings',      icon: BookOpen,        label: 'Tour Bookings' },
       { href: '/admin/attraction-tickets', icon: Ticket,          label: 'Attraction Tickets' },
-      { href: '/admin/inquiries',          icon: Inbox,           label: 'Inquiries' },
     ],
   },
   {
     label: 'Management',
     items: [
       { href: '/admin/attractions',      icon: Package,  label: 'Manage Attractions' },
-      { href: '/admin/discount-codes',   icon: Tag,      label: 'Discount Codes' },
+      { href: '/admin/tours',            icon: MapPin,   label: 'Manage Tours' },
+      { href: '/admin/blog',             icon: FileText, label: 'Manage Blog' },
+      { href: '/admin/drivers',          icon: Users,    label: 'Drivers' },
+      { href: '/admin/inquiries',        icon: Inbox,    label: 'Inquiries' },
+      { href: '/admin/discount-codes',   icon: Tag,      label: 'Discount' },
       { href: '/admin/reviews',          icon: Star,     label: 'Reviews' },
-      { href: '/admin/blog',             icon: FileText, label: 'Blog' },
     ],
   },
   {
@@ -62,25 +63,15 @@ export default function AdminShell({
       <aside className="w-[220px] bg-white border-r border-gray-100 flex flex-col shrink-0">
 
         {/* Logo */}
-        <div className="px-5 pt-5 pb-4 border-b border-gray-50">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
-              <span className="text-white font-extrabold text-sm">W</span>
-            </div>
-            <div>
-              <p className="font-extrabold text-gray-900 text-[13px] leading-none">Werest</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">Admin Panel</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
-            <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-400 flex-1">Search</span>
-            <kbd className="text-[9px] text-gray-300 bg-white border border-gray-200 rounded px-1 py-0.5">⌘K</kbd>
-          </div>
+        <div className="px-5 pt-4 pb-4 border-b border-gray-50">
+          <Image
+            src="/images/logo.png"
+            alt="Werest"
+            width={150}
+            height={54}
+            className="h-[54px] w-auto object-contain"
+            priority
+          />
         </div>
 
         {/* Nav */}
