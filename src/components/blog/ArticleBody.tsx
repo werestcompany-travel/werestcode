@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
 interface ArticleBodyProps {
@@ -21,11 +22,17 @@ const ALLOWED_ATTRS: sanitizeHtml.IOptions['allowedAttributes'] = {
   '*':   ['class', 'id'],
 };
 
-function cleanContent(html: string): string {
+// Configure marked for clean output
+marked.setOptions({ gfm: true, breaks: true });
+
+function parseContent(raw: string): string {
+  // Detect if content is Markdown (has ## headings or ** bold) or already HTML
+  const isMarkdown = /^#{1,6}\s|^\*\*|^\- |\n#{1,6}\s|\n\*\*/.test(raw.trim());
+  const html = isMarkdown ? (marked.parse(raw) as string) : raw;
+
   return sanitizeHtml(html, {
     allowedTags:       ALLOWED_TAGS,
     allowedAttributes: ALLOWED_ATTRS,
-    // Force external links to be safe
     transformTags: {
       a: (tagName, attribs) => ({
         tagName,
@@ -40,7 +47,7 @@ function cleanContent(html: string): string {
 }
 
 export default function ArticleBody({ content }: ArticleBodyProps) {
-  const safe = cleanContent(content);
+  const safe = parseContent(content);
 
   return (
     <div

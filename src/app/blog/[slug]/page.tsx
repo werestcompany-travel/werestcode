@@ -10,6 +10,7 @@ import ArticleBody from '@/components/blog/ArticleBody'
 import BlogFAQ from '@/components/blog/BlogFAQ'
 import BlogCTA from '@/components/blog/BlogCTA'
 import RelatedServices from '@/components/blog/RelatedServices'
+import { prisma } from '@/lib/db'
 import {
   BLOG_CATEGORIES,
   type BlogPost,
@@ -20,7 +21,6 @@ import {
   generateFAQSchema,
 } from '@/lib/blog'
 
-const SITE_URL        = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 const PUBLIC_SITE_URL = 'https://www.werest.com'
 
 const FALLBACK_BG: Record<string, string> = {
@@ -31,17 +31,51 @@ const FALLBACK_BG: Record<string, string> = {
   KRABI:    'from-orange-400 to-amber-600',
 }
 
-// ─── Data fetching ─────────────────────────────────────────────────────────────
+const RELATED_SELECT = {
+  id: true, slug: true, title: true, excerpt: true,
+  featuredImage: true, category: true, tags: true,
+  publishedAt: true, readingTimeMin: true, authorName: true,
+} as const
+
+// ─── Data fetching — direct Prisma (no HTTP self-fetch) ────────────────────────
 
 async function fetchPost(
   slug: string,
 ): Promise<{ post: BlogPost; relatedPosts: BlogPostSummary[] } | null> {
   try {
-    const res = await fetch(`${SITE_URL}/api/blog/${slug}`, { next: { revalidate: 60 } })
-    if (!res.ok) return null
-    const json = await res.json()
-    if (!json.success) return null
-    return json.data
+    const post = await prisma.blogPost.findFirst({
+      where: { slug, status: 'PUBLISHED' },
+    })
+    if (!post) return null
+
+    let relatedPosts
+    if (post.relatedSlugs.length > 0) {
+      relatedPosts = await prisma.blogPost.findMany({
+        where: { slug: { in: post.relatedSlugs }, status: 'PUBLISHED' },
+        select: RELATED_SELECT,
+        take: 4,
+      })
+    } else {
+      relatedPosts = await prisma.blogPost.findMany({
+        where: { category: post.category, status: 'PUBLISHED', id: { not: post.id } },
+        select: RELATED_SELECT,
+        orderBy: { publishedAt: 'desc' },
+        take: 4,
+      })
+    }
+    if (relatedPosts.length === 0) {
+      relatedPosts = await prisma.blogPost.findMany({
+        where: { status: 'PUBLISHED', id: { not: post.id } },
+        select: RELATED_SELECT,
+        orderBy: { publishedAt: 'desc' },
+        take: 4,
+      })
+    }
+
+    return {
+      post: post as unknown as BlogPost,
+      relatedPosts: relatedPosts as unknown as BlogPostSummary[],
+    }
   } catch {
     return null
   }

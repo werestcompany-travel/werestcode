@@ -375,7 +375,7 @@ A **Werest private transfer** from Suvarnabhumi Airport or central Bangkok takes
 - **North Pattaya:** Quieter, family-friendly, away from Walking Street
 - **Central Pattaya / Jomtien:** Best balance of beach access and nightlife
 - **Pratumnak Hill:** Hillside luxury resorts with bay views — a short drive from everything`,
-    featuredImage: 'https://images.unsplash.com/photo-1559628233-100c798642d5?w=900&q=80&auto=format&fit=crop',
+    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80&auto=format&fit=crop',
     category: 'PATTAYA' as const,
     tags: ['Pattaya', 'Itinerary', 'Travel Guide', '3 Days', 'Things To Do'],
     status: 'PUBLISHED' as const,

@@ -6,13 +6,14 @@ import AdminShell from '@/components/admin/AdminShell';
 import { formatCurrency } from '@/lib/utils';
 import {
   Car, Ticket, MapPin, TrendingUp, Clock,
-  CheckCircle2, AlertCircle, ArrowRight, RefreshCw,
+  CheckCircle2, AlertCircle, ArrowRight, RefreshCw, BookOpen, PenSquare, Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 
 interface TransferStats { total: number; pending: number; active: number; completed: number; revenue: number }
 interface AttractionStats { total: number; pending: number; confirmed: number; revenue: number }
 interface TourStats { listed: number; active: number; bookings: number }
+interface BlogStats { total: number; published: number; draft: number }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Booking = any;
 
@@ -39,6 +40,7 @@ export default function AdminDashboard() {
   const [transferStats,   setTransferStats]   = useState<TransferStats | null>(null);
   const [attractionStats, setAttractionStats] = useState<AttractionStats | null>(null);
   const [tourStats,       setTourStats]       = useState<TourStats | null>(null);
+  const [blogStats,       setBlogStats]       = useState<BlogStats | null>(null);
   const [allTransfers,      setAllTransfers]      = useState<Booking[]>([]);
   const [recentTransfers,   setRecentTransfers]   = useState<Booking[]>([]);
   const [recentAttractions, setRecentAttractions] = useState<Booking[]>([]);
@@ -47,15 +49,17 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [tRes, aRes, tourRes] = await Promise.all([
+      const [tRes, aRes, tourRes, blogRes] = await Promise.all([
         fetch('/api/admin/bookings'),
         fetch('/api/admin/attraction-bookings'),
         fetch('/api/admin/tours'),
+        fetch('/api/admin/blog'),
       ]);
       if (tRes.status === 401 || aRes.status === 401 || tourRes.status === 401) { router.push('/admin/login'); return; }
       const tJson    = await tRes.json();
       const aJson    = await aRes.json();
       const tourJson = await tourRes.json();
+      const blogJson = await blogRes.json();
       const allB  = tJson.data?.bookings ?? [];
       setTransferStats(tJson.data?.stats ?? null);
       setAllTransfers(allB);
@@ -67,6 +71,12 @@ export default function AdminDashboard() {
         listed:   tours.length,
         active:   tours.filter((t: Booking) => t.isActive).length,
         bookings: tourJson.totalBookings ?? 0,
+      });
+      const blogPosts: Booking[] = blogJson.data ?? [];
+      setBlogStats({
+        total:     blogPosts.length,
+        published: blogPosts.filter((p: Booking) => p.status === 'PUBLISHED').length,
+        draft:     blogPosts.filter((p: Booking) => p.status === 'DRAFT').length,
       });
     } finally {
       setLoading(false);
@@ -110,7 +120,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Section cards ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 mb-7">
         <SectionCard
           icon={<Car className="w-5 h-5 text-brand-600" />}
           iconBg="bg-brand-50"
@@ -147,6 +157,18 @@ export default function AdminDashboard() {
           ]}
           revenue={attractionStats?.revenue}
           href="/admin/attraction-tickets"
+          loading={loading}
+        />
+        <SectionCard
+          icon={<BookOpen className="w-5 h-5 text-sky-600" />}
+          iconBg="bg-sky-50"
+          title="Blog Posts"
+          stats={[
+            { label: 'Total',     value: blogStats?.total     ?? 0 },
+            { label: 'Published', value: blogStats?.published ?? 0 },
+            { label: 'Drafts',    value: blogStats?.draft     ?? 0 },
+          ]}
+          href="/admin/blog"
           loading={loading}
         />
       </div>
@@ -268,6 +290,35 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── Blog quick-access ─────────────────────────────────── */}
+      <div className="mt-5 bg-gradient-to-r from-[#2534ff] to-indigo-500 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <BookOpen className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white">Blog Management</p>
+            <p className="text-xs text-blue-200">
+              {loading ? '…' : `${blogStats?.published ?? 0} published · ${blogStats?.draft ?? 0} drafts`}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/blog/new"
+            className="flex items-center gap-1.5 bg-white text-[#2534ff] font-bold text-xs px-4 py-2 rounded-xl hover:bg-blue-50 transition-colors"
+          >
+            <PenSquare className="w-3.5 h-3.5" /> New Post
+          </Link>
+          <Link
+            href="/admin/blog"
+            className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" /> All Posts
+          </Link>
+        </div>
       </div>
 
       {/* Refresh */}
