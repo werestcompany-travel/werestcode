@@ -75,39 +75,63 @@ export default function AdminDashboard() {
 
   const load = useCallback(async () => {
     setLoading(true);
+
+    // Fetch each API independently so a failure in one never blocks the others
+    const safeJson = async (res: Response) => {
+      try { return await res.json(); } catch { return {}; }
+    };
+
+    const [tRes, aRes, tourRes, blogRes] = await Promise.all([
+      fetch('/api/admin/bookings').catch(() => new Response('{}', { status: 0 })),
+      fetch('/api/admin/attraction-bookings').catch(() => new Response('{}', { status: 0 })),
+      fetch('/api/admin/tours').catch(() => new Response('{}', { status: 0 })),
+      fetch('/api/admin/blog').catch(() => new Response('{}', { status: 0 })),
+    ]);
+
+    if (tRes.status === 401 || aRes.status === 401) { router.push('/admin/login'); return; }
+
+    const [tJson, aJson, tourJson, blogJson] = await Promise.all([
+      safeJson(tRes),
+      safeJson(aRes),
+      safeJson(tourRes),
+      safeJson(blogRes),
+    ]);
+
+    // Transfers
     try {
-      const [tRes, aRes, tourRes, blogRes] = await Promise.all([
-        fetch('/api/admin/bookings'),
-        fetch('/api/admin/attraction-bookings'),
-        fetch('/api/admin/tours'),
-        fetch('/api/admin/blog'),
-      ]);
-      if (tRes.status === 401 || aRes.status === 401 || tourRes.status === 401) { router.push('/admin/login'); return; }
-      const tJson    = await tRes.json();
-      const aJson    = await aRes.json();
-      const tourJson = await tourRes.json();
-      const blogJson = await blogRes.json();
-      const allB  = tJson.data?.bookings ?? [];
+      const allB = tJson.data?.bookings ?? [];
       setTransferStats(tJson.data?.stats ?? null);
       setAllTransfers(allB);
       setRecentTransfers(allB.slice(0, 5));
+    } catch { /* keep previous state */ }
+
+    // Attraction bookings
+    try {
       setAttractionStats(aJson.stats ?? null);
       setRecentAttractions((aJson.bookings ?? []).slice(0, 5));
+    } catch { /* keep previous state */ }
+
+    // Tours
+    try {
       const tours: Booking[] = tourJson.tours ?? [];
       setTourStats({
         listed:   tours.length,
         active:   tours.filter((t: Booking) => t.isActive).length,
         bookings: tourJson.totalBookings ?? 0,
       });
+    } catch { /* keep previous state */ }
+
+    // Blog
+    try {
       const blogPosts: Booking[] = blogJson.data ?? [];
       setBlogStats({
         total:     blogPosts.length,
         published: blogPosts.filter((p: Booking) => p.status === 'PUBLISHED').length,
         draft:     blogPosts.filter((p: Booking) => p.status === 'DRAFT').length,
       });
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* keep previous state */ }
+
+    setLoading(false);
   }, [router]);
 
   useEffect(() => { load(); }, [load]);
