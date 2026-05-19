@@ -32,3 +32,6 @@ next-env.d.ts
 *.pem
 Thumbs.db
 .claude/
+
+# Local blog image uploads
+public/uploads/

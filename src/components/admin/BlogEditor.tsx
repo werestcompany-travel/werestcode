@@ -50,6 +50,47 @@ function slugify(str: string): string {
 }
 
 /* ─── Sub-components ─────────────────────────────────────────────────────── */
+
+function FeaturedImageUpload({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [error,     setError]     = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res  = await fetch('/api/admin/upload', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Upload failed');
+      onUploaded(json.url);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  }
+
+  return (
+    <div className="shrink-0">
+      <input ref={inputRef} type="file" id="feat-img-upload"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        onChange={handleChange} className="hidden" />
+      <label htmlFor="feat-img-upload"
+        className={`flex items-center gap-1.5 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors ${uploading ? 'opacity-60 pointer-events-none' : 'hover:bg-gray-50 text-gray-600'}`}>
+        {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+        {uploading ? 'Uploading…' : 'Upload'}
+      </label>
+      {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+}
+
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
@@ -97,10 +138,15 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
   const [relatedSlugs, setRelatedSlugs] = useState((initialData?.relatedSlugs ?? []).join(', '));
 
   // Image insert panel
-  const contentRef = useRef<HTMLTextAreaElement>(null);
-  const [showImgPanel, setShowImgPanel] = useState(false);
-  const [imgUrl,       setImgUrl]       = useState('');
-  const [imgCaption,   setImgCaption]   = useState('');
+  const contentRef  = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showImgPanel,  setShowImgPanel]  = useState(false);
+  const [imgTab,        setImgTab]        = useState<'url' | 'upload'>('url');
+  const [imgUrl,        setImgUrl]        = useState('');
+  const [imgCaption,    setImgCaption]    = useState('');
+  const [uploading,     setUploading]     = useState(false);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadError,   setUploadError]   = useState<string | null>(null);
 
   // Insert text at cursor position in the content textarea
   const insertAtCursor = useCallback((text: string) => {
@@ -136,15 +182,49 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
     }, 0);
   }, [content]);
 
+  function buildFigure(src: string, caption: string) {
+    return caption.trim()
+      ? `<figure>\n<img src="${src}" alt="${caption.trim()}" loading="lazy">\n<figcaption>${caption.trim()}</figcaption>\n</figure>`
+      : `<figure>\n<img src="${src}" alt="" loading="lazy">\n</figure>`;
+  }
+
   function handleInsertImage() {
     if (!imgUrl.trim()) return;
-    const figure = imgCaption.trim()
-      ? `<figure>\n<img src="${imgUrl.trim()}" alt="${imgCaption.trim()}" loading="lazy">\n<figcaption>${imgCaption.trim()}</figcaption>\n</figure>`
-      : `<figure>\n<img src="${imgUrl.trim()}" alt="" loading="lazy">\n</figure>`;
-    insertAtCursor(figure);
+    insertAtCursor(buildFigure(imgUrl.trim(), imgCaption));
     setImgUrl('');
     setImgCaption('');
     setShowImgPanel(false);
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+
+    // Local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setUploadPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res  = await fetch('/api/admin/upload', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Upload failed');
+      // Auto-insert once uploaded
+      insertAtCursor(buildFigure(json.url, imgCaption));
+      setImgCaption('');
+      setUploadPreview(null);
+      setShowImgPanel(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   }
 
   // Content blocks
@@ -394,47 +474,118 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
 
             {/* ── Image insert panel ── */}
             {showImgPanel && (
-              <div className="border border-gray-200 border-b-0 bg-blue-50/50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-end gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Image URL *</p>
-                  <input
-                    value={imgUrl}
-                    onChange={(e) => setImgUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-..."
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white font-mono"
-                    onKeyDown={(e) => e.key === 'Enter' && handleInsertImage()}
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Caption (optional)</p>
-                  <input
-                    value={imgCaption}
-                    onChange={(e) => setImgCaption(e.target.value)}
-                    placeholder="e.g. Bangkok skyline at sunset"
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white"
-                    onKeyDown={(e) => e.key === 'Enter' && handleInsertImage()}
-                  />
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {imgUrl && (
-                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imgUrl} alt="preview" className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }} />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleInsertImage}
-                    disabled={!imgUrl.trim()}
-                    className="flex items-center gap-1.5 bg-[#2534ff] disabled:opacity-40 hover:bg-[#1a26e0] text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors"
-                  >
-                    <ImagePlus className="w-3.5 h-3.5" /> Insert
-                  </button>
-                  <button type="button" onClick={() => setShowImgPanel(false)}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-xl transition-colors">
+              <div className="border border-gray-200 border-b-0 bg-gray-50">
+
+                {/* Tab bar */}
+                <div className="flex items-center justify-between border-b border-gray-200 px-4 pt-2">
+                  <div className="flex gap-1">
+                    {(['url', 'upload'] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => { setImgTab(t); setUploadError(null); }}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors ${imgTab === t ? 'bg-white border border-gray-200 border-b-white -mb-px text-[#2534ff]' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        {t === 'url' ? '🔗 Paste URL' : '📁 Upload from Computer'}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => { setShowImgPanel(false); setUploadPreview(null); setUploadError(null); }}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors mb-1">
                     <X className="w-3.5 h-3.5" />
                   </button>
+                </div>
+
+                <div className="px-4 py-3">
+
+                  {/* Caption — shared between tabs */}
+                  <div className="mb-3">
+                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Caption (optional)</p>
+                    <input
+                      value={imgCaption}
+                      onChange={(e) => setImgCaption(e.target.value)}
+                      placeholder="e.g. Bangkok skyline at sunset (Source: Unsplash)"
+                      className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white"
+                    />
+                  </div>
+
+                  {/* ── URL tab ── */}
+                  {imgTab === 'url' && (
+                    <div className="flex items-end gap-3">
+                      <div className="flex-1">
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Image URL *</p>
+                        <input
+                          value={imgUrl}
+                          onChange={(e) => setImgUrl(e.target.value)}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          className="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white font-mono"
+                          onKeyDown={(e) => e.key === 'Enter' && handleInsertImage()}
+                        />
+                      </div>
+                      {imgUrl && (
+                        <div className="w-12 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imgUrl} alt="preview" className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }} />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleInsertImage}
+                        disabled={!imgUrl.trim()}
+                        className="flex items-center gap-1.5 bg-[#2534ff] disabled:opacity-40 hover:bg-[#1a26e0] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0"
+                      >
+                        <ImagePlus className="w-3.5 h-3.5" /> Insert
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ── Upload tab ── */}
+                  {imgTab === 'upload' && (
+                    <div className="space-y-3">
+                      {/* Hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="blog-img-upload"
+                      />
+
+                      {/* Drop zone */}
+                      <label
+                        htmlFor="blog-img-upload"
+                        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-6 cursor-pointer transition-colors ${uploading ? 'border-gray-200 bg-gray-50 pointer-events-none' : 'border-gray-300 bg-white hover:border-[#2534ff] hover:bg-blue-50/30'}`}
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="w-8 h-8 text-[#2534ff] animate-spin mb-2" />
+                            <p className="text-xs font-semibold text-gray-500">Uploading…</p>
+                          </>
+                        ) : uploadPreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={uploadPreview} alt="preview" className="max-h-40 rounded-xl object-contain" />
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 bg-[#2534ff]/10 rounded-2xl flex items-center justify-center mb-3">
+                              <ImagePlus className="w-6 h-6 text-[#2534ff]" />
+                            </div>
+                            <p className="text-sm font-semibold text-gray-700 mb-1">Click to choose a file</p>
+                            <p className="text-xs text-gray-400">or drag and drop here</p>
+                            <p className="text-[11px] text-gray-400 mt-2">JPG, PNG, WebP, GIF — max 8 MB</p>
+                          </>
+                        )}
+                      </label>
+
+                      {uploadError && (
+                        <p className="text-xs text-red-500 font-medium flex items-center gap-1">
+                          ⚠️ {uploadError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                 </div>
               </div>
             )}
@@ -455,31 +606,35 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
 
           {/* Featured Image */}
           <div>
-            <Label>Featured Image URL</Label>
-            <input
-              value={featuredImage}
-              onChange={(e) => setFeaturedImage(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className={`${inputCls} font-mono text-xs`}
-            />
-            {featuredImage && (
-              <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 h-40 relative bg-gray-100">
+            <Label>Featured Image</Label>
+
+            {featuredImage ? (
+              /* ── Preview with remove ── */
+              <div className="mt-1 rounded-2xl overflow-hidden border border-gray-200 relative bg-gray-100 aspect-[16/7]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={featuredImage}
-                  alt="Featured image preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setFeaturedImage('')}
-                  className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-semibold hover:bg-red-600 transition-colors"
-                >
-                  Remove
-                </button>
+                <img src={featuredImage} alt="Featured image" className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <div className="absolute top-2 right-2 flex gap-2">
+                  <button type="button" onClick={() => setFeaturedImage('')}
+                    className="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1 rounded-lg font-semibold transition-colors flex items-center gap-1">
+                    <X className="w-3 h-3" /> Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ── URL + upload zone ── */
+              <div className="space-y-2 mt-1">
+                {/* URL input */}
+                <div className="flex items-center gap-2">
+                  <input
+                    value={featuredImage}
+                    onChange={(e) => setFeaturedImage(e.target.value)}
+                    placeholder="Paste image URL…"
+                    className={`${inputCls} font-mono text-xs`}
+                  />
+                  <span className="text-xs text-gray-400 shrink-0">or</span>
+                  <FeaturedImageUpload onUploaded={setFeaturedImage} />
+                </div>
               </div>
             )}
           </div>
