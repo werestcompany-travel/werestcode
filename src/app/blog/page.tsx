@@ -105,10 +105,11 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
         {/* ════════════════════════════════════════════
             RECENT BLOG POSTS — grid only
         ════════════════════════════════════════════ */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10">
-            Recent Blog Post
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3">
+            Recent Blog Posts
           </h2>
+          <p className="text-gray-400 text-sm text-center mb-10">Expert guides from our Thailand travel team</p>
 
           {posts.length === 0 ? (
             <div className="text-center py-24">
@@ -160,49 +161,65 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
 
 /* ── Blog Post Card ─────────────────────────────────────────────────────────── */
 
+const CATEGORY_BADGE: Record<string, string> = {
+  BANGKOK:  'bg-blue-50 text-[#2534ff]',
+  PATTAYA:  'bg-emerald-50 text-emerald-700',
+  THAILAND: 'bg-red-50 text-red-600',
+  PHUKET:   'bg-purple-50 text-purple-700',
+  KRABI:    'bg-orange-50 text-orange-600',
+}
+
 function BlogPostCard({ post }: { post: BlogPostSummary }) {
   const cat      = BLOG_CATEGORIES[post.category]
   const fallback = FALLBACK_BG[post.category] ?? 'from-gray-400 to-gray-600'
+  const badge    = CATEGORY_BADGE[post.category] ?? 'bg-gray-100 text-gray-600'
 
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
     >
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden shrink-0 rounded-2xl">
+      <div className="relative w-full aspect-[16/10] overflow-hidden shrink-0 rounded-t-2xl">
         {post.featuredImage ? (
           <Image
             src={post.featuredImage}
             alt={post.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${fallback}`} />
         )}
+        {/* Category badge overlay */}
+        <span className={`absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full ${badge} backdrop-blur-sm`}>
+          {cat?.label ?? post.category}
+        </span>
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 pt-4 gap-2">
+      <div className="flex flex-col flex-1 p-5 gap-2.5">
+        {/* Date + reading time */}
         <div className="flex items-center gap-2 text-xs text-gray-400">
-          <span className="font-medium text-gray-500">{cat?.label ?? post.category}</span>
-          {post.publishedAt && (
-            <>
-              <span>·</span>
-              <span>{formatBlogDate(post.publishedAt)}</span>
-            </>
-          )}
+          {post.publishedAt && <span>{formatBlogDate(post.publishedAt)}</span>}
+          <span>·</span>
+          <span>{post.readingTimeMin} min read</span>
         </div>
-        <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 group-hover:text-[#2534ff] transition-colors duration-150">
+
+        {/* Title */}
+        <h3 className="font-bold text-gray-900 text-[15px] leading-snug line-clamp-2 group-hover:text-[#2534ff] transition-colors duration-150">
           {post.title}
         </h3>
-        <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 flex-1">
+
+        {/* Excerpt */}
+        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 flex-1">
           {post.excerpt}
         </p>
-        <div className="flex items-center gap-1.5 text-[#2534ff] text-sm font-semibold mt-2 group-hover:gap-2.5 transition-all duration-150">
-          View Full Article
+
+        {/* CTA */}
+        <div className="flex items-center gap-1.5 text-[#2534ff] text-sm font-semibold pt-1 group-hover:gap-2.5 transition-all duration-150">
+          Read Article
           <ArrowRight className="w-3.5 h-3.5" />
         </div>
       </div>
