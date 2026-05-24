@@ -12,7 +12,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useLocale, type Lang, type Currency } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 import LocaleCurrencyModal from './LocaleCurrencyModal';
 
 const LANGUAGES: { code: Lang; label: string; flagSrc: string; native: string }[] = [
@@ -306,7 +305,7 @@ export default function Navbar({
       <header className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
 
         <div className={cn(
-          'absolute inset-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm transition-opacity duration-300 pointer-events-none',
+          'absolute inset-0 bg-white border-b border-gray-200 shadow-sm transition-opacity duration-300 pointer-events-none',
           isDark ? 'opacity-0' : 'opacity-100',
         )} />
 
@@ -407,8 +406,6 @@ export default function Navbar({
               <ChevronDown className="w-3 h-3 ml-0.5" />
             </button>
 
-            <ThemeToggle />
-
             {user ? (
               <div className="relative ml-1" ref={userMenuRef}>
                 <button type="button" onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -485,12 +482,12 @@ export default function Navbar({
       {mobileMenuOpen && (
         <div
           className={cn(
-            'fixed inset-0 z-[200] bg-white dark:bg-gray-900 flex flex-col lg:hidden transition-all duration-200 ease-out',
+            'fixed inset-0 z-[200] bg-white flex flex-col lg:hidden transition-all duration-200 ease-out',
             mobileMenuVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3',
           )}
         >
           {/* ── Overlay header (mirrors main nav) ── */}
-          <div className="h-16 flex items-center gap-2 px-4 shrink-0 border-b border-gray-100 dark:border-gray-800">
+          <div className="h-16 flex items-center gap-2 px-4 shrink-0 border-b border-gray-100">
             <Link href="/" onClick={closeMobileMenu} className="flex items-center shrink-0 -ml-[5px]">
               <Image src="/images/logo.png" alt="Werest Travel" height={32} width={106} priority className="object-contain" />
             </Link>
@@ -601,11 +598,6 @@ export default function Navbar({
                 );
               })()}
 
-              {/* Dark mode toggle row */}
-              <div className="flex items-center gap-3 w-full py-4 border-b border-gray-100">
-                <div className="flex-1 text-[15px] text-gray-800 font-medium">Dark mode</div>
-                <ThemeToggle />
-              </div>
             </div>
 
             {/* ── Travel options ── */}

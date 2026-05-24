@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useState, useCallback, useEffect, useRef } from 'react';
@@ -298,7 +298,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Full-page sticky sidebar ── */}
         <aside
-          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
+          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
           style={{
             top: navHidden ? '0px' : '64px',
             height: navHidden ? '100vh' : 'calc(100vh - 64px)',
@@ -412,7 +412,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent min-h-0 lg:min-h-[580px]"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px]"
         >
           {/* Background landscape — hidden on mobile, visible sm+ */}
           <div className="hidden lg:block absolute inset-0">
@@ -537,7 +537,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           2. NEW USER EXCLUSIVE
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="New user exclusive" className="bg-white dark:bg-gray-900 pt-[30px] pb-7 lg:pt-7">
+      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 lg:pt-7">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
           {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
@@ -591,7 +591,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           3. PROMOTIONAL BANNER SLIDER
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Promotions" className="bg-white dark:bg-gray-900 py-6">
+      <section aria-label="Promotions" className="bg-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Slider container */}
           <div className="relative overflow-hidden sm:overflow-visible">
@@ -687,7 +687,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           WHERE TO NEXT — portrait city card row
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="inspired-heading" className="py-10 bg-white dark:bg-gray-900">
+      <section aria-labelledby="inspired-heading" className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Section header */}
@@ -809,13 +809,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white dark:bg-gray-900">
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
           <div className="text-center mb-2 lg:mb-6">
             <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
+          <div className="bg-white rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
           <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
@@ -857,7 +857,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           9. TRAVEL BLOG
       ════════════════════════════════════════════════════════════ */}
       {latestPosts.length > 0 && (
-        <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white dark:bg-gray-900">
+        <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between mb-8">
               <div>
@@ -917,7 +917,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           12. SEO ROUTE KEYWORD GRID
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="All transfer routes in Thailand" className="py-14 bg-white dark:bg-gray-900">
+      <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t('seo.h2')}</h2>
           <nav aria-label="Transfer route directory">

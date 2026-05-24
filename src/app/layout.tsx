@@ -9,7 +9,6 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import CookieConsent from '@/components/CookieConsent';
 import { ChatProvider } from '@/context/ChatContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -60,7 +59,7 @@ export const metadata: Metadata = {
 /* ── Root layout ──────────────────────────────────────────────────────────── */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#2534ff" />
@@ -79,8 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <ThemeProvider>
-          <LocaleProvider>
+        <LocaleProvider>
             <WishlistProvider>
               <AuthModalProvider>
                 <ChatProvider>
@@ -98,7 +96,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </AuthModalProvider>
             </WishlistProvider>
           </LocaleProvider>
-        </ThemeProvider>
 
         {/* Vercel Analytics */}
         <Analytics />
