@@ -9,8 +9,10 @@ import LoyaltyProgressBar from '@/components/account/LoyaltyProgressBar';
 import {
   Heart, BookOpen, User, MapPin, Calendar, Ticket,
   ExternalLink, Trash2, ChevronRight, Star, Package, Compass,
-  Car, Gift, Users, Plus, X, Pencil,
+  Car, Gift, Users, Plus, X, Pencil, CalendarDays,
 } from 'lucide-react';
+import BookingCalendar from '@/components/account/BookingCalendar';
+import PushNotificationBell from '@/components/PushNotificationBell';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -190,7 +192,7 @@ function AccountContent() {
   const searchParams = useSearchParams();
   const tabParam     = searchParams.get('tab');
 
-  type TabId = 'profile' | 'wishlist' | 'bookings' | 'travellers' | 'referral';
+  type TabId = 'profile' | 'wishlist' | 'bookings' | 'travellers' | 'referral' | 'calendar';
 
   const [tab,       setTab]       = useState<TabId>((tabParam as TabId) ?? 'profile');
   const [user,      setUser]      = useState<UserInfo | null>(null);
@@ -314,11 +316,12 @@ function AccountContent() {
   }).slice(0, 1); // show only the latest one
 
   const TABS: { id: TabId; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: 'profile',   label: 'Profile',    icon: <User      className="w-4 h-4" /> },
-    { id: 'bookings',  label: 'Bookings',   icon: <BookOpen  className="w-4 h-4" />, count: allBookings.length },
-    { id: 'wishlist',  label: 'Wishlist',   icon: <Heart     className="w-4 h-4" />, count: wishlist.length },
-    { id: 'travellers',label: 'Travellers', icon: <Users     className="w-4 h-4" />, count: travellers.length },
-    { id: 'referral',  label: 'Refer',      icon: <Gift      className="w-4 h-4" /> },
+    { id: 'profile',   label: 'Profile',    icon: <User        className="w-4 h-4" /> },
+    { id: 'bookings',  label: 'Bookings',   icon: <BookOpen    className="w-4 h-4" />, count: allBookings.length },
+    { id: 'calendar',  label: 'Calendar',   icon: <CalendarDays className="w-4 h-4" /> },
+    { id: 'wishlist',  label: 'Wishlist',   icon: <Heart       className="w-4 h-4" />, count: wishlist.length },
+    { id: 'travellers',label: 'Travellers', icon: <Users       className="w-4 h-4" />, count: travellers.length },
+    { id: 'referral',  label: 'Refer',      icon: <Gift        className="w-4 h-4" /> },
   ];
 
   return (
@@ -407,6 +410,11 @@ function AccountContent() {
                   ))}
                 </div>
               </div>
+
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 max-w-lg">
+                <h2 className="font-bold text-gray-900 mb-3">Notifications</h2>
+                <PushNotificationBell />
+              </div>
             </div>
           )}
 
@@ -487,6 +495,11 @@ function AccountContent() {
                 </>
               )}
             </div>
+          )}
+
+          {/* ── CALENDAR TAB ── */}
+          {tab === 'calendar' && (
+            <BookingCalendar bookings={allBookings} />
           )}
 
           {/* ── WISHLIST TAB ── */}

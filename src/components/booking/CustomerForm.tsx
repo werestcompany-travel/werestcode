@@ -47,8 +47,6 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
       e.customerEmail = 'Valid email address is required';
     if (!form.nationality.trim())
       e.nationality = 'Nationality is required';
-    if (!form.birthDate)
-      e.birthDate = 'Date of birth is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -109,7 +107,7 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
           />
         </Field>
 
-        <Field icon={<CalendarDays className="w-4 h-4 text-gray-400" />} label="Date of Birth *" error={errors.birthDate}>
+        <Field icon={<CalendarDays className="w-4 h-4 text-gray-400" />} label="Date of Birth (optional)" error={errors.birthDate}>
           <input
             type="date"
             max={today}

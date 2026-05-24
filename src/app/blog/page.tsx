@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import BlogSubscribeForm from '@/components/blog/BlogSubscribeForm'
 import { BLOG_CATEGORIES, type BlogPostSummary, formatBlogDate } from '@/lib/blog'
 import { prisma } from '@/lib/db'
 
@@ -78,28 +79,16 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
         ════════════════════════════════════════════ */}
         <section className="pt-28 pb-12 px-4 text-center bg-white">
           <span className="inline-block bg-yellow-300 text-gray-900 text-xs font-extrabold px-4 py-1.5 rounded-full mb-5 tracking-wide">
-            Blogs &amp; Articles
+            Travel Blog
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-gray-900 leading-tight mb-4">
-            Blogs &amp; Articles
+            Thailand Travel Guides
           </h1>
           <p className="text-gray-500 text-base sm:text-lg max-w-md mx-auto mb-8 leading-relaxed">
-            Subscribe to learn more about traveling and get the newest tips for upcoming travel
+            Expert tips, itineraries and transfer advice from our Thailand travel team
           </p>
-          {/* Subscribe form */}
-          <form className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 w-full sm:w-auto border border-gray-200 rounded-full px-5 py-3 text-sm text-gray-700 outline-none focus:border-[#2534ff] shadow-sm placeholder:text-gray-400"
-            />
-            <button
-              type="submit"
-              className="bg-[#2534ff] hover:bg-[#1e2ce6] text-white font-bold px-7 py-3 rounded-full text-sm transition-colors shadow-md whitespace-nowrap"
-            >
-              Subscribe
-            </button>
-          </form>
+          {/* Subscribe form — connected to API */}
+          <BlogSubscribeForm />
         </section>
 
         {/* ════════════════════════════════════════════

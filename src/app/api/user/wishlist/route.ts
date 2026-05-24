@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromCookies } from '@/lib/user-auth';
+import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
 
 // GET /api/user/wishlist — list the current user's wishlist
-export async function GET() {
-  const session = await getUserFromCookies();
+export async function GET(req: NextRequest) {
+  const session = await getUserFromRequest(req);
   if (!session) return NextResponse.json({ items: [] });
 
   const items = await prisma.wishlistItem.findMany({
@@ -17,7 +17,7 @@ export async function GET() {
 
 // POST /api/user/wishlist — add item
 export async function POST(req: NextRequest) {
-  const session = await getUserFromCookies();
+  const session = await getUserFromRequest(req);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { attractionId, attractionName, attractionUrl } = await req.json();
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
 // DELETE /api/user/wishlist?attractionId=xxx — remove item
 export async function DELETE(req: NextRequest) {
-  const session = await getUserFromCookies();
+  const session = await getUserFromRequest(req);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);

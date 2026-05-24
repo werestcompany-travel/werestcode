@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import CustomerForm, { type CustomerFormData } from '@/components/booking/CustomerForm';
 import PaymentSection, { type PaymentMethod } from '@/components/booking/PaymentSection';
 import PriceSummary from '@/components/booking/PriceSummary';
+import LoyaltyRedemption from '@/components/booking/LoyaltyRedemption';
 import { VehicleType, SelectedAddOn } from '@/types';
 import { formatDate, formatCurrency, VEHICLE_LABELS } from '@/lib/utils';
 import { VEHICLE_CONFIGS } from '@/lib/vehicles';
@@ -22,6 +23,8 @@ function BookingPageInner() {
   const [discountCode,   setDiscountCode]   = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [loyaltyPoints,   setLoyaltyPoints]   = useState(0);
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
 
   // Parse params
   const pickupAddress  = params.get('pickup_address')  ?? '';
@@ -58,7 +61,7 @@ function BookingPageInner() {
     ? calculateSurcharges(basePrice, pickupAddress, dropoffAddress, time, new Date(date))
     : { total: 0, breakdown: [] };
   const clientTotal = Math.round(basePrice + addOnsTotal + surchargeResult.total);
-  const displayTotal = Math.max(0, clientTotal - discountAmount);
+  const displayTotal = Math.max(0, clientTotal - discountAmount - loyaltyDiscount);
 
   const handleApplyDiscount = async (code: string): Promise<{ error?: string }> => {
     try {
@@ -84,6 +87,16 @@ function BookingPageInner() {
     setDiscountApplied(false);
   };
 
+  const handleLoyaltyApplied = (discount: number, points: number) => {
+    setLoyaltyDiscount(discount);
+    setLoyaltyPoints(points);
+  };
+
+  const handleLoyaltyRemoved = () => {
+    setLoyaltyDiscount(0);
+    setLoyaltyPoints(0);
+  };
+
   const handleSubmit = async (customerData: CustomerFormData) => {
     setLoading(true);
     try {
@@ -102,6 +115,7 @@ function BookingPageInner() {
           basePrice, addOnsTotal, totalPrice,
           paymentMethod,
           ...(discountApplied && discountCode ? { discountCode } : {}),
+          ...(loyaltyPoints > 0 ? { loyaltyPointsRedeemed: loyaltyPoints, loyaltyDiscount } : {}),
           ...customerData,
         }),
       });
@@ -234,6 +248,13 @@ function BookingPageInner() {
                 </div>
               </div>
 
+              {/* Loyalty rewards redemption */}
+              <LoyaltyRedemption
+                orderTotal={clientTotal - discountAmount}
+                onApplied={handleLoyaltyApplied}
+                onRemoved={handleLoyaltyRemoved}
+              />
+
               {/* Price summary */}
               <PriceSummary
                 vehicleType={vehicleType}
@@ -256,6 +277,8 @@ function BookingPageInner() {
                 discountApplied={discountApplied}
                 onApplyDiscount={handleApplyDiscount}
                 onRemoveDiscount={handleRemoveDiscount}
+                loyaltyDiscount={loyaltyDiscount}
+                loyaltyPointsRedeemed={loyaltyPoints}
               />
             </div>
 

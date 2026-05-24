@@ -40,6 +40,9 @@ interface PriceSummaryProps {
   discountApplied?:     boolean;
   onApplyDiscount?:     (code: string) => Promise<{ error?: string }>;
   onRemoveDiscount?:    () => void;
+  // Loyalty
+  loyaltyDiscount?:     number;
+  loyaltyPointsRedeemed?: number;
 }
 
 export default function PriceSummary({
@@ -48,6 +51,7 @@ export default function PriceSummary({
   surcharges = [], surchargeTotal = 0,
   discountCode = '', discountAmount = 0, discountApplied = false,
   onApplyDiscount, onRemoveDiscount,
+  loyaltyDiscount = 0, loyaltyPointsRedeemed = 0,
 }: PriceSummaryProps) {
   const [codeInput, setCodeInput]     = useState('');
   const [applyError, setApplyError]   = useState('');
@@ -128,15 +132,26 @@ export default function PriceSummary({
               </div>
             )}
 
+            {/* Loyalty discount line */}
+            {loyaltyDiscount > 0 && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span className="flex items-center gap-1">
+                  <span className="text-xs">💎</span>
+                  Loyalty points ({loyaltyPointsRedeemed.toLocaleString()} pts)
+                </span>
+                <span>−{formatCurrency(loyaltyDiscount)}</span>
+              </div>
+            )}
+
             {/* Total */}
             <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
               <span className="font-bold text-gray-900">Total</span>
               <div className="text-right">
-                {discountApplied && discountAmount > 0 && (
+                {(discountApplied && discountAmount > 0) || loyaltyDiscount > 0 ? (
                   <p className="text-xs text-gray-400 line-through mb-0.5">
-                    {formatCurrency(totalPrice + discountAmount)}
+                    {formatCurrency(totalPrice + discountAmount + loyaltyDiscount)}
                   </p>
-                )}
+                ) : null}
                 <span className="font-extrabold text-2xl text-gray-900">{formatCurrency(totalPrice)}</span>
               </div>
             </div>

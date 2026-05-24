@@ -2,15 +2,32 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFromCookies } from '@/lib/auth';
 
-export const config = { api: { bodyParser: false } };
-
-const MAX_SIZE_MB = 8;
+const MAX_SIZE_MB   = 8;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
 export async function POST(req: NextRequest) {
   /* ── Auth ── */
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey    = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    return NextResponse.json({
+      error: 'Cloudinary not configured',
+      setup: [
+        '1. Go to https://cloudinary.com and create a free account',
+        '2. Copy your Cloud Name, API Key, and API Secret from the dashboard',
+        '3. Add them to your .env.local (and Vercel env vars for production):',
+        '   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name',
+        '   CLOUDINARY_API_KEY=your_api_key',
+        '   CLOUDINARY_API_SECRET=your_api_secret',
+        '4. In Cloudinary: Settings → Upload → Add upload preset → name it "werest_unsigned" → set to Unsigned',
+      ],
+    }, { status: 503 });
+  }
 
   try {
     const formData = await req.formData();
@@ -33,39 +50,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `File too large. Max size is ${MAX_SIZE_MB}MB` }, { status: 400 });
     }
 
-    const bytes  = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    /* ── Signed upload to Cloudinary ── */
+    const timestamp = Math.round(Date.now() / 1000);
+    const folder    = 'werest';
 
-    /* ── Generate safe filename ── */
-    const ext      = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const safeName = `blog-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const crypto = await import('crypto');
+    const sigStr  = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash('sha1').update(sigStr).digest('hex');
 
-    /* ── Try Vercel Blob (production) first ── */
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const { put } = await import('@vercel/blob');
-      const blob = await put(`blog/${safeName}`, buffer, {
-        access: 'public',
-        contentType: file.type,
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
-      return NextResponse.json({ url: blob.url });
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    uploadData.append('api_key', apiKey);
+    uploadData.append('timestamp', timestamp.toString());
+    uploadData.append('signature', signature);
+    uploadData.append('folder', folder);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: 'POST', body: uploadData }
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[upload] Cloudinary error:', err);
+      return NextResponse.json({ error: 'Upload failed' }, { status: 502 });
     }
 
-    /* ── Fallback: save to public/uploads/blog/ (local dev) ── */
-    const { writeFile } = await import('fs/promises');
-    const { join }      = await import('path');
-    const uploadDir     = join(process.cwd(), 'public', 'uploads', 'blog');
-
-    // Ensure directory exists
-    const { mkdir } = await import('fs/promises');
-    await mkdir(uploadDir, { recursive: true });
-
-    await writeFile(join(uploadDir, safeName), buffer);
-    const url = `/uploads/blog/${safeName}`;
-
-    return NextResponse.json({ url });
+    const data = await res.json();
+    return NextResponse.json({
+      success:  true,
+      url:      data.secure_url,
+      publicId: data.public_id,
+    });
   } catch (err) {
-    console.error('[upload]', err);
+    console.error('[upload] error:', err);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

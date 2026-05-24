@@ -7,6 +7,86 @@ const prisma = new PrismaClient();
 
 const POSTS = [
   {
+    title: 'Bangkok Airport Transfer Guide: Suvarnabhumi vs Don Mueang',
+    slug: 'bangkok-airport-transfer-guide-suvarnabhumi-don-mueang',
+    excerpt:
+      'Everything you need to know about getting from Bangkok airports to your hotel — pricing, vehicle types, and why a private transfer beats the taxi queue.',
+    content: `## Bangkok Has Two International Airports
+
+Suvarnabhumi (BKK) handles most international flights and is located about 30 km east of the city center. Don Mueang (DMK) is the hub for low-cost carriers like AirAsia and Nok Air, located 25 km north.
+
+Both airports can take 45–90 minutes to reach central Bangkok depending on traffic — and Bangkok traffic is famously unpredictable.
+
+## Your Transfer Options Compared
+
+| Option | Pros | Cons |
+|--------|------|------|
+| Metered taxi | Cheap | Queue + meter + expressway surcharge |
+| Public bus | Very cheap | Luggage hassle, slow |
+| Airport Rail Link (Suvarnabhumi only) | Fast | Doesn't go to most hotels, heavy luggage issue |
+| **Private transfer** | Door-to-door, fixed price, meet & greet | Slightly higher cost |
+
+## Why Private Transfers Make Sense
+
+When you land after a long flight, the last thing you want is to argue with a driver or navigate an unfamiliar transport system with luggage.
+
+A private transfer from Werest gives you:
+- **Fixed price** — no surprises, negotiated before you travel
+- **Meet & greet** — driver holds a sign with your name inside the arrivals hall
+- **Vehicle choice** — Sedan (1–2 pax), SUV (1–4 pax), Minivan (1–10 pax)
+- **Flight tracking** — your driver monitors your flight and adjusts for delays
+
+## Suvarnabhumi to Central Bangkok: What to Expect
+
+The drive from Suvarnabhumi to Sukhumvit typically takes:
+- **Off-peak** (10am–4pm): 40–55 minutes
+- **Rush hour** (7–9am, 5–8pm): 60–90 minutes
+
+Cost for a private transfer: from ฿800 for a Sedan to ฿1,200 for an SUV. All tolls and parking included.
+
+## Don Mueang to Central Bangkok
+
+Don Mueang is further north, so transfers to Sukhumvit take slightly longer:
+- **Off-peak**: 50–70 minutes
+- **Rush hour**: 75–110 minutes
+
+A common option for budget travelers is taking the A1 express bus to Mo Chit BTS, then BTS to your hotel. But with luggage, a private transfer at around ฿900–1,100 is often worth it.
+
+## How to Book Your Transfer
+
+1. Visit [Werest Private Transfers](/transfers)
+2. Enter your pickup address (or select airport) and drop-off hotel
+3. Choose your vehicle type based on group size
+4. Confirm and receive instant booking reference
+
+Your driver will be waiting at arrivals — look for the Werest sign with your name.
+
+## Tips for Your Bangkok Airport Transfer
+
+- **Save the driver's contact number** — you'll receive it in your confirmation
+- **Flights delayed?** Your driver monitors your flight — no extra charge for delays up to 60 minutes
+- **Early morning arrivals?** Not a problem — we operate 24/7
+- **More than 10 passengers?** Contact us for coach/bus options
+
+## Ready to Book?
+
+Skip the queue and travel in comfort. [Book your private Bangkok airport transfer](/booking) today — instant confirmation, fixed price, professional driver.`,
+    featuredImage: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1200&q=80',
+    category: 'BANGKOK' as const,
+    tags: ['bangkok airport transfer', 'suvarnabhumi transfer', 'don mueang transfer', 'bangkok private transfer', 'bkk airport taxi', 'thailand travel tips'],
+    status: 'DRAFT' as const,
+    publishedAt: null,
+    authorName: 'Werest Team',
+    authorTitle: 'Thailand Travel Expert',
+    readingTimeMin: 6,
+    seoTitle: 'Bangkok Airport Transfer Guide: Suvarnabhumi vs Don Mueang',
+    seoDescription: 'Compare your Bangkok airport transfer options. Private transfers from BKK and DMK with fixed prices, meet & greet service, and 24/7 availability.',
+    faqs: null,
+    ctaBlocks: null,
+    relatedServices: null,
+    relatedSlugs: [],
+  },
+  {
     title: 'Bangkok to Pattaya Transfer: The Complete Guide for 2025',
     slug: 'bangkok-to-pattaya-transfer-guide-2025',
     excerpt:

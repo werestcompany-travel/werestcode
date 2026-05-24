@@ -3,17 +3,21 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Lang     = 'EN' | 'TH' | 'ZH';
-export type Currency = 'USD' | 'EUR' | 'GBP' | 'THB';
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'THB' | 'CNY' | 'JPY' | 'AUD' | 'SGD';
 
-/* ── Exchange rates relative to THB (1 THB = X currency) ── */
-const RATES: Record<Currency, number> = {
+/* ── Fallback exchange rates relative to THB (1 THB = X currency) ── */
+const FALLBACK_RATES: Record<Currency, number> = {
   THB: 1,
   USD: 0.0274,
   EUR: 0.0254,
   GBP: 0.0217,
+  CNY: 0.197,
+  JPY: 4.1,
+  AUD: 0.042,
+  SGD: 0.037,
 };
-const SYMBOLS: Record<Currency, string>  = { THB: '฿', USD: '$', EUR: '€', GBP: '£' };
-const DECIMALS: Record<Currency, number> = { THB: 0,   USD: 2,   EUR: 2,   GBP: 2   };
+const SYMBOLS: Record<Currency, string>  = { THB: '฿', USD: '$',  EUR: '€', GBP: '£', CNY: '¥',  JPY: '¥',  AUD: 'A$', SGD: 'S$' };
+const DECIMALS: Record<Currency, number> = { THB: 0,   USD: 2,    EUR: 2,   GBP: 2,   CNY: 2,    JPY: 0,    AUD: 2,    SGD: 2    };
 
 /* ── Translations ─────────────────────────────────────────── */
 type Strings = Record<string, string>;
@@ -194,7 +198,7 @@ const T: Record<Lang, Strings> = {
     'faq.q4': 'Is payment required at the time of booking?',
     'faq.a4': 'No payment is needed when you book. You pay the driver directly on the day of transfer in cash (Thai Baht) or via bank transfer.',
     'faq.q5': 'What vehicle types are available?',
-    'faq.a5': 'We offer Sedan (up to 2 passengers & 2 bags), SUV (up to 4 passengers & 4 bags), and Minivan (up to 10 passengers & 7 bags). All vehicles are air-conditioned and include complimentary water.',
+    'faq.a5': 'We offer Sedan (up to 2 passengers & 2 bags), SUV (up to 4 passengers & 4 bags), Minivan (up to 10 passengers & 7 bags), and Luxury MPV (up to 6 passengers, VIP). All vehicles are air-conditioned and include complimentary water.',
     'faq.q6': 'Do you cover routes outside Bangkok?',
     'faq.a6': 'Yes — we cover all major airports and cities across Thailand including Phuket, Chiang Mai, Koh Samui, Krabi, Pattaya, Hua Hin, and more.',
     /* seo section */
@@ -378,7 +382,7 @@ const T: Record<Lang, Strings> = {
     'faq.q4': 'ต้องชำระเงินตอนจองไหม?',
     'faq.a4': 'ไม่ต้องชำระเงินตอนจอง คุณจ่ายให้คนขับโดยตรงในวันเดินทางด้วยเงินสด (บาท) หรือโอนเงิน',
     'faq.q5': 'มีรถประเภทใดบ้าง?',
-    'faq.a5': 'เรามีซีดาน (สูงสุด 2 คน 2 กระเป๋า) SUV (สูงสุด 4 คน 4 กระเป๋า) และมินิแวน (สูงสุด 10 คน 7 กระเป๋า) รถทุกคันมีแอร์และน้ำดื่มฟรี',
+    'faq.a5': 'เรามีซีดาน (สูงสุด 2 คน 2 กระเป๋า) SUV (สูงสุด 4 คน 4 กระเป๋า) มินิแวน (สูงสุด 10 คน 7 กระเป๋า) และ Luxury MPV (สูงสุด 6 คน VIP) รถทุกคันมีแอร์และน้ำดื่มฟรี',
     'faq.q6': 'ให้บริการนอกกรุงเทพฯ ด้วยไหม?',
     'faq.a6': 'ใช่ — เราครอบคลุมสนามบินและเมืองสำคัญทั่วไทย รวมถึงภูเก็ต เชียงใหม่ เกาะสมุย กระบี่ พัทยา หัวหิน และอีกมาก',
     /* seo section */
@@ -562,7 +566,7 @@ const T: Record<Lang, Strings> = {
     'faq.q4': '预订时需要付款吗？',
     'faq.a4': '预订时无需付款。您在接送当天直接向司机付款，可用现金（泰铢）或银行转账。',
     'faq.q5': '有哪些车型可选？',
-    'faq.a5': '我们提供轿车（最多2人，2件行李）、SUV（最多4人，4件行李）和面包车（最多10人，7件行李）。所有车辆均配备空调和免费饮用水。',
+    'faq.a5': '我们提供轿车（最多2人，2件行李）、SUV（最多4人，4件行李）、面包车（最多10人，7件行李）和豪华MPV（最多6人，VIP服务）。所有车辆均配备空调和免费饮用水。',
     'faq.q6': '你们服务曼谷以外的地区吗？',
     'faq.a6': '是的 — 我们覆盖泰国所有主要机场和城市，包括普吉岛、清迈、苏梅岛、甲米、芭提雅、华欣等。',
     /* seo section */
@@ -576,6 +580,7 @@ const T: Record<Lang, Strings> = {
 interface LocaleCtx {
   lang:        Lang;
   currency:    Currency;
+  rates:       Record<Currency, number>;
   setLang:     (l: Lang)     => void;
   setCurrency: (c: Currency) => void;
   t:           (key: string) => string;
@@ -583,20 +588,40 @@ interface LocaleCtx {
 }
 
 const LocaleContext = createContext<LocaleCtx>({
-  lang: 'EN', currency: 'USD',
+  lang: 'EN', currency: 'THB', rates: FALLBACK_RATES,
   setLang: () => {}, setCurrency: () => {},
   t: k => k, formatPrice: n => `฿${n}`,
 });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [lang,     setLangState]     = useState<Lang>('EN');
-  const [currency, setCurrencyState] = useState<Currency>('USD');
+  const [lang,         setLangState]     = useState<Lang>('EN');
+  const [currency,     setCurrencyState] = useState<Currency>('THB');
+  const [rates,        setRates]         = useState<Record<Currency, number>>(FALLBACK_RATES);
 
+  /* ── Restore persisted preferences from localStorage ── */
   useEffect(() => {
     const l = (localStorage.getItem('werest_lang')     as Lang)     ?? 'EN';
-    const c = (localStorage.getItem('werest_currency') as Currency) ?? 'USD';
+    const c = (localStorage.getItem('werest_currency') as Currency) ?? 'THB';
     setLangState(l);
     setCurrencyState(c);
+  }, []);
+
+  /* ── Fetch live exchange rates on mount, refresh every 4 hours ── */
+  useEffect(() => {
+    async function fetchRates() {
+      try {
+        const res  = await fetch('/api/currency-rates');
+        const json = await res.json();
+        if (json.rates && typeof json.rates === 'object') {
+          setRates(prev => ({ ...prev, ...json.rates }));
+        }
+      } catch {
+        /* keep static fallback rates */
+      }
+    }
+    fetchRates();
+    const interval = setInterval(fetchRates, 4 * 60 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const setLang = (l: Lang) => {
@@ -612,7 +637,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     T[lang]?.[key] ?? T['EN']?.[key] ?? key;
 
   const formatPrice = (thb: number): string => {
-    const converted = thb * RATES[currency];
+    const converted = thb * (rates[currency] ?? FALLBACK_RATES[currency] ?? 1);
     const dec       = DECIMALS[currency];
     return `${SYMBOLS[currency]}${converted.toLocaleString('en-US', {
       minimumFractionDigits: dec,
@@ -621,7 +646,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <LocaleContext.Provider value={{ lang, currency, setLang, setCurrency, t, formatPrice }}>
+    <LocaleContext.Provider value={{ lang, currency, rates, setLang, setCurrency, t, formatPrice }}>
       {children}
     </LocaleContext.Provider>
   );

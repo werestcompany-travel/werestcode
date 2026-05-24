@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { getUserFromCookies } from '@/lib/user-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
 import { calcTier, nextTierInfo, TIER_META, TIER_THRESHOLDS } from '@/lib/loyalty';
 
-export async function GET() {
-  const session = await getUserFromCookies();
+export async function GET(req: NextRequest) {
+  const session = await getUserFromRequest(req);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const user = await prisma.user.findUnique({

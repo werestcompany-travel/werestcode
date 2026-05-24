@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, X, ChevronLeft, ImagePlus, Bold, Italic, Link2, Heading2, Heading3, List, ListOrdered, Minus } from 'lucide-react';
+import { Loader2, Plus, X, ChevronLeft, ImagePlus, Bold, Italic, Link2, Heading2, Heading3, List, ListOrdered, Minus, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 export interface BlogPost {
@@ -136,6 +137,31 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
       : '',
   );
   const [relatedSlugs, setRelatedSlugs] = useState((initialData?.relatedSlugs ?? []).join(', '));
+
+  // SEO auto-fill
+  const [seoGenerating, setSeoGenerating] = useState(false);
+
+  const autoFillSeo = async () => {
+    if (!title.trim()) { toast.error('Add a title first'); return; }
+    setSeoGenerating(true);
+    try {
+      const res = await fetch('/api/admin/ai/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'blog', title, description: excerpt || content.slice(0, 500), category }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        if (d.seoTitle)       setSeoTitle(d.seoTitle);
+        if (d.seoDescription) setSeoDesc(d.seoDescription);
+        if (d.tags?.length)   setTags(d.tags.join(', '));
+        if (d.excerpt && !excerpt.trim()) setExcerpt(d.excerpt);
+        toast.success('SEO fields auto-filled');
+      }
+    } catch { toast.error('Generation failed'); }
+    finally { setSeoGenerating(false); }
+  };
 
   // Image insert panel
   const contentRef  = useRef<HTMLTextAreaElement>(null);
@@ -711,6 +737,17 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
 
         {/* ── Section 3: SEO ── */}
         <SectionCard title="SEO">
+          <div className="flex justify-end mb-3">
+            <button
+              type="button"
+              onClick={autoFillSeo}
+              disabled={seoGenerating}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition-colors disabled:opacity-50"
+            >
+              {seoGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              {seoGenerating ? 'Generating…' : 'Auto-fill SEO'}
+            </button>
+          </div>
           <div>
             <Label>SEO Title</Label>
             <input

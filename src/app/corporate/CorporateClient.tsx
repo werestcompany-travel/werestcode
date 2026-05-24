@@ -174,7 +174,7 @@ export default function CorporatePage() {
               className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-6 py-3.5 rounded-xl hover:bg-gray-50 transition-colors text-sm shadow-lg">
               Apply now <ChevronRight className="w-4 h-4" />
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm">
               <Phone className="w-4 h-4" /> Talk to sales
             </a>

@@ -29,6 +29,14 @@ export async function PATCH(
         },
       },
     });
+
+    // Post-trip automation on COMPLETED
+    if (status === 'COMPLETED') {
+      const { awardLoyaltyPoints, sendReviewRequest } = await import('@/lib/post-trip');
+      awardLoyaltyPoints(booking.customerEmail, booking.totalPrice, booking.bookingRef, 'tour').catch(console.error);
+      sendReviewRequest(booking.customerPhone, booking.customerName, booking.bookingRef).catch(console.error);
+    }
+
     return NextResponse.json({ booking });
   } catch {
     return NextResponse.json({ error: 'Booking not found or update failed' }, { status: 404 });

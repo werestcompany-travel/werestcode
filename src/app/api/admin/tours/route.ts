@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { title, subtitle, location, cities, duration, maxGroupSize, languages,
             rating, reviewCount, category, badge, images, highlights, description,
             includes, excludes, itinerary, options, meetingPoint, importantInfo,
-            reviews, isActive, sortOrder } = body;
+            reviews, isActive, sortOrder, metaTitle, metaDesc } = body;
 
     if (!title || !location || !category) {
       return NextResponse.json({ error: 'title, location, and category are required' }, { status: 400 });
@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
         reviews:      reviews    ?? [],
         isActive:     isActive   ?? true,
         sortOrder:    parseInt(sortOrder) || 0,
+        metaTitle:    metaTitle ?? null,
+        metaDesc:     metaDesc  ?? null,
       },
     });
 

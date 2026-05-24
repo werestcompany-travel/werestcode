@@ -57,6 +57,39 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       trackingUrl,
     ).catch(console.error);
 
+    // Post-trip automation on COMPLETED
+    if (status === 'COMPLETED') {
+      const { awardLoyaltyPoints, sendReviewRequest } = await import('@/lib/post-trip');
+      awardLoyaltyPoints(booking.customerEmail, booking.totalPrice, booking.bookingRef, 'transfer').catch(console.error);
+      sendReviewRequest(booking.customerPhone, booking.customerName, booking.bookingRef).catch(console.error);
+    }
+
+    // Push notification to customer (web + mobile)
+    const PUSH_STATUSES: BookingStatus[] = ['DRIVER_CONFIRMED', 'DRIVER_STANDBY', 'DRIVER_PICKED_UP'];
+    if (PUSH_STATUSES.includes(status)) {
+      const pushMessages: Record<string, { title: string; body: string }> = {
+        DRIVER_CONFIRMED: { title: '🚗 Driver Confirmed',    body: 'Your driver has been assigned for your Werest transfer.' },
+        DRIVER_STANDBY:   { title: '📍 Driver On the Way',   body: 'Your driver is heading to your pickup location now.' },
+        DRIVER_PICKED_UP: { title: '✅ Picked Up',            body: 'You\'re on your way! Enjoy your journey.' },
+      };
+      const msg = pushMessages[status];
+      if (msg) {
+        const { sendPushNotification } = await import('@/lib/web-push');
+        const { prisma: db } = await import('@/lib/db');
+        const user = await db.user.findUnique({
+          where:  { email: booking.customerEmail },
+          select: { id: true },
+        });
+        if (user) {
+          sendPushNotification(user.id, {
+            ...msg,
+            url: trackingUrl,
+            tag: `booking-${booking.bookingRef}`,
+          }).catch(console.error);
+        }
+      }
+    }
+
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
     console.error('[status] PATCH error:', err);

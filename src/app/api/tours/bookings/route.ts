@@ -52,13 +52,30 @@ async function resolveTour(slug: string): Promise<Tour | null> {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function generateBookingRef(): string {
-  const now  = new Date();
-  const yy   = String(now.getFullYear()).slice(-2);
-  const mm   = String(now.getMonth() + 1).padStart(2, '0');
-  const dd   = String(now.getDate()).padStart(2, '0');
-  const rand = Math.floor(Math.random() * 9000) + 1000;
-  return `TR-${yy}${mm}${dd}-${rand}`;
+/**
+ * Generates a unique tour booking reference.
+ * Format: WRTOUR-DDMMYYPP### where:
+ *   DD  = day of tour date
+ *   MM  = month of tour date
+ *   YY  = last 2 digits of year
+ *   PP  = total participants (adults + children), zero-padded to 2 digits
+ *   ### = 3-digit daily sequence for that date + participant count (001, 002, …)
+ *
+ * Example: WRTOUR-19052604001
+ */
+async function generateTourRef(tourDate: Date, participants: number): Promise<string> {
+  const dd = String(tourDate.getDate()).padStart(2, '0');
+  const mm = String(tourDate.getMonth() + 1).padStart(2, '0');
+  const yy = String(tourDate.getFullYear()).slice(-2);
+  const pp = String(participants).padStart(2, '0');
+  const prefix = `WRTOUR-${dd}${mm}${yy}${pp}`;
+
+  const existing = await prisma.tourBooking.count({
+    where: { bookingRef: { startsWith: prefix } },
+  });
+
+  const seq = String(existing + 1).padStart(3, '0');
+  return `${prefix}${seq}`;
 }
 
 // ─── POST /api/tours/bookings ─────────────────────────────────────────────────
@@ -109,12 +126,7 @@ export async function POST(req: NextRequest) {
     const totalPrice = adults * adultPrice + children * childPrice;
 
     // ── Unique booking ref ────────────────────────────────────────────────────
-    let bookingRef = generateBookingRef();
-    for (let i = 0; i < 5; i++) {
-      const exists = await prisma.tourBooking.findUnique({ where: { bookingRef } });
-      if (!exists) break;
-      bookingRef = generateBookingRef();
-    }
+    const bookingRef = await generateTourRef(new Date(tourDate), adults + children);
 
     // ── Logged-in user ────────────────────────────────────────────────────────
     const session = await getUserFromCookies();

@@ -7,13 +7,30 @@ import { sendAttractionBookingToAdmin } from '@/lib/whatsapp';
 import { createAttractionBookingSchema } from '@/lib/validation/attraction';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 
-function generateBookingRef(): string {
-  const now = new Date();
-  const yy   = String(now.getFullYear()).slice(-2);
-  const mm   = String(now.getMonth() + 1).padStart(2, '0');
-  const dd   = String(now.getDate()).padStart(2, '0');
-  const rand = Math.floor(Math.random() * 9000) + 1000;
-  return `AT-${yy}${mm}${dd}-${rand}`;
+/**
+ * Generates a unique attraction ticket booking reference.
+ * Format: WRTK-DDMMYYPP### where:
+ *   DD  = day of visit date
+ *   MM  = month of visit date
+ *   YY  = last 2 digits of year
+ *   PP  = total visitors (adults + children + infants), zero-padded to 2 digits
+ *   ### = 3-digit daily sequence for that date + visitor count (001, 002, …)
+ *
+ * Example: WRTK-19052604001
+ */
+async function generateAttractionRef(visitDate: Date, visitors: number): Promise<string> {
+  const dd = String(visitDate.getDate()).padStart(2, '0');
+  const mm = String(visitDate.getMonth() + 1).padStart(2, '0');
+  const yy = String(visitDate.getFullYear()).slice(-2);
+  const pp = String(visitors).padStart(2, '0');
+  const prefix = `WRTK-${dd}${mm}${yy}${pp}`;
+
+  const existing = await prisma.attractionBooking.count({
+    where: { bookingRef: { startsWith: prefix } },
+  });
+
+  const seq = String(existing + 1).padStart(3, '0');
+  return `${prefix}${seq}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -54,13 +71,9 @@ export async function POST(req: NextRequest) {
     // Link to logged-in user if available
     const session = await getUserFromCookies();
 
-    // Generate unique booking ref (retry on collision)
-    let bookingRef = generateBookingRef();
-    for (let i = 0; i < 5; i++) {
-      const existing = await prisma.attractionBooking.findUnique({ where: { bookingRef } });
-      if (!existing) break;
-      bookingRef = generateBookingRef();
-    }
+    // Generate unique booking ref
+    const totalVisitors = (data.adultQty ?? 0) + (data.childQty ?? 0) + (data.infantQty ?? 0);
+    const bookingRef = await generateAttractionRef(new Date(data.visitDate), totalVisitors);
 
     const booking = await prisma.attractionBooking.create({
       data: {

@@ -187,9 +187,23 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
     }))
   })()
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.werest.com' },
+      { '@type': 'ListItem', position: 2, name: 'Tours', item: 'https://www.werest.com/tours' },
+      { '@type': 'ListItem', position: 3, name: tour.title, item: `https://www.werest.com/tours/${params.slug}` },
+    ],
+  }
+
   return (
     <>
       <JsonLd data={tourProductSchema(tour)} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
       <Navbar />
 
       <main className="min-h-screen bg-white pt-16">
@@ -587,7 +601,7 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
                   <p className="text-sm font-semibold text-gray-900 mb-1">Have a question?</p>
                   <p className="text-xs text-gray-500 mb-3">Our team replies within minutes on WhatsApp</p>
                   <a
-                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors w-full justify-center"

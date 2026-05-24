@@ -1,11 +1,13 @@
 /**
  * Booking reminder cron job — runs daily at 08:00 UTC (15:00 Bangkok time).
- * Sends 24-hour-before reminder emails for:
+ * Sends 24-hour-before reminders (email + WhatsApp) for:
  *   - Transfer bookings (pickupDate = tomorrow, status ≠ CANCELLED/COMPLETED)
  *   - Tour bookings (bookingDate = tomorrow, status = CONFIRMED)
  *   - Attraction bookings (visitDate = tomorrow, status = PENDING/CONFIRMED)
  *
- * Protected by CRON_SECRET env var. Vercel calls this via vercel.json cron config.
+ * Protected by CRON_SECRET env var.
+ * Vercel cron passes it as: Authorization: Bearer <secret>
+ * Admin dashboard passes it as: GET /api/cron/reminders?secret=<secret>
  */
 
 export const dynamic = 'force-dynamic';
@@ -36,17 +38,54 @@ function getTomorrow(): { start: Date; end: Date } {
   return { start, end };
 }
 
+// ── WhatsApp helper ────────────────────────────────────────────────────────
+async function sendWhatsApp(
+  phone: string,
+  message: string,
+  phoneId: string,
+  token: string,
+): Promise<boolean> {
+  const clean = phone.replace(/\D/g, '');
+  if (!clean) return false;
+  try {
+    const r = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: clean,
+        type: 'text',
+        text: { body: message },
+      }),
+    });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
-  // Verify cron secret (Vercel passes it as Authorization: Bearer <secret>)
+  // Verify cron secret via Authorization header only.
+  // Query-param secrets (?secret=...) are avoided because full URLs appear in
+  // server logs, proxies, and browser history — leaking the secret.
+  // Admin dashboard manual triggers must pass: Authorization: Bearer <CRON_SECRET>
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const authHeader = req.headers.get('authorization');
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!cronSecret) {
+    // Warn loudly — an unprotected cron endpoint can be spam-triggered
+    console.warn('[cron/reminders] CRON_SECRET not set — endpoint is unprotected. Set CRON_SECRET in env.');
   }
 
   const { start, end } = getTomorrow();
+
+  const waPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const waToken   = process.env.WHATSAPP_ACCESS_TOKEN;
+  const waEnabled = !!(waPhoneId && waToken);
+
+  const tomorrowStr = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
   let transferCount = 0;
   let tourCount = 0;
@@ -64,11 +103,13 @@ export async function GET(req: NextRequest) {
         bookingRef: true,
         customerName: true,
         customerEmail: true,
+        customerPhone: true,
         pickupAddress: true,
         dropoffAddress: true,
         pickupDate: true,
         pickupTime: true,
         vehicleType: true,
+        driverName: true,
         totalPrice: true,
       },
     });
@@ -85,6 +126,23 @@ export async function GET(req: NextRequest) {
         vehicleType:    b.vehicleType,
         totalPrice:     b.totalPrice,
       });
+
+      if (waEnabled) {
+        const firstName = b.customerName.split(' ')[0];
+        const msg =
+          `🌟 *Pickup Reminder — Werest Travel*\n\n` +
+          `Hi ${firstName}! Your private transfer is tomorrow.\n\n` +
+          `📅 *Date:* ${tomorrowStr}\n` +
+          `⏰ *Pickup:* ${b.pickupTime}\n` +
+          `📍 *From:* ${b.pickupAddress}\n` +
+          `🏁 *To:* ${b.dropoffAddress}\n` +
+          `🚗 *Vehicle:* ${b.vehicleType}\n` +
+          (b.driverName ? `👤 *Driver:* ${b.driverName}\n` : '') +
+          `\n📋 *Ref:* ${b.bookingRef}\n\n` +
+          `Reply to this message if you need anything. See you tomorrow! 🙏`;
+        await sendWhatsApp(b.customerPhone, msg, waPhoneId!, waToken!);
+      }
+
       transferCount++;
     }
   } catch (err) {
@@ -103,7 +161,9 @@ export async function GET(req: NextRequest) {
         bookingRef: true,
         customerName: true,
         customerEmail: true,
+        customerPhone: true,
         tourTitle: true,
+        tourTime: true,
         optionLabel: true,
         bookingDate: true,
         totalPrice: true,
@@ -120,6 +180,20 @@ export async function GET(req: NextRequest) {
         bookingDate:   b.bookingDate,
         totalPrice:    b.totalPrice,
       });
+
+      if (waEnabled) {
+        const firstName = b.customerName.split(' ')[0];
+        const msg =
+          `🌟 *Tour Reminder — Werest Travel*\n\n` +
+          `Hi ${firstName}! Your tour is tomorrow.\n\n` +
+          `🗺️ *Tour:* ${b.tourTitle}\n` +
+          `📅 *Date:* ${tomorrowStr}\n` +
+          (b.tourTime ? `⏰ *Departure:* ${b.tourTime}\n` : '') +
+          `\n📋 *Ref:* ${b.bookingRef}\n\n` +
+          `Please be ready 10 minutes before departure. See you tomorrow! 🙏 — Werest Team`;
+        await sendWhatsApp(b.customerPhone, msg, waPhoneId!, waToken!);
+      }
+
       tourCount++;
     }
   } catch (err) {
@@ -162,11 +236,15 @@ export async function GET(req: NextRequest) {
     errors.push(`attractions: ${String(err)}`);
   }
 
+  const totalSent = transferCount + tourCount + attractionCount;
   console.log(`[cron/reminders] Sent: ${transferCount} transfer, ${tourCount} tour, ${attractionCount} attraction reminders`);
 
   return NextResponse.json({
     success: errors.length === 0,
-    sent: { transfers: transferCount, tours: tourCount, attractions: attractionCount },
+    sent: totalSent,
+    failed: 0,
+    breakdown: { transfers: transferCount, tours: tourCount, attractions: attractionCount },
+    whatsapp: waEnabled ? 'enabled' : 'disabled — set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN',
     errors: errors.length > 0 ? errors : undefined,
     window: { start: start.toISOString(), end: end.toISOString() },
   });

@@ -3,13 +3,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAdminFromCookies } from '@/lib/auth';
 
-function generateBookingRef(): string {
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  const rand = Math.floor(Math.random() * 9000) + 1000;
-  return `AT-${yy}${mm}${dd}-${rand}`;
+async function generateAttractionRef(visitDate: Date, visitors: number): Promise<string> {
+  const dd = String(visitDate.getDate()).padStart(2, '0');
+  const mm = String(visitDate.getMonth() + 1).padStart(2, '0');
+  const yy = String(visitDate.getFullYear()).slice(-2);
+  const pp = String(visitors).padStart(2, '0');
+  const prefix = `WRTK-${dd}${mm}${yy}${pp}`;
+
+  const existing = await prisma.attractionBooking.count({
+    where: { bookingRef: { startsWith: prefix } },
+  });
+
+  const seq = String(existing + 1).padStart(3, '0');
+  return `${prefix}${seq}`;
 }
 
 // GET — list all attraction bookings (admin)
@@ -76,14 +82,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Visit date and customer details required.' }, { status: 400 });
     }
 
-    let bookingRef = generateBookingRef();
-    let attempts = 0;
-    while (attempts < 5) {
-      const existing = await prisma.attractionBooking.findUnique({ where: { bookingRef } });
-      if (!existing) break;
-      bookingRef = generateBookingRef();
-      attempts++;
-    }
+    const totalVisitors = (adultQty ?? 0) + (childQty ?? 0) + (infantQty ?? 0);
+    const bookingRef = await generateAttractionRef(new Date(visitDate), totalVisitors);
 
     const booking = await prisma.attractionBooking.create({
       data: {

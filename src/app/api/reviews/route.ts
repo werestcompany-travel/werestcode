@@ -7,14 +7,17 @@ import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 import { getUserFromCookies } from '@/lib/user-auth';
 
 const createReviewSchema = z.object({
-  entityType: z.enum(['TOUR', 'ATTRACTION', 'TRANSFER']),
-  entityId:   z.string().min(1).max(200),   // slug or ref
-  entityName: z.string().min(1).max(200),
-  rating:     z.number().int().min(1).max(5),
-  title:      z.string().max(120).optional(),
-  body:       z.string().min(10).max(2000),
-  authorName: z.string().min(2).max(100),
+  entityType:  z.enum(['TOUR', 'ATTRACTION', 'TRANSFER']),
+  entityId:    z.string().min(1).max(200),   // slug or ref
+  entityName:  z.string().min(1).max(200),
+  rating:      z.number().int().min(1).max(5),
+  title:       z.string().max(120).optional(),
+  body:        z.string().min(10).max(2000),
+  authorName:  z.string().min(2).max(100),
   authorEmail: z.string().email().max(255),
+  // Optional: booking ref supplied by the verification step in ReviewForm.
+  // When present, we verify against it and set verified=true automatically.
+  bookingRef:  z.string().max(50).optional(),
 });
 
 // POST — submit a new review (goes into moderation queue)
@@ -51,23 +54,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'You have already submitted a review for this recently.' }, { status: 409 });
   }
 
-  // Try to verify: check if the email matches a booking for this entity
+  // Try to verify: check if the email matches a paid/completed booking.
+  // If a bookingRef was supplied by the front-end verification step, use it directly.
+  // Otherwise fall back to matching by entityId (slug / ref).
   let verified = false;
   if (data.entityType === 'TRANSFER') {
+    const where = data.bookingRef
+      ? { bookingRef: data.bookingRef.toUpperCase(), customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } }
+      : { bookingRef: data.entityId,                 customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } };
     const match = await prisma.booking.findFirst({
-      where: { bookingRef: data.entityId, customerEmail: { equals: data.authorEmail, mode: 'insensitive' } },
+      where,
+      select: { paymentStatus: true, currentStatus: true },
     });
-    verified = !!match;
+    // BookingStatus enum: PENDING | DRIVER_CONFIRMED | DRIVER_STANDBY | DRIVER_PICKED_UP | COMPLETED | CANCELLED
+    verified = !!(match && (
+      match.paymentStatus === 'PAID' ||
+      match.currentStatus === 'COMPLETED' ||
+      match.currentStatus === 'DRIVER_CONFIRMED' ||
+      match.currentStatus === 'DRIVER_STANDBY' ||
+      match.currentStatus === 'DRIVER_PICKED_UP'
+    ));
   } else if (data.entityType === 'TOUR') {
+    const where = data.bookingRef
+      ? { bookingRef: data.bookingRef.toUpperCase(), customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } }
+      : { tourSlug: data.entityId,                   customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } };
     const match = await prisma.tourBooking.findFirst({
-      where: { tourSlug: data.entityId, customerEmail: { equals: data.authorEmail, mode: 'insensitive' } },
+      where,
+      select: { paymentStatus: true, status: true },
     });
-    verified = !!match;
+    // TourBookingStatus enum: PENDING | CONFIRMED | CANCELLED | COMPLETED
+    verified = !!(match && (
+      match.paymentStatus === 'PAID' ||
+      match.status === 'COMPLETED' ||
+      match.status === 'CONFIRMED'
+    ));
   } else if (data.entityType === 'ATTRACTION') {
+    const where = data.bookingRef
+      ? { bookingRef: data.bookingRef.toUpperCase(), customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } }
+      : { attractionId: data.entityId,               customerEmail: { equals: data.authorEmail, mode: 'insensitive' as const } };
     const match = await prisma.attractionBooking.findFirst({
-      where: { attractionId: data.entityId, customerEmail: { equals: data.authorEmail, mode: 'insensitive' } },
+      where,
+      select: { paymentStatus: true, status: true },
     });
-    verified = !!match;
+    // AttractionBookingStatus enum: PENDING | CONFIRMED | CANCELLED | USED
+    verified = !!(match && (
+      match.paymentStatus === 'PAID' ||
+      match.status === 'CONFIRMED' ||
+      match.status === 'USED'
+    ));
   }
 
   const session = await getUserFromCookies();

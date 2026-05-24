@@ -56,10 +56,18 @@ export function generateRequestSignature(orderId: string, amount: number): strin
  * Payso signs: txnId + orderId + amount + status
  */
 export function verifyWebhookSignature(payload: PaysoWebhookPayload): boolean {
-  if (!payload.signature) return false
-  const message = `${payload.txnId}${payload.orderId}${Number(payload.amount).toFixed(2)}${payload.status}`
-  const expected = crypto.createHmac('sha256', SECRET_KEY).update(message).digest('hex')
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(payload.signature))
+  if (!payload.signature || !SECRET_KEY) return false
+  try {
+    const message  = `${payload.txnId}${payload.orderId}${Number(payload.amount).toFixed(2)}${payload.status}`
+    const expected = crypto.createHmac('sha256', SECRET_KEY).update(message).digest('hex')
+    const actual   = Buffer.from(String(payload.signature))
+    const exp      = Buffer.from(expected)
+    // timingSafeEqual requires equal-length buffers — mismatched length = definitely wrong
+    if (actual.length !== exp.length) return false
+    return crypto.timingSafeEqual(exp, actual)
+  } catch {
+    return false
+  }
 }
 
 // ─── Create payment session ───────────────────────────────────────────────────

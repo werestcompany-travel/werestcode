@@ -25,7 +25,7 @@ const DEALS = [
     desc: 'Save on all Suvarnabhumi & Don Mueang pickups and drop-offs',
     discount: '10% OFF',
     code: 'BKKARRIVAL',
-    validUntil: 'Jun 30, 2026',
+    validUntil: 'Dec 31, 2026',
     minPax: 1,
     img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80',
     hot: true,
@@ -51,7 +51,7 @@ const DEALS = [
     desc: 'Full-day speedboat tour from Phuket — limited-time discount',
     discount: '15% OFF',
     code: 'PHIPHIMAY',
-    validUntil: 'May 31, 2026',
+    validUntil: 'Dec 31, 2026',
     minPax: 2,
     img: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf4?w=600&q=80',
     hot: true,
@@ -64,7 +64,7 @@ const DEALS = [
     desc: 'Damnoen Saduak canal experience — weekend special rate',
     discount: '12% OFF',
     code: 'FLOAT12',
-    validUntil: 'Jun 15, 2026',
+    validUntil: 'Dec 31, 2026',
     minPax: 1,
     img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
     hot: false,
@@ -77,7 +77,7 @@ const DEALS = [
     desc: 'Private day trip to the iconic all-wood temple by the sea',
     discount: '8% OFF',
     code: 'TRUTH8',
-    validUntil: 'Jul 31, 2026',
+    validUntil: 'Dec 31, 2026',
     minPax: 1,
     img: 'https://images.unsplash.com/photo-1562802378-063ec186a863?w=600&q=80',
     hot: false,
@@ -177,6 +177,11 @@ export default function DealsPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+          {/* ── Disclaimer banner ─────────────────────────────────────────── */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 mb-6">
+            <strong>Note:</strong> Discount codes must be entered at checkout. Contact us on WhatsApp if a code doesn&apos;t work.
+          </div>
 
           {/* ── Featured deal banner ──────────────────────────────────────── */}
           {!activeCategory && (

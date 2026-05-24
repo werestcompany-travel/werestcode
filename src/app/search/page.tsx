@@ -11,83 +11,22 @@ import { formatTHB } from '@/lib/tours'
 
 // ─── Review widgets ───────────────────────────────────────────────────────────
 
-function TrustpilotWidget() {
+function ReviewBadge() {
   return (
-    <a
-      href="https://www.trustpilot.com/review/werest.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 bg-white border border-gray-200 hover:border-[#00b67a]/40 hover:shadow-md rounded-2xl px-5 py-3 transition-all group"
-    >
-      {/* Trustpilot logo mark */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        <svg width="22" height="22" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#00b67a" d="M128 0L157.6 92.8H256L180.2 150.3L209.8 243.1L128 185.6L46.2 243.1L75.8 150.3L0 92.8H98.4L128 0Z"/>
-          <path fill="#005128" d="M183.8 168.1L180.2 150.3L128 185.6L183.8 168.1Z"/>
-        </svg>
-        <span className="text-[13px] font-extrabold text-gray-800 tracking-tight">Trustpilot</span>
-      </div>
-
-      <div className="flex flex-col items-start">
-        {/* Stars */}
-        <div className="flex items-center gap-0.5 mb-0.5">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="w-5 h-5 bg-[#00b67a] flex items-center justify-center rounded-sm">
-              <svg viewBox="0 0 20 20" className="w-3.5 h-3.5 fill-white">
-                <path d="M10 1l2.39 6.26H19l-5.35 4.14 2.04 6.27L10 14.27l-5.69 3.4 2.04-6.27L1 7.26h6.61L10 1z"/>
-              </svg>
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-gray-800">Excellent</span>
-          <span className="text-[11px] text-gray-400">4.8 · 200+ reviews</span>
-        </div>
-      </div>
-    </a>
-  )
-}
-
-function TripAdvisorWidget() {
-  return (
-    <a
-      href="https://www.tripadvisor.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 bg-white border border-gray-200 hover:border-[#34E0A1]/40 hover:shadow-md rounded-2xl px-5 py-3 transition-all group"
-    >
-      {/* Tripadvisor owl logo */}
-      <div className="w-9 h-9 shrink-0">
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <circle cx="50" cy="50" r="50" fill="#34E0A1"/>
-          <ellipse cx="33" cy="52" rx="11" ry="11" fill="white"/>
-          <ellipse cx="67" cy="52" rx="11" ry="11" fill="white"/>
-          <circle cx="33" cy="52" r="6" fill="#222"/>
-          <circle cx="67" cy="52" r="6" fill="#222"/>
-          <circle cx="35" cy="50" r="2" fill="white"/>
-          <circle cx="69" cy="50" r="2" fill="white"/>
-          <path d="M24 38 Q50 20 76 38" stroke="#222" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-          <path d="M38 67 Q50 75 62 67" stroke="#222" strokeWidth="3" fill="none" strokeLinecap="round"/>
-        </svg>
-      </div>
-
-      <div className="flex flex-col items-start">
-        <span className="text-[11px] font-bold text-gray-800 mb-0.5">Tripadvisor</span>
-        {/* Bubble rating */}
-        <div className="flex items-center gap-0.5 mb-0.5">
-          {[1,2,3,4].map(i => (
-            <svg key={i} viewBox="0 0 20 20" className="w-3.5 h-3.5 fill-[#34E0A1]">
-              <circle cx="10" cy="10" r="8"/>
-            </svg>
-          ))}
-          <svg viewBox="0 0 20 20" className="w-3.5 h-3.5">
-            <circle cx="10" cy="10" r="8" fill="#34E0A1" opacity="0.4"/>
+    <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-5 py-3">
+      <div className="flex items-center gap-1">
+        {[1,2,3,4,5].map(i => (
+          <svg key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
           </svg>
-        </div>
-        <span className="text-[11px] text-gray-400">Travellers' Choice · 150+ reviews</span>
+        ))}
       </div>
-    </a>
-  )
+      <div>
+        <p className="text-sm font-bold text-gray-900">4.9 / 5.0</p>
+        <p className="text-xs text-gray-500">Customer Rated</p>
+      </div>
+    </div>
+  );
 }
 
 export default function SearchPage() {
@@ -204,12 +143,10 @@ function SearchInner() {
               </button>
             </form>
 
-            {/* Review trust badges */}
+            {/* Review trust badge */}
             {!searched && (
-              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <TrustpilotWidget />
-                <div className="hidden sm:block w-px h-10 bg-gray-200" />
-                <TripAdvisorWidget />
+              <div className="mt-6 flex items-center justify-center">
+                <ReviewBadge />
               </div>
             )}
           </div>

@@ -8,13 +8,16 @@ import {
   Car, Ticket, MapPin, TrendingUp, Clock,
   CheckCircle2, AlertCircle, ArrowRight, RefreshCw, BookOpen, PenSquare, Eye,
   ShieldCheck, TriangleAlert, XCircle, Minus, ExternalLink, Search,
+  Monitor, Smartphone, Plus, Gift,
 } from 'lucide-react';
 import Link from 'next/link';
+import SendRemindersButton from '@/components/admin/SendRemindersButton';
 
 /* ── SEO types (mirrors src/app/api/admin/seo/route.ts) ── */
 interface SeoCheck {
   id: string;
   category: 'technical' | 'on-page' | 'content';
+  perspective: 'desktop' | 'mobile' | 'shared';
   label: string;
   status: 'pass' | 'warn' | 'fail' | 'skip';
   message: string;
@@ -28,6 +31,14 @@ interface SeoReport {
   grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
   earned: number;
   maxPossible: number;
+  desktopScore: number;
+  desktopGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+  desktopEarned: number;
+  desktopMax: number;
+  mobileScore: number;
+  mobileGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+  mobileEarned: number;
+  mobileMax: number;
   checks: SeoCheck[];
   checkedAt: string;
 }
@@ -156,6 +167,61 @@ export default function AdminDashboard() {
 
   return (
     <AdminShell title="Dashboard" subtitle="Welcome back! Here's what's happening today.">
+
+      {/* ── Quick Actions ──────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+        <Link
+          href="/admin/transfers?date=today"
+          className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group"
+        >
+          <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-100 transition-colors">
+            <Car className="w-5 h-5 text-brand-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900">Today&apos;s Pickups</p>
+            <p className="text-[10px] text-gray-400 truncate">View today&apos;s transfers</p>
+          </div>
+        </Link>
+        <Link
+          href="/admin/transfers?status=PENDING"
+          className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-amber-200 transition-all group"
+        >
+          <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
+            <Clock className="w-5 h-5 text-amber-500" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900">Pending Bookings</p>
+            <p className="text-[10px] text-gray-400 truncate">Awaiting confirmation</p>
+          </div>
+        </Link>
+        <Link
+          href="/booking"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group"
+        >
+          <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
+            <Plus className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900">New Booking</p>
+            <p className="text-[10px] text-gray-400 truncate">Open booking form</p>
+          </div>
+        </Link>
+        <Link
+          href="/admin/gift-vouchers"
+          className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-violet-200 transition-all group"
+        >
+          <div className="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+            <Gift className="w-5 h-5 text-violet-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900">Issue Voucher</p>
+            <p className="text-[10px] text-gray-400 truncate">Gift vouchers</p>
+          </div>
+        </Link>
+        <SendRemindersButton />
+      </div>
 
       {/* ── Top stat cards ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
@@ -469,7 +535,7 @@ function SectionCard({
           <p className="text-sm font-bold text-gray-900">{title}</p>
         </div>
         <Link href={href} className="text-[11px] text-brand-600 font-semibold hover:text-brand-800 flex items-center gap-0.5">
-          Manage <ArrowRight className="w-3 h-3" />
+          See all <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
       <div className="grid grid-cols-3 gap-2 mb-3">
@@ -535,19 +601,19 @@ const CATEGORY_LABEL: Record<string, string> = {
   technical: 'Technical', 'on-page': 'On-Page', content: 'Content',
 };
 
-function SeoGauge({ score, grade }: { score: number; grade: string }) {
-  const radius = 38;
-  const circ   = 2 * Math.PI * radius; // ≈ 238.76
+function SeoGauge({ score, grade, size = 100 }: { score: number; grade: string; size?: number }) {
+  const radius = (size / 2) - 8;
+  const circ   = 2 * Math.PI * radius;
   const offset = circ * (1 - score / 100);
   const color  = GAUGE_COLOR[grade] ?? '#6b7280';
 
   return (
-    <div className="relative flex items-center justify-center w-[100px] h-[100px]">
-      <svg width="100" height="100" className="-rotate-90">
-        <circle cx="50" cy="50" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="8" />
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth="7" />
         <circle
-          cx="50" cy="50" r={radius} fill="none"
-          stroke={color} strokeWidth="8"
+          cx={size/2} cy={size/2} r={radius} fill="none"
+          stroke={color} strokeWidth="7"
           strokeDasharray={circ}
           strokeDashoffset={offset}
           strokeLinecap="round"
@@ -555,8 +621,8 @@ function SeoGauge({ score, grade }: { score: number; grade: string }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-extrabold text-gray-900 leading-none">{score}</span>
-        <span className={`text-xs font-bold leading-none mt-0.5 ${GRADE_COLOR[grade] ?? 'text-gray-400'}`}>{grade}</span>
+        <span className={`font-extrabold text-gray-900 leading-none ${size < 90 ? 'text-base' : 'text-xl'}`}>{score}</span>
+        <span className={`font-bold leading-none mt-0.5 ${size < 90 ? 'text-[10px]' : 'text-xs'} ${GRADE_COLOR[grade] ?? 'text-gray-400'}`}>{grade}</span>
       </div>
     </div>
   );
@@ -569,6 +635,8 @@ function CheckIcon({ status }: { status: SeoCheck['status'] }) {
   return <Minus className="w-4 h-4 text-gray-300 shrink-0" />;
 }
 
+type PerspectiveTab = 'all' | 'desktop' | 'mobile';
+
 function SeoWidget({
   report, loading, error, onRun,
 }: {
@@ -577,8 +645,16 @@ function SeoWidget({
   error: string | null;
   onRun: () => void;
 }) {
+  const [perspTab, setPerspTab] = useState<PerspectiveTab>('all');
+
+  const visibleChecks = !report ? [] : perspTab === 'desktop'
+    ? report.checks.filter(c => c.perspective === 'desktop' || c.perspective === 'shared')
+    : perspTab === 'mobile'
+    ? report.checks.filter(c => c.perspective === 'mobile' || c.perspective === 'shared')
+    : report.checks;
+
   const categories = (['technical', 'on-page', 'content'] as const).filter(cat =>
-    report?.checks.some(c => c.category === cat)
+    visibleChecks.some(c => c.category === cat)
   );
 
   return (
@@ -621,7 +697,7 @@ function SeoWidget({
               <ShieldCheck className="w-7 h-7 text-violet-300" />
             </div>
             <p className="text-sm text-gray-400 text-center max-w-xs">
-              Click <strong className="text-gray-600">Run SEO Audit</strong> to scan your site&apos;s technical health, meta tags, and content quality.
+              Click <strong className="text-gray-600">Run SEO Audit</strong> to scan your site&apos;s technical health, meta tags, and content quality — for both Desktop and Mobile.
             </p>
           </div>
         )}
@@ -629,13 +705,16 @@ function SeoWidget({
         {/* Loading skeleton */}
         {loading && (
           <div className="flex flex-col items-center py-8 gap-4">
-            <div className="w-[100px] h-[100px] rounded-full bg-gray-100 animate-pulse" />
+            <div className="flex gap-6">
+              <div className="w-[88px] h-[88px] rounded-full bg-gray-100 animate-pulse" />
+              <div className="w-[88px] h-[88px] rounded-full bg-gray-100 animate-pulse" />
+            </div>
             <div className="space-y-2 w-full max-w-md">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-8 bg-gray-50 rounded-xl animate-pulse" />
               ))}
             </div>
-            <p className="text-xs text-gray-400">Scanning your site — this takes a few seconds…</p>
+            <p className="text-xs text-gray-400">Scanning for Desktop & Mobile SEO…</p>
           </div>
         )}
 
@@ -650,16 +729,38 @@ function SeoWidget({
         {/* Report */}
         {report && !loading && (
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left: score gauge + summary */}
-            <div className="flex flex-col items-center gap-3 lg:w-[160px] shrink-0">
-              <SeoGauge score={report.score} grade={report.grade} />
-              <div className="text-center">
-                <p className="text-[11px] text-gray-400">
-                  {report.earned} / {report.maxPossible} pts
-                </p>
+            {/* Left: dual gauges */}
+            <div className="flex flex-col items-center gap-4 lg:w-[180px] shrink-0">
+
+              {/* Dual gauges */}
+              <div className="flex gap-5">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                    <Monitor className="w-3 h-3" /> Desktop
+                  </div>
+                  <SeoGauge score={report.desktopScore} grade={report.desktopGrade} size={84} />
+                  <p className="text-[10px] text-gray-400 text-center">{report.desktopEarned}/{report.desktopMax} pts</p>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                    <Smartphone className="w-3 h-3" /> Mobile
+                  </div>
+                  <SeoGauge score={report.mobileScore} grade={report.mobileGrade} size={84} />
+                  <p className="text-[10px] text-gray-400 text-center">{report.mobileEarned}/{report.mobileMax} pts</p>
+                </div>
               </div>
-              {/* Pass/warn/fail summary pills */}
-              <div className="flex gap-2 flex-wrap justify-center">
+
+              {/* Overall */}
+              <div className="w-full bg-gray-50 rounded-xl p-2.5 text-center">
+                <p className="text-[10px] text-gray-400 font-medium">Overall</p>
+                <p className={`text-lg font-extrabold leading-none mt-0.5 ${GRADE_COLOR[report.grade] ?? 'text-gray-400'}`}>
+                  {report.score}<span className="text-xs font-bold text-gray-400 ml-0.5">/100</span>
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{report.earned}/{report.maxPossible} pts</p>
+              </div>
+
+              {/* Pass/warn/fail pills */}
+              <div className="flex gap-1.5 flex-wrap justify-center">
                 {(['pass', 'warn', 'fail'] as const).map(s => {
                   const count = report.checks.filter(c => c.status === s).length;
                   if (!count) return null;
@@ -676,42 +777,77 @@ function SeoWidget({
               </div>
             </div>
 
-            {/* Right: checks by category */}
-            <div className="flex-1 space-y-5 min-w-0">
-              {categories.map(cat => (
-                <div key={cat}>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    {CATEGORY_LABEL[cat]}
-                  </p>
-                  <div className="space-y-1.5">
-                    {report.checks.filter(c => c.category === cat).map(check => (
-                      <div key={check.id} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-3 py-2.5">
-                        <CheckIcon status={check.status} />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-semibold text-gray-800 truncate">{check.label}</p>
-                            <span className="text-[10px] text-gray-400 shrink-0 font-mono">
-                              {check.score}/{check.max}
-                            </span>
+            {/* Right: tab + checks */}
+            <div className="flex-1 min-w-0">
+              {/* Perspective tabs */}
+              <div className="flex gap-1 mb-4 bg-gray-50 rounded-xl p-1 w-fit">
+                {([
+                  { key: 'all',     label: 'All checks' },
+                  { key: 'desktop', label: '🖥 Desktop',  icon: Monitor },
+                  { key: 'mobile',  label: '📱 Mobile',   icon: Smartphone },
+                ] as { key: PerspectiveTab; label: string; icon?: React.ComponentType<{ className?: string }> }[]).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setPerspTab(tab.key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                      perspTab === tab.key
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-400 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Checks by category */}
+              <div className="space-y-5">
+                {categories.map(cat => (
+                  <div key={cat}>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      {CATEGORY_LABEL[cat]}
+                    </p>
+                    <div className="space-y-1.5">
+                      {visibleChecks.filter(c => c.category === cat).map(check => (
+                        <div key={check.id} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-3 py-2.5">
+                          <CheckIcon status={check.status} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <p className="text-xs font-semibold text-gray-800 truncate">{check.label}</p>
+                                {check.perspective !== 'shared' && (
+                                  <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                                    check.perspective === 'desktop'
+                                      ? 'bg-blue-100 text-blue-600'
+                                      : 'bg-green-100 text-green-600'
+                                  }`}>
+                                    {check.perspective === 'desktop' ? '🖥' : '📱'}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-gray-400 shrink-0 font-mono">
+                                {check.score}/{check.max}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-500 mt-0.5">{check.message}</p>
+                            {check.detail && (
+                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{check.detail}</p>
+                            )}
                           </div>
-                          <p className="text-[11px] text-gray-500 mt-0.5">{check.message}</p>
-                          {check.detail && (
-                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{check.detail}</p>
+                          {check.fixHref && check.status !== 'pass' && (
+                            <Link
+                              href={check.fixHref}
+                              className="shrink-0 flex items-center gap-0.5 text-[10px] text-brand-600 font-semibold hover:text-brand-800"
+                            >
+                              Fix <ExternalLink className="w-2.5 h-2.5" />
+                            </Link>
                           )}
                         </div>
-                        {check.fixHref && check.status !== 'pass' && (
-                          <Link
-                            href={check.fixHref}
-                            className="shrink-0 flex items-center gap-0.5 text-[10px] text-brand-600 font-semibold hover:text-brand-800"
-                          >
-                            Fix <ExternalLink className="w-2.5 h-2.5" />
-                          </Link>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}

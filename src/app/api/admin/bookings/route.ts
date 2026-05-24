@@ -22,6 +22,8 @@ export async function GET() {
         pickupDate:     true,
         pickupTime:     true,
         vehicleType:    true,
+        passengers:     true,
+        luggage:        true,
         totalPrice:     true,
         currentStatus:  true,
         createdAt:      true,

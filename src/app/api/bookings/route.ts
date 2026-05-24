@@ -1,13 +1,55 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { generateBookingRef, formatDate } from '@/lib/utils';
+import { Prisma } from '@prisma/client';
+import { formatDate } from '@/lib/utils';
 import { sendBookingToAdmin, sendCustomerBookingConfirmation } from '@/lib/whatsapp';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { createBookingSchema } from '@/lib/validation/booking';
 import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
 import { calculateSurcharges } from '@/lib/surcharges';
 import { VehicleType, type BookingDetail } from '@/types';
+import { getUserFromCookies } from '@/lib/user-auth';
+
+// Loyalty tier multipliers for points earned per booking
+const TIER_MULTIPLIERS: Record<string, number> = {
+  EXPLORER:   1,
+  ADVENTURER: 1.2,
+  NAVIGATOR:  1.5,
+  VOYAGER:    2,
+};
+
+/**
+ * Generates a unique booking reference inside a transaction.
+ * Format: WRTF-DDMMYYPPS## where:
+ *   DD  = day of pickup date
+ *   MM  = month of pickup date
+ *   YY  = last 2 digits of year
+ *   PP  = passenger count (zero-padded to 2 digits)
+ *   ### = 3-digit sequence (001, 002, …) for that day + pax combination
+ *
+ * Example: WRTF-19052604001
+ */
+async function generateTransferRef(
+  tx: Prisma.TransactionClient,
+  pickupDate: Date,
+  passengers: number,
+): Promise<string> {
+  const dd = String(pickupDate.getDate()).padStart(2, '0');
+  const mm = String(pickupDate.getMonth() + 1).padStart(2, '0');
+  const yy = String(pickupDate.getFullYear()).slice(-2);
+  const pp = String(passengers).padStart(2, '0');
+  const prefix = `WRTF-${dd}${mm}${yy}${pp}`;
+
+  // Count refs that already start with this prefix to determine the next sequence number.
+  // Done inside the transaction so concurrent requests can't grab the same number.
+  const existing = await tx.booking.count({
+    where: { bookingRef: { startsWith: prefix } },
+  });
+
+  const seq = String(existing + 1).padStart(3, '0');
+  return `${prefix}${seq}`;
+}
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
@@ -117,11 +159,60 @@ export async function POST(req: NextRequest) {
 
     const serverTotal = Math.max(0, serverSubtotal - (discountRecord?.discountAmount ?? 0));
 
+    // ── Server-side loyalty points validation ────────────────────────────────
+    const loyaltyPointsRedeemed = data.loyaltyPointsRedeemed ?? 0;
+    let loyaltyDiscount         = 0;
+    let loyaltyUserId: string | null = null;
+    let loyaltyUserTier: string = 'EXPLORER';
+
+    if (loyaltyPointsRedeemed > 0) {
+      const sessionUser = await getUserFromCookies();
+      if (!sessionUser) {
+        return NextResponse.json(
+          { success: false, error: 'You must be logged in to redeem loyalty points.' },
+          { status: 401 },
+        );
+      }
+
+      // Minimum / maximum guards (same as the /apply endpoint)
+      if (loyaltyPointsRedeemed < 100) {
+        return NextResponse.json(
+          { success: false, error: 'Minimum loyalty redemption is 100 points.' },
+          { status: 400 },
+        );
+      }
+      const maxAllowed = Math.floor(serverTotal * 0.2);
+      if (loyaltyPointsRedeemed > maxAllowed) {
+        return NextResponse.json(
+          { success: false, error: `Cannot redeem more than ${maxAllowed} points (20% of order total).` },
+          { status: 400 },
+        );
+      }
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id: sessionUser.id },
+        select: { id: true, loyaltyPoints: true, tierLevel: true },
+      });
+      if (!dbUser || dbUser.loyaltyPoints < loyaltyPointsRedeemed) {
+        return NextResponse.json(
+          { success: false, error: 'Insufficient loyalty points.' },
+          { status: 400 },
+        );
+      }
+
+      loyaltyDiscount = loyaltyPointsRedeemed; // 1 point = ฿1
+      loyaltyUserId   = dbUser.id;
+      loyaltyUserTier = dbUser.tierLevel as string;
+    }
+
+    const finalTotal = Math.max(0, serverTotal - loyaltyDiscount);
+
     // ── Create booking + optionally increment discount usedCount (transaction) ──
     const booking = await prisma.$transaction(async (tx) => {
+      const bookingRef = await generateTransferRef(tx, new Date(data.pickupDate), data.passengers);
       const created = await tx.booking.create({
         data: {
-          bookingRef:     generateBookingRef(),
+          bookingRef,
           pickupAddress:  data.pickupAddress,  pickupLat:  data.pickupLat,  pickupLng:  data.pickupLng,
           dropoffAddress: data.dropoffAddress, dropoffLat: data.dropoffLat, dropoffLng: data.dropoffLng,
           distanceKm:     data.distanceKm,
@@ -140,7 +231,9 @@ export async function POST(req: NextRequest) {
           discountAmount: discountRecord?.discountAmount ?? 0,
           discountCode:   discountRecord?.code ?? null,
           discountCodeId: discountRecord?.id  ?? null,
-          totalPrice:     serverTotal,
+          loyaltyPointsRedeemed,
+          loyaltyDiscount,
+          totalPrice:     finalTotal,
           currentStatus:  'PENDING',
           statusHistory: {
             create: { status: 'PENDING', note: 'Booking created', updatedBy: 'system' },
@@ -181,6 +274,56 @@ export async function POST(req: NextRequest) {
             bookingId:      created.id,
           },
         });
+      }
+
+      // ── Loyalty: deduct redeemed points ──────────────────────────────────
+      if (loyaltyPointsRedeemed > 0 && loyaltyUserId) {
+        // Re-verify balance inside the transaction (race-condition safety)
+        const freshUser = await tx.user.findUnique({
+          where: { id: loyaltyUserId },
+          select: { loyaltyPoints: true },
+        });
+        if (!freshUser || freshUser.loyaltyPoints < loyaltyPointsRedeemed) {
+          throw new Error('Insufficient loyalty points (balance changed).');
+        }
+
+        await tx.user.update({
+          where: { id: loyaltyUserId },
+          data:  { loyaltyPoints: { decrement: loyaltyPointsRedeemed } },
+        });
+
+        await tx.loyaltyTransaction.create({
+          data: {
+            userId:      loyaltyUserId,
+            points:      -loyaltyPointsRedeemed,
+            type:        'REDEEM',
+            description: 'Redeemed at checkout',
+            bookingRef:  created.bookingRef,
+          },
+        });
+      }
+
+      // ── Loyalty: award points earned for this booking ─────────────────────
+      if (loyaltyUserId) {
+        const multiplier = TIER_MULTIPLIERS[loyaltyUserTier] ?? 1;
+        const pointsEarned = Math.floor(Math.floor(finalTotal / 10) * multiplier);
+
+        if (pointsEarned > 0) {
+          await tx.user.update({
+            where: { id: loyaltyUserId },
+            data:  { loyaltyPoints: { increment: pointsEarned } },
+          });
+
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId:      loyaltyUserId,
+              points:      pointsEarned,
+              type:        'EARN',
+              description: 'Points earned for booking',
+              bookingRef:  created.bookingRef,
+            },
+          });
+        }
       }
 
       return created;

@@ -142,10 +142,23 @@ export default function VoucherClient({ data: d }: { data: VoucherData }) {
         {/* QR code */}
         <Section title="Booking Verification QR">
           <div className="flex items-center gap-7">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={d.qrDataUrl} alt="QR code" className="w-32 h-32 rounded-xl border border-gray-100 shrink-0" />
+            <div className="flex flex-col items-center shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={d.qrDataUrl}
+                alt="Booking verification QR code"
+                className="w-32 h-32 rounded-xl border border-gray-200 bg-white p-1 shadow-sm"
+              />
+              <a
+                href={d.qrDataUrl}
+                download={`werest-qr-${d.bookingRef}.png`}
+                className="mt-3 text-xs text-[#2534ff] underline font-medium print:hidden"
+              >
+                Download QR Code
+              </a>
+            </div>
             <div>
-              <p className="font-bold text-gray-900 text-sm mb-1">Show this to your driver</p>
+              <p className="font-bold text-gray-900 text-sm mb-1">Show this QR code to your driver for identity verification</p>
               <p className="text-sm text-gray-500 leading-relaxed">
                 Your driver can scan this code to instantly verify your booking. No ID required at pickup.
               </p>

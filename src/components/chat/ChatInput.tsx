@@ -5,7 +5,7 @@ import { SendHorizontal } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 
 export default function ChatInput() {
-  const { sendMessage, isStreaming } = useChat();
+  const { sendMessage, isStreaming, messages } = useChat();
   const [text, setText] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -35,6 +35,28 @@ export default function ChatInput() {
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
+
+  function buildHandoffUrl(): string {
+    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
+
+    if (messages.length === 0) {
+      return `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi, I need help with a booking on Werest.')}`;
+    }
+
+    // Take last 4 messages max, format as a brief transcript
+    const recent = messages.slice(-4);
+    const transcript = recent
+      .map(m => {
+        const label = m.role === 'user' ? 'Me' : 'Werest AI';
+        const snippet = m.content.length > 120 ? `${m.content.slice(0, 120)}...` : m.content;
+        return `${label}: ${snippet}`;
+      })
+      .join('\n');
+
+    const fullMsg = `Hi, I was chatting with the Werest AI and need human help. Here's our conversation:\n\n${transcript}\n\nCan you assist me?`;
+
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(fullMsg)}`;
+  }
 
   return (
     <div className="border-t border-gray-100 bg-white px-3 py-3">
@@ -71,12 +93,12 @@ export default function ChatInput() {
       <p className="text-[10px] text-gray-400 mt-2 text-center leading-tight">
         AI can make mistakes. For urgent help,{' '}
         <a
-          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66800000000'}?text=Hi%2C%20I%20need%20help`}
+          href={buildHandoffUrl()}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#2534ff] underline"
         >
-          chat with our team
+          Talk to a human
         </a>
       </p>
     </div>

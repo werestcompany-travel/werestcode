@@ -161,6 +161,8 @@ export interface AdminBookingRow {
   pickupDate: string;
   pickupTime: string;
   vehicleType: VehicleType;
+  passengers: number;
+  luggage: number;
   totalPrice: number;
   currentStatus: BookingStatus;
   createdAt: string;

@@ -15,6 +15,7 @@ import PrepareChecklist from '@/components/booking/PrepareChecklist';
 import PayNowButton from '@/components/booking/PayNowButton';
 import VoucherDownloadButton from '@/components/booking/VoucherDownloadButton';
 import TrackConversion from '@/components/booking/TrackConversion';
+import PWAInstallTrigger from '@/components/PWAInstallTrigger';
 
 interface Props {
   params: { bookingId: string };
@@ -86,6 +87,25 @@ export default async function ConfirmationPage({ params }: Props) {
     `My booking ref is ${booking.bookingRef} for ${booking.pickupAddress} to ${booking.dropoffAddress} on ${formatDate(booking.pickupDate.toISOString())}. Track at https://werest.com/tracking`
   );
 
+  // Derive city names for social sharing
+  function extractCityName(address: string): string {
+    const cityMap: Record<string, string> = {
+      pattaya: 'Pattaya', phuket: 'Phuket', 'chiang mai': 'Chiang Mai',
+      chiangmai: 'Chiang Mai', krabi: 'Krabi', 'ao nang': 'Ao Nang',
+      'chiang rai': 'Chiang Rai', chiangrai: 'Chiang Rai', bangkok: 'Bangkok',
+      'suvarnabhumi': 'Bangkok', 'dmk': 'Bangkok', 'don mueang': 'Bangkok',
+    };
+    const lower = address.toLowerCase();
+    for (const [key, label] of Object.entries(cityMap)) {
+      if (lower.includes(key)) return label;
+    }
+    // Fallback: use first comma-delimited segment
+    return address.split(',')[0].trim();
+  }
+  const fromCityLabel = extractCityName(booking.pickupAddress);
+  const toCityLabel   = extractCityName(booking.dropoffAddress);
+  const bookingDateLabel = formatDate(booking.pickupDate.toISOString());
+
   return (
     <>
       <JsonLd data={bookingReservationSchema(booking)} />
@@ -94,6 +114,7 @@ export default async function ConfirmationPage({ params }: Props) {
         totalPrice={booking.totalPrice}
         vehicleType={booking.vehicleType}
       />
+      <PWAInstallTrigger bookingId={booking.id} />
       <Navbar />
       <main className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
@@ -259,11 +280,14 @@ export default async function ConfirmationPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Client-side action buttons (WhatsApp share, copy link, email) */}
+          {/* Client-side action buttons (WhatsApp share, social share, copy link) */}
           <ConfirmationActions
             bookingRef={booking.bookingRef}
             whatsappMsg={whatsappMsg}
             confirmationUrl={confirmationUrl}
+            bookingDate={bookingDateLabel}
+            fromCity={fromCityLabel}
+            toCity={toCityLabel}
           />
 
           {/* Prepare for your trip checklist */}

@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 
 // Use NEXT_PUBLIC_COMPANY_PHONE env var; fall back to a generic Thai support number
 const WA_SUPPORT_URL = `https://wa.me/${
-  (process.env.NEXT_PUBLIC_COMPANY_PHONE ?? '66800000000').replace(/\D/g, '')
+  (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392').replace(/\D/g, '')
 }`;
 import Link from 'next/link';
 import {

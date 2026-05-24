@@ -53,6 +53,10 @@ export const createBookingSchema = z.object({
   isRoundTrip: z.boolean().optional(),
   returnDate:  z.string().optional(),
   returnTime:  z.string().optional(),
+
+  // Loyalty points redemption (validated server-side at booking creation)
+  loyaltyPointsRedeemed: z.number().int().min(0).optional(),
+  loyaltyDiscount:       z.number().min(0).optional(),
 });
 
 export const discountCodeSchema = z.object({

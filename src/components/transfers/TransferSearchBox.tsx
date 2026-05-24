@@ -1,15 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Car, Clock } from 'lucide-react'
+import { Car } from 'lucide-react'
 import PrivateRideForm from '@/components/search/PrivateRideForm'
-import HourlyForm from '@/components/search/HourlyForm'
-
-type Tab = 'transfer' | 'hourly'
 
 export default function TransferSearchBox() {
-  const [tab, setTab] = useState<Tab>('transfer')
-
   return (
     <div className="w-full max-w-5xl">
       {/* Tab bar */}
@@ -23,28 +17,16 @@ export default function TransferSearchBox() {
         }}
       >
         <button
-          onClick={() => setTab('transfer')}
-          className={`relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-150 select-none whitespace-nowrap ${
-            tab === 'transfer' ? 'bg-white text-[#2534ff] shadow-md' : 'text-white/90 hover:bg-white/20 hover:text-white'
-          }`}
+          className="relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-150 select-none whitespace-nowrap bg-white text-[#2534ff] shadow-md"
         >
           <Car className="w-4 h-4" />
           Transfer
-        </button>
-        <button
-          onClick={() => setTab('hourly')}
-          className={`relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-150 select-none whitespace-nowrap ${
-            tab === 'hourly' ? 'bg-white text-[#2534ff] shadow-md' : 'text-white/90 hover:bg-white/20 hover:text-white'
-          }`}
-        >
-          <Clock className="w-4 h-4" />
-          Hourly
         </button>
       </div>
 
       {/* Form */}
       <div>
-        {tab === 'transfer' ? <PrivateRideForm /> : <HourlyForm />}
+        <PrivateRideForm />
       </div>
     </div>
   )

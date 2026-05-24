@@ -145,4 +145,12 @@ export const LIMITS = {
   booking:      { limit: 20, windowSec: 60 * 60 } satisfies RateLimitConfig, // 20/hour
   discountCode: { limit: 30, windowSec: 60 * 15 } satisfies RateLimitConfig, // 30/15min
   inquiry:      { limit: 3,  windowSec: 60 * 60 } satisfies RateLimitConfig, // 3/hour
+  // ── New limiters ───────────────────────────────────────────────────────────
+  track:        { limit: 30, windowSec: 60 * 5  } satisfies RateLimitConfig, // 30/5min — booking lookup (customers track)
+  contact:      { limit: 3,  windowSec: 60 * 60 } satisfies RateLimitConfig, // 3/hour — contact form
+  newsletter:   { limit: 3,  windowSec: 60 * 60 } satisfies RateLimitConfig, // 3/hour — newsletter signup
+  giftVoucher:  { limit: 10, windowSec: 60 * 15 } satisfies RateLimitConfig, // 10/15min — gift voucher validation
+  chat:         { limit: 15, windowSec: 30       } satisfies RateLimitConfig, // 15/30s — AI chat messages
+  push:         { limit: 10, windowSec: 60       } satisfies RateLimitConfig, // 10/min — push subscribe
+  adminWrite:   { limit: 60, windowSec: 60 * 60 } satisfies RateLimitConfig, // 60/hour — admin write operations
 };

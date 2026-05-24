@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66800000000'
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'
 
 const WA_HREF = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%2C%20I%20need%20help%20with%20a%20booking`
 

@@ -15,7 +15,7 @@ import { prisma } from '@/lib/db'
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: 'Experiences & Day Trips in Thailand | Werest Travel',
+  title: 'Experiences & Day Trips in Thailand',
   description:
     'Discover the best day trips, cultural tours, food experiences and adventures across Thailand. Book with confidence — free cancellation, instant confirmation.',
   alternates: { canonical: 'https://www.werest.com/tours' },
@@ -294,11 +294,11 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
         {/* ── Trip.com-style Hero ───────────────────────────────────────── */}
         <section className="relative overflow-hidden" style={{ minHeight: 355 }}>
 
-          {/* Mountain landscape background */}
+          {/* Thailand landscape background */}
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1531210483974-4f8c1f33fd35?w=1920&q=80"
-              alt=""
+              src="https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1920&q=80"
+              alt="Thailand temples and attractions"
               fill
               priority
               sizes="100vw"

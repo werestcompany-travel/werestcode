@@ -4,27 +4,26 @@ import Link from 'next/link'
 
 const CONTACT_LINKS = [
   { label: 'Customer support',  href: '/inquiry'  },
+  { label: 'Contact Us',        href: '/contact'  },
+  { label: 'FAQ',               href: '/faq'      },
   { label: 'Service Guarantee', href: '/about'    },
-  { label: 'More service info', href: '/about'    },
 ]
 
 const ABOUT_LINKS = [
-  { label: 'About Werest',          href: '/about',            blue: false },
-  { label: 'Travel Blog',           href: '/blog',             blue: false },
-  { label: 'Careers',               href: '/careers',          blue: false },
-  { label: 'Terms of Service',      href: '/terms-of-service', blue: false },
-  { label: 'Privacy Policy',        href: '/privacy-policy',   blue: false },
-  { label: 'Cookie Policy',         href: '/cookie-policy',    blue: false },
-  { label: 'About Werest Group',    href: '/about',            blue: true  },
+  { label: 'About Werest',          href: '/about',               blue: false },
+  { label: 'Travel Blog',           href: '/blog',                blue: false },
+  { label: 'Terms of Service',      href: '/terms-of-service',    blue: false },
+  { label: 'Privacy Policy',        href: '/privacy-policy',      blue: false },
+  { label: 'Cookie Policy',         href: '/cookie-policy',       blue: false },
+  { label: 'Cancellation Policy',   href: '/cancellation-policy', blue: false },
 ]
 
 const OTHER_LINKS = [
   { label: 'Corporate Travel',  href: '/corporate',      blue: false },
-  { label: 'Werest Rewards',    href: '/rewards',        blue: true  },
+  { label: 'Deals & Offers',    href: '/deals',          blue: true  },
   { label: 'Partner Program',   href: '/partners',       blue: true  },
   { label: 'Host Agencies',     href: '/host-agencies',  blue: true  },
-  { label: 'List your service', href: '/partners',       blue: false },
-  { label: 'Become a supplier', href: '/partners',       blue: false },
+  { label: 'Become a Partner',  href: '/partner',        blue: false },
   { label: 'Gift Vouchers',     href: '/gift-vouchers',  blue: false },
 ]
 
@@ -63,7 +62,7 @@ function Social({ href, label, children }: { href: string; label: string; childr
 
 export default function Footer() {
   return (
-    <footer style={{ backgroundColor: '#f5f6f8' }} className="text-gray-700">
+    <footer className="text-gray-700 dark:text-gray-300 bg-[#f5f6f8] dark:bg-gray-900">
 
       {/* ══ Main 4-column grid ══ */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-6">
@@ -71,7 +70,7 @@ export default function Footer() {
 
           {/* ── Col 1: Contact us ── */}
           <div>
-            <p className="font-semibold text-[15px] text-gray-900 mb-4">Contact us</p>
+            <p className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 mb-4">Contact us</p>
             <ul className="space-y-2.5 mb-6">
               {CONTACT_LINKS.map(l => (
                 <li key={l.label}>
@@ -115,7 +114,7 @@ export default function Footer() {
 
           {/* ── Col 2: About ── */}
           <div>
-            <p className="font-semibold text-[15px] text-gray-900 mb-4">About</p>
+            <p className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 mb-4">About</p>
             <ul className="space-y-2.5">
               {ABOUT_LINKS.map(l => (
                 <li key={l.label}>
@@ -132,7 +131,7 @@ export default function Footer() {
 
           {/* ── Col 3: Other services ── */}
           <div>
-            <p className="font-semibold text-[15px] text-gray-900 mb-4">Other services</p>
+            <p className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 mb-4">Other services</p>
             <ul className="space-y-2.5">
               {OTHER_LINKS.map(l => (
                 <li key={l.label}>
@@ -149,12 +148,12 @@ export default function Footer() {
 
           {/* ── Col 4: Payment methods + Our partners ── */}
           <div>
-            <p className="font-semibold text-[15px] text-gray-900 mb-4">Payment methods</p>
+            <p className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 mb-4">Payment methods</p>
             <div className="grid grid-cols-5 gap-1.5 mb-6">
               {PAYMENTS.map(p => (
                 <span
                   key={p.label}
-                  className="flex items-center justify-center h-7 rounded text-[9px] font-bold border border-gray-200"
+                  className="flex items-center justify-center h-7 rounded text-[9px] font-bold border border-gray-200 dark:border-gray-700"
                   style={{ backgroundColor: p.bg, color: p.color }}
                 >
                   {p.label}
@@ -162,7 +161,7 @@ export default function Footer() {
               ))}
             </div>
 
-            <p className="font-semibold text-[15px] text-gray-900 mb-3">Our partners</p>
+            <p className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 mb-3">Our partners</p>
             <div className="flex items-center gap-4">
               {/* Google text logo */}
               <span className="text-[18px] font-medium tracking-tight" style={{ fontFamily: 'sans-serif' }}>
@@ -186,12 +185,12 @@ export default function Footer() {
 
 
       {/* ══ Bottom copyright ══ */}
-      <div className="border-t border-gray-200">
+      <div className="border-t border-gray-200 dark:border-gray-700">
         <div className="py-4 text-center">
-          <p className="text-[12px] text-gray-500">
+          <p className="text-[12px] text-gray-500 dark:text-gray-400">
             Copyright © {new Date().getFullYear()} Werest Travel Co., Ltd. All rights reserved.
           </p>
-          <p className="text-[12px] text-gray-400 mt-0.5">
+          <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">
             Service Operator: <span className="text-[#1677ff]">Werest Travel Co., Ltd.</span>
           </p>
         </div>

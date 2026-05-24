@@ -13,12 +13,13 @@ function WriteReviewContent() {
   const router      = useRouter();
   const [done, setDone] = useState(false);
 
-  const type       = (params.get('type') ?? 'ATTRACTION') as 'ATTRACTION' | 'TOUR' | 'TRANSFER';
-  const targetId   = params.get('targetId')   ?? '';
-  const targetName = params.get('targetName') ?? '';
+  const type       = (params.get('type') ?? 'TRANSFER') as 'ATTRACTION' | 'TOUR' | 'TRANSFER';
+  // targetId can be omitted when arriving via post-trip WhatsApp link (only bookingRef is known)
+  const targetId   = params.get('targetId')   ?? params.get('bookingRef') ?? '';
+  const targetName = params.get('targetName') ?? (type === 'TRANSFER' ? 'Your Private Transfer' : type === 'TOUR' ? 'Your Tour Experience' : 'Your Attraction Visit');
   const bookingRef = params.get('bookingRef') ?? '';
 
-  if (!targetId) {
+  if (!targetId && !bookingRef) {
     router.replace('/');
     return null;
   }

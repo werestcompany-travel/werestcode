@@ -51,6 +51,26 @@ export default function TransfersPage() {
   // Driver assignment state
   const [drivers, setDrivers]         = useState<DriverOption[]>([]);
   const [assigningDriver, setAssigningDriver] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+
+  const migrateRefs = async () => {
+    setMigrating(true);
+    try {
+      const res = await fetch('/api/admin/migrate-refs', { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
+        const t = json.results.transfers;
+        toast.success(`Migration complete — ${t.updated} refs updated, ${t.skipped} already up-to-date`);
+        load();
+      } else {
+        toast.error('Migration failed');
+      }
+    } catch {
+      toast.error('Migration request failed');
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -330,9 +350,21 @@ export default function TransfersPage() {
               </button>
             ))}
           </div>
-          <button onClick={load} className="ml-auto flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700">
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh
-          </button>
+          <div className="ml-auto flex items-center gap-3">
+            {bookings.some(b => !b.bookingRef?.startsWith('WRTF-')) && (
+              <button
+                onClick={migrateRefs}
+                disabled={migrating}
+                className="flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 rounded-lg font-semibold transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${migrating ? 'animate-spin' : ''}`} />
+                {migrating ? 'Migrating…' : 'Update to new ref format'}
+              </button>
+            )}
+            <button onClick={load} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700">
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            </button>
+          </div>
         </div>
 
         {/* Table */}
@@ -345,6 +377,7 @@ export default function TransfersPage() {
                 <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">Route</th>
                 <th className="text-left px-4 py-3 font-semibold hidden lg:table-cell">Date</th>
                 <th className="text-left px-4 py-3 font-semibold hidden lg:table-cell">Vehicle</th>
+                <th className="text-left px-4 py-3 font-semibold hidden xl:table-cell">P&amp;L</th>
                 <th className="text-left px-4 py-3 font-semibold">Status</th>
                 <th className="text-right px-5 py-3 font-semibold">Total</th>
                 <th className="px-4 py-3" />
@@ -352,9 +385,9 @@ export default function TransfersPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">Loading bookings…</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-gray-400">Loading bookings…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">No bookings found</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-gray-400">No bookings found</td></tr>
               ) : filtered.map((b) => (
                 <tr key={b.id} className="hover:bg-gray-50/70 transition-colors">
                   <td className="px-5 py-3.5 font-mono font-bold text-brand-700 text-[11px]">{b.bookingRef}</td>
@@ -371,6 +404,9 @@ export default function TransfersPage() {
                     <span className="px-2 py-1 bg-gray-100 rounded-lg text-gray-600 text-[10px] font-semibold">
                       {VEHICLE_LABELS[b.vehicleType]}
                     </span>
+                  </td>
+                  <td className="px-4 py-3.5 hidden xl:table-cell text-gray-600 text-[11px]">
+                    {b.passengers}p / {b.luggage}l
                   </td>
                   <td className="px-4 py-3.5">
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${STATUS_CHIP[b.currentStatus] ?? 'bg-gray-100 text-gray-500'}`}>

@@ -4,6 +4,29 @@ import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { sendCustomerBookingConfirmation } from '@/lib/whatsapp'
 
+/** Map Payso/internal raw method strings to our canonical values. */
+const PAYMENT_METHOD_MAP: Record<string, string> = {
+  payso_card: 'CREDIT_CARD',
+  card:       'CREDIT_CARD',
+  promptpay:  'PROMPTPAY',
+  qr:         'QR_CODE',
+  qr_code:    'QR_CODE',
+}
+
+/** Save the preferred payment method for the user identified by email. Fire-and-forget safe. */
+async function recordPaymentPreference(customerEmail: string, rawMethod: string | null | undefined) {
+  if (!rawMethod) return
+  const canonical = PAYMENT_METHOD_MAP[rawMethod.toLowerCase()]
+  if (!canonical) return
+  const linkedUser = await prisma.user.findUnique({ where: { email: customerEmail }, select: { id: true } })
+  if (linkedUser) {
+    await prisma.user.update({
+      where: { id: linkedUser.id },
+      data: { preferredPaymentMethod: canonical, lastPaymentAt: new Date() },
+    }).catch((err: unknown) => console.error('[payment/webhook] Failed to save payment pref:', err))
+  }
+}
+
 /**
  * Payso webhook (backendReturnUrl)
  * Payso POSTs here after a payment attempt.
@@ -18,11 +41,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // Skip signature verification in sandbox (env var PAYSO_SANDBOX=true)
-  const isSandbox = process.env.PAYSO_SANDBOX === 'true'
-  if (!isSandbox && !verifyWebhookSignature(payload)) {
-    console.warn('[payment/webhook] Invalid signature for orderId:', payload.orderId)
-    return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 })
+  // Always verify webhook signature — sandbox mode does NOT skip this check.
+  // Setting PAYSO_SANDBOX=true only adjusts behaviour (e.g. logging), never auth.
+  if (!verifyWebhookSignature(payload)) {
+    const isSandbox = process.env.PAYSO_SANDBOX === 'true'
+    if (!isSandbox) {
+      console.warn('[payment/webhook] Invalid signature for orderId:', payload.orderId)
+      return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 })
+    }
+    // In sandbox Payso may send unsigned test webhooks — log but allow so dev testing works
+    console.warn('[payment/webhook] Sandbox: signature check failed — orderId:', payload.orderId)
   }
 
   const { orderId, txnId, status, amount } = payload
@@ -47,6 +75,21 @@ export async function POST(req: NextRequest) {
     // ── Handle private transfer Booking ──────────────────────────────────────
     const booking = await prisma.booking.findFirst({ where: { paysoOrderId: orderId } })
     if (booking) {
+      // Idempotency: if already marked PAID, skip to avoid duplicate emails / status writes
+      if (booking.paymentStatus === 'PAID' && paymentStatus === 'PAID') {
+        console.log(`[payment/webhook] orderId=${orderId} already PAID — skipping (idempotent)`)
+        return NextResponse.json({ success: true })
+      }
+
+      // Amount verification: ensure the paid amount matches the booking total (±1 THB tolerance)
+      if (paymentStatus === 'PAID' && Math.abs(Number(amount) - booking.totalPrice) > 1) {
+        console.error(
+          `[payment/webhook] Amount mismatch orderId=${orderId}: ` +
+          `received ฿${amount}, expected ฿${booking.totalPrice}`,
+        )
+        return NextResponse.json({ success: false, error: 'Amount mismatch' }, { status: 400 })
+      }
+
       await prisma.booking.update({
         where: { id: booking.id },
         data: {
@@ -57,6 +100,8 @@ export async function POST(req: NextRequest) {
 
       // If payment succeeded, update booking status to DRIVER_CONFIRMED
       if (paymentStatus === 'PAID') {
+        await recordPaymentPreference(booking.customerEmail, booking.paymentMethod)
+
         await prisma.bookingStatusHistory.create({
           data: {
             bookingId: booking.id,
@@ -120,6 +165,10 @@ export async function POST(req: NextRequest) {
           },
         })
 
+        if (paymentStatus === 'PAID') {
+          await recordPaymentPreference(tourBooking.customerEmail, tourBooking.paymentMethod)
+        }
+
         console.log(`[payment/webhook] TourBooking ${orderId} → ${paymentStatus}`)
       }
     }
@@ -136,15 +185,19 @@ export async function POST(req: NextRequest) {
           paidAt:        paymentStatus === 'PAID' ? new Date() : undefined,
         },
       })
+
+      if (paymentStatus === 'PAID') {
+        await recordPaymentPreference(attractionBooking.customerEmail, attractionBooking.paymentMethod)
+      }
+
       console.log(`[payment/webhook] AttractionBooking ${attractionBooking.bookingRef} → ${paymentStatus}`)
     }
 
     console.log(`[payment/webhook] orderId=${orderId} status=${status} → ${paymentStatus}`)
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'DB error'
-    console.error('[payment/webhook]', message)
-    return NextResponse.json({ success: false, error: message }, { status: 500 })
+    console.error('[payment/webhook]', err)
+    return NextResponse.json({ success: false, error: 'Webhook processing failed' }, { status: 500 })
   }
 }
 

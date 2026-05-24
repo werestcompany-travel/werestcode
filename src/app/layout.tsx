@@ -9,6 +9,7 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import CookieConsent from '@/components/CookieConsent';
 import { ChatProvider } from '@/context/ChatContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     template: '%s | Werest Travel',
   },
   description:
-    'Book fixed-price private airport transfers, day trips, and attraction tickets across Thailand. Verified drivers, instant confirmation, free cancellation. Bangkok, Phuket, Chiang Mai & more.',
+    'Book fixed-price transfers, attraction tickets and tours across Thailand. Verified drivers, instant confirmation, free cancellation. Bangkok, Phuket and more.',
   keywords: [
     'Thailand transfer', 'private car hire Thailand', 'Bangkok airport transfer',
     'Phuket private transfer', 'Chiang Mai day trip', 'Thailand tour booking',
@@ -78,27 +79,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <LocaleProvider>
-          <WishlistProvider>
-            <AuthModalProvider>
-              <ChatProvider>
-                {children}
-                <FloatingWidgets />
-                <CookieConsent />
-                <Toaster
-                  position="top-center"
-                  toastOptions={{
-                    duration: 4000,
-                    style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-                  }}
-                />
-              </ChatProvider>
-            </AuthModalProvider>
-          </WishlistProvider>
-        </LocaleProvider>
+        <ThemeProvider>
+          <LocaleProvider>
+            <WishlistProvider>
+              <AuthModalProvider>
+                <ChatProvider>
+                  {children}
+                  <FloatingWidgets />
+                  <CookieConsent />
+                  <Toaster
+                    position="top-center"
+                    toastOptions={{
+                      duration: 4000,
+                      style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+                    }}
+                  />
+                </ChatProvider>
+              </AuthModalProvider>
+            </WishlistProvider>
+          </LocaleProvider>
+        </ThemeProvider>
 
         {/* Vercel Analytics */}
         <Analytics />
+
+        {/* PWA Service Worker — scoped per path */}
+        <Script id="sw-register" strategy="afterInteractive">
+          {`
+    if ('serviceWorker' in navigator) {
+      var path = window.location.pathname;
+      if (path.startsWith('/driver')) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/driver/' }).catch(function(){});
+      } else {
+        navigator.serviceWorker.register('/sw-customer.js', { scope: '/' }).catch(function(){});
+      }
+    }
+  `}
+        </Script>
 
         {/* GA4 — only loaded when NEXT_PUBLIC_GA_MEASUREMENT_ID is set */}
         {GA_ID && (

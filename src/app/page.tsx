@@ -23,7 +23,7 @@ const SITE_URL = 'https://www.werest.com';
 export const metadata: Metadata = {
   title: 'Private Transfers & Day Trips in Thailand | Werest Travel',
   description:
-    'Book fixed-price private airport transfers, day trips, and tours across Thailand. Verified drivers, instant confirmation, free cancellation. Bangkok, Phuket, Chiang Mai & more.',
+    'Book fixed-price transfers, attraction tickets and tours across Thailand. Verified drivers, instant confirmation, free cancellation. Bangkok, Phuket and more.',
   keywords: [
     'private transfer Thailand',
     'Bangkok airport transfer',
@@ -47,10 +47,10 @@ export const metadata: Metadata = {
     siteName: 'Werest Travel',
     images: [
       {
-        url: `${SITE_URL}/og-image.jpg`,
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Werest Travel — Private Transfers & Day Trips in Thailand',
+        alt: 'Werest Travel — Private Transfers and Day Trips in Thailand',
       },
     ],
     locale: 'en_US',
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: 'Private Transfers & Day Trips in Thailand | Werest Travel',
     description:
       'Fixed-price private transfers and curated day trips across Thailand. Instant confirmation, free cancellation.',
-    images: [`${SITE_URL}/og-image.jpg`],
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -191,7 +191,7 @@ const jsonLd = {
           name: 'What vehicle types are available?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'We offer Sedan (up to 3 passengers), SUV (up to 6 passengers), and Minivan (up to 10 passengers). All vehicles are air-conditioned and include complimentary water.',
+            text: 'We offer Sedan (up to 2 passengers), SUV (up to 4 passengers), and Minivan (up to 10 passengers). All vehicles are air-conditioned and include complimentary water.',
           },
         },
         {

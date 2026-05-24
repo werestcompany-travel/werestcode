@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromCookies } from '@/lib/user-auth';
+import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
 
 interface GuestItem {
@@ -12,7 +12,7 @@ interface GuestItem {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getUserFromCookies();
+  const session = await getUserFromRequest(req);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();

@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 const schema = z.object({ email: z.string().email() });
 
-// Simple in-request rate limit check (IP-based, best-effort)
-const recentRequests = new Map<string, number[]>();
-
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
-  const now = Date.now();
-  const recent = (recentRequests.get(ip) ?? []).filter(t => now - t < 60 * 60 * 1000);
-  if (recent.length >= 3) {
+  // Rate limit: 3 signups per hour per IP (uses Redis when available, in-memory fallback)
+  const ip = getIP(req);
+  const rl = await rateLimitAsync(`newsletter:${ip}`, LIMITS.newsletter);
+  if (!rl.allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
-  recentRequests.set(ip, [...recent, now]);
 
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }

@@ -90,7 +90,7 @@ Werest offers three core services:
 
 ## Booking Assistant Rules
 - For private transfers: ask departure point, destination, date, number of passengers
-- Recommend vehicle based on group size: 1–2 use Sedan, 3–4 use SUV, 5–9 use Minivan, premium clients use Luxury MPV
+- Recommend vehicle based on group size: 1–2 use Sedan, 3–4 use SUV, 5–10 use Minivan, premium clients use Luxury MPV
 - For tours: ask destination city and preferred date
 - Always provide a booking link: [Book Transfer](/booking) or [Browse Tours](/tours) or [View Attractions](/attractions)
 - Never quote specific prices (rates depend on exact routes/dates) — direct to booking form for quotes

@@ -310,11 +310,26 @@ export default function AdminDiscountCodesPage() {
               {/* New users only + Per-user limit */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">New users only</label>
-                  <button type="button" onClick={() => setForm(f => ({ ...f, newUserOnly: !f.newUserOnly }))}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center gap-2 ${form.newUserOnly ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                    {form.newUserOnly ? <><ToggleRight className="w-4 h-4" /> New customers only</> : <><ToggleLeft className="w-4 h-4" /> All customers</>}
-                  </button>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Eligible users</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { value: false, label: 'All users' },
+                      { value: true,  label: 'New users' },
+                    ].map(opt => (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, newUserOnly: opt.value }))}
+                        className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${
+                          form.newUserOnly === opt.value
+                            ? 'bg-brand-600 border-brand-600 text-white'
+                            : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Per-user limit</label>

@@ -5,7 +5,9 @@ import {
   Plus, X, Pencil, Trash2, Check,
   ToggleLeft, ToggleRight, Package, ChevronDown, ChevronUp, AlertTriangle,
   Image as ImageIcon, ListChecks, HelpCircle, MapPin, Info, Star,
+  Sparkles, Loader2,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AdminShell from '@/components/admin/AdminShell';
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -27,6 +29,8 @@ interface AttractionListing {
   faqs: { q: string; a: string }[] | null;
   gallery: { src: string; alt: string }[] | null;
   packages: AttractionPackage[];
+  metaTitle?: string | null;
+  metaDesc?: string | null;
 }
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
@@ -65,6 +69,8 @@ const EMPTY_FORM = {
   gallery: [{ src: '', alt: '' }] as { src: string; alt: string }[],
   expectSteps: [{ time: '', title: '', icon: '⭐', desc: '' }] as { time: string; title: string; icon: string; desc: string }[],
   faqs: [{ q: '', a: '' }] as { q: string; a: string }[],
+  metaTitle: '',
+  metaDesc: '',
 };
 
 const EMPTY_PKG = {
@@ -92,6 +98,7 @@ export default function AdminAttractionsPage() {
   const [modalTab,  setModalTab]  = useState<ModalTab>('basic');
   const [saving,    setSaving]    = useState(false);
   const [formError, setFormError] = useState('');
+  const [seoGenerating, setSeoGenerating] = useState(false);
 
   // Package modal
   const [showPkgModal, setShowPkgModal] = useState(false);
@@ -151,10 +158,35 @@ export default function AdminAttractionsPage() {
       gallery:     a.gallery?.length ? a.gallery : [{ src: '', alt: '' }],
       expectSteps: a.expectSteps?.length ? a.expectSteps : [{ time: '', title: '', icon: '⭐', desc: '' }],
       faqs:        a.faqs?.length ? a.faqs : [{ q: '', a: '' }],
+      metaTitle: (a as any).metaTitle ?? '',
+      metaDesc:  (a as any).metaDesc  ?? '',
     });
     setModalTab('basic');
     setFormError('');
     setShowModal(true);
+  }
+
+  async function autoFillSeoAttraction() {
+    if (!form.name.trim()) { toast.error('Add a name first'); return; }
+    setSeoGenerating(true);
+    try {
+      const res = await fetch('/api/admin/ai/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'attraction', title: form.name, description: form.overview, location: form.location, category: form.category }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        setForm(f => ({
+          ...f,
+          metaTitle: d.seoTitle || f.metaTitle,
+          metaDesc:  d.seoDescription || f.metaDesc,
+        }));
+        toast.success('SEO fields auto-filled');
+      }
+    } catch { toast.error('Generation failed'); }
+    finally { setSeoGenerating(false); }
   }
 
   async function handleSave() {
@@ -626,6 +658,38 @@ export default function AdminAttractionsPage() {
                     <div>
                       <p className="text-sm font-bold text-gray-900">{form.name || 'Attraction name'}</p>
                       <p className="text-xs text-gray-400">{form.location || 'Location'} · ฿{Number(form.price || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {/* SEO */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">SEO</p>
+                      <button
+                        type="button"
+                        onClick={autoFillSeoAttraction}
+                        disabled={seoGenerating}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition-colors disabled:opacity-50"
+                      >
+                        {seoGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                        {seoGenerating ? 'Generating…' : 'Auto-fill'}
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Meta Title</label>
+                        <input value={form.metaTitle} onChange={(e) => setForm({...form, metaTitle: e.target.value})}
+                          placeholder="Leave blank to use attraction name"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 placeholder:text-gray-300" />
+                        <p className={`text-xs mt-1 ${form.metaTitle.length > 60 ? 'text-red-500' : 'text-gray-400'}`}>{form.metaTitle.length}/60</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Meta Description</label>
+                        <textarea value={form.metaDesc} onChange={(e) => setForm({...form, metaDesc: e.target.value})}
+                          placeholder="Compelling meta description (140–160 chars)…" rows={2}
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 resize-none placeholder:text-gray-300" />
+                        <p className={`text-xs mt-1 ${form.metaDesc.length > 160 ? 'text-red-500' : 'text-gray-400'}`}>{form.metaDesc.length}/160</p>
+                      </div>
                     </div>
                   </div>
                 </>

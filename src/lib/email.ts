@@ -16,32 +16,75 @@ function escapeHtml(s: string): string {
 }
 
 function baseLayout(title: string, body: string): string {
+  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
+  const waHref   = `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi, I need help with my booking')}`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:24px 12px;">
   <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-      <!-- Header -->
+    <table width="100%" style="max-width:600px;" cellpadding="0" cellspacing="0">
+
+      <!-- Top brand bar -->
       <tr>
-        <td style="background:#2534ff;padding:28px 40px;">
-          <span style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">Werest Travel</span>
+        <td style="background:linear-gradient(135deg,#1a24e0 0%,#2534ff 50%,#3d4eff 100%);border-radius:16px 16px 0 0;padding:24px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td>
+                <span style="color:#ffffff;font-size:20px;font-weight:900;letter-spacing:-0.5px;">Werest Travel 🇹🇭</span>
+                <br/><span style="color:rgba(255,255,255,0.65);font-size:12px;letter-spacing:0.5px;">PRIVATE TRANSFERS · TOURS · EXPERIENCES</span>
+              </td>
+              <td align="right">
+                <span style="color:rgba(255,255,255,0.9);font-size:28px;">✈️</span>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
-      <!-- Body -->
-      <tr><td style="padding:36px 40px;">${body}</td></tr>
+
+      <!-- Body card -->
+      <tr>
+        <td style="background:#ffffff;padding:36px 36px 28px;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
+          ${body}
+        </td>
+      </tr>
+
+      <!-- WhatsApp support strip -->
+      <tr>
+        <td style="background:#f6fdf8;border:1px solid #d1fae5;border-top:none;border-bottom:none;padding:16px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="font-size:13px;color:#374151;">
+                <strong style="color:#065f46;">Need help?</strong> Contact us any time:
+              </td>
+              <td align="right">
+                <a href="${waHref}" style="display:inline-block;background:#25D366;color:#ffffff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:8px;text-decoration:none;">💬 WhatsApp Us</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
       <!-- Footer -->
       <tr>
-        <td style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #e5e7eb;">
-          <p style="margin:0;color:#9ca3af;font-size:12px;">Werest Travel · Thailand · <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;">${APP_URL}</a></p>
-          <p style="margin:6px 0 0;color:#9ca3af;font-size:11px;">You received this because you made a booking with us.</p>
+        <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;padding:20px 36px;text-align:center;">
+          <p style="margin:0 0 6px;color:#9ca3af;font-size:12px;">
+            <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;font-weight:600;">werest.com</a>
+            &nbsp;·&nbsp; Bangkok, Thailand
+            &nbsp;·&nbsp; <a href="mailto:werestcompany@gmail.com" style="color:#9ca3af;text-decoration:none;">werestcompany@gmail.com</a>
+          </p>
+          <p style="margin:0;color:#d1d5db;font-size:11px;">
+            You received this because you made a booking with Werest Travel.
+          </p>
         </td>
       </tr>
+
     </table>
   </td></tr>
 </table>
@@ -80,58 +123,118 @@ export async function sendBookingConfirmationEmail(booking: BookingEmailData): P
   const trackUrl   = `${APP_URL}/tracking`;
 
   const body = `
-    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Booking Confirmed ✓</h1>
-    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${booking.customerName}, your transfer has been received.</p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;margin-bottom:14px;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Booking Reference</p>
-        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${booking.bookingRef}</p>
-      </td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;width:50%;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Pickup</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${booking.pickupAddress}</p>
-      </td><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Drop-off</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${booking.dropoffAddress}</p>
-      </td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date &amp; Time</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr} at ${booking.pickupTime}</p>
-      </td><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Vehicle</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${vehicleLabel} · ${booking.passengers} pax</p>
-      </td></tr>
-    </table>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-      <tr>
-        <td style="font-size:14px;color:#374151;">Base fare</td>
-        <td align="right" style="font-size:14px;color:#374151;">${formatCurrency(booking.basePrice)}</td>
-      </tr>
-      ${booking.addOnsTotal > 0 ? `
-      <tr>
-        <td style="font-size:14px;color:#374151;padding-top:4px;">Add-ons</td>
-        <td align="right" style="font-size:14px;color:#374151;padding-top:4px;">${formatCurrency(booking.addOnsTotal)}</td>
-      </tr>` : ''}
-      <tr>
-        <td style="font-size:16px;font-weight:800;color:#111827;padding-top:10px;border-top:1px solid #e5e7eb;">Total</td>
-        <td align="right" style="font-size:16px;font-weight:800;color:#2534ff;padding-top:10px;border-top:1px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
-      </tr>
-    </table>
-
-    ${booking.specialNotes ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:24px;">📝 <strong>Your notes:</strong> ${escapeHtml(booking.specialNotes)}</p>` : ''}
-
-    <p style="font-size:14px;color:#374151;margin-bottom:20px;">Payment is due on the day. Your driver will be in touch before pickup. You can track your booking status at any time:</p>
-
-    <div style="text-align:center;margin-bottom:16px;">
-      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
+    <!-- Success header -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;width:60px;height:60px;background:#d1fae5;border-radius:50%;line-height:60px;font-size:28px;margin-bottom:12px;">✓</div>
+      <h1 style="margin:0 0 6px;font-size:26px;font-weight:900;color:#065f46;letter-spacing:-0.5px;">Booking Confirmed!</h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, your transfer is locked in.</p>
     </div>
-    <p style="text-align:center;font-size:13px;color:#9ca3af;">or track at: <a href="${trackUrl}" style="color:#2534ff;">${trackUrl}</a></p>
-    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
-      You're receiving this email because you made a booking with Werest Travel.<br/>
-      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
-    </p>
+
+    <!-- Booking ref box -->
+    <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:2px solid #c7d2fe;border-radius:14px;padding:18px 24px;text-align:center;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Booking Reference</p>
+      <p style="margin:0;font-size:30px;font-weight:900;color:#2534ff;letter-spacing:3px;">${booking.bookingRef}</p>
+      <p style="margin:6px 0 0;font-size:11px;color:#9ca3af;">Save this for tracking and support</p>
+    </div>
+
+    <!-- Route card -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:20px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="vertical-align:top;width:44%;">
+            <p style="margin:0 0 4px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">📍 Pickup</p>
+            <p style="margin:0;font-size:13px;color:#111827;font-weight:700;line-height:1.4;">${escapeHtml(booking.pickupAddress)}</p>
+          </td>
+          <td style="text-align:center;vertical-align:middle;width:12%;color:#d1d5db;font-size:20px;padding:0 4px;">→</td>
+          <td style="vertical-align:top;width:44%;">
+            <p style="margin:0 0 4px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">🏁 Drop-off</p>
+            <p style="margin:0;font-size:13px;color:#111827;font-weight:700;line-height:1.4;">${escapeHtml(booking.dropoffAddress)}</p>
+          </td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e7eb;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="width:33%;vertical-align:top;text-align:center;">
+              <p style="margin:0 0 3px;font-size:18px;">📅</p>
+              <p style="margin:0 0 2px;font-size:10px;color:#9ca3af;text-transform:uppercase;">Date</p>
+              <p style="margin:0;font-size:13px;color:#111827;font-weight:700;">${dateStr}</p>
+            </td>
+            <td style="width:33%;vertical-align:top;text-align:center;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
+              <p style="margin:0 0 3px;font-size:18px;">⏰</p>
+              <p style="margin:0 0 2px;font-size:10px;color:#9ca3af;text-transform:uppercase;">Pickup Time</p>
+              <p style="margin:0;font-size:20px;color:#2534ff;font-weight:900;">${booking.pickupTime}</p>
+            </td>
+            <td style="width:33%;vertical-align:top;text-align:center;">
+              <p style="margin:0 0 3px;font-size:18px;">🚗</p>
+              <p style="margin:0 0 2px;font-size:10px;color:#9ca3af;text-transform:uppercase;">Vehicle</p>
+              <p style="margin:0;font-size:13px;color:#111827;font-weight:700;">${vehicleLabel}</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div style="margin-top:12px;padding:8px 12px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;display:inline-block;">
+        <span style="font-size:12px;color:#374151;">👥 ${booking.passengers} passenger${booking.passengers !== 1 ? 's' : ''} · 🧳 ${booking.luggage} bag${booking.luggage !== 1 ? 's' : ''}</span>
+      </div>
+    </div>
+
+    <!-- Price summary -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:18px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Price Summary</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="font-size:14px;color:#374151;padding:4px 0;">Base fare</td>
+          <td align="right" style="font-size:14px;color:#374151;padding:4px 0;">${formatCurrency(booking.basePrice)}</td>
+        </tr>
+        ${booking.addOnsTotal > 0 ? `<tr>
+          <td style="font-size:14px;color:#374151;padding:4px 0;">Add-ons</td>
+          <td align="right" style="font-size:14px;color:#374151;padding:4px 0;">${formatCurrency(booking.addOnsTotal)}</td>
+        </tr>` : ''}
+        <tr>
+          <td style="font-size:16px;font-weight:900;color:#111827;padding-top:12px;border-top:2px solid #e5e7eb;">Total</td>
+          <td align="right" style="font-size:20px;font-weight:900;color:#2534ff;padding-top:12px;border-top:2px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
+        </tr>
+      </table>
+      <p style="margin:10px 0 0;font-size:12px;color:#f59e0b;background:#fffbeb;border-radius:8px;padding:8px 12px;">💳 Payment is due on the day of travel. Your driver will collect payment on arrival.</p>
+    </div>
+
+    ${booking.specialNotes ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#92400e;"><strong>📝 Your notes:</strong> ${escapeHtml(booking.specialNotes)}</p>
+    </div>` : ''}
+
+    <!-- What happens next -->
+    <div style="margin-bottom:24px;">
+      <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">What happens next</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:36px;vertical-align:top;padding:6px 0;"><span style="font-size:18px;">📱</span></td>
+          <td style="vertical-align:top;padding:6px 0 6px 8px;">
+            <p style="margin:0;font-size:13px;font-weight:700;color:#111827;">Driver assigned</p>
+            <p style="margin:0;font-size:12px;color:#9ca3af;">Your driver will be confirmed 24 hours before pickup.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="width:36px;vertical-align:top;padding:6px 0;"><span style="font-size:18px;">💬</span></td>
+          <td style="vertical-align:top;padding:6px 0 6px 8px;">
+            <p style="margin:0;font-size:13px;font-weight:700;color:#111827;">Reminder sent</p>
+            <p style="margin:0;font-size:12px;color:#9ca3af;">You'll receive a WhatsApp reminder the evening before.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="width:36px;vertical-align:top;padding:6px 0;"><span style="font-size:18px;">🚗</span></td>
+          <td style="vertical-align:top;padding:6px 0 6px 8px;">
+            <p style="margin:0;font-size:13px;font-weight:700;color:#111827;">Pickup day</p>
+            <p style="margin:0;font-size:12px;color:#9ca3af;">Your driver will contact you 30 min before arrival.</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- CTA button -->
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:15px;padding:16px 40px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;">Track My Booking →</a>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:8px 0 0;">Or enter ref <strong>${booking.bookingRef}</strong> at <a href="${trackUrl}" style="color:#2534ff;">${APP_URL}/tracking</a></p>
   `;
 
   try {
@@ -175,49 +278,97 @@ export async function sendTourBookingEmail(booking: TourBookingEmailData): Promi
   const confirmUrl  = `${APP_URL}/tours/confirmation/${booking.bookingRef}`;
 
   const body = `
-    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Tour Booking Confirmed ✓</h1>
-    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, your tour is booked!</p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;">Booking Reference</p>
-        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${booking.bookingRef}</p>
-      </td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;width:50%;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tour</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${escapeHtml(booking.tourTitle)}</p>
-      </td><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Date</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}${booking.tourTime ? ` at ${booking.tourTime}` : ''}</p>
-      </td></tr>
-      ${booking.meetingPoint ? `<tr><td colspan="2" style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Meeting Point</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${escapeHtml(booking.meetingPoint)}</p>
-      </td></tr>` : ''}
-    </table>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-      <tr>
-        <td style="font-size:14px;color:#374151;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''} × ${formatCurrency(booking.adultPrice)}</td>
-        <td align="right" style="font-size:14px;color:#374151;">${formatCurrency(booking.adultQty * booking.adultPrice)}</td>
-      </tr>
-      ${booking.childQty > 0 ? `<tr>
-        <td style="font-size:14px;color:#374151;padding-top:4px;">${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''} × ${formatCurrency(booking.childPrice)}</td>
-        <td align="right" style="font-size:14px;color:#374151;padding-top:4px;">${formatCurrency(booking.childQty * booking.childPrice)}</td>
-      </tr>` : ''}
-      <tr>
-        <td style="font-size:16px;font-weight:800;color:#111827;padding-top:10px;border-top:1px solid #e5e7eb;">Total</td>
-        <td align="right" style="font-size:16px;font-weight:800;color:#2534ff;padding-top:10px;border-top:1px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
-      </tr>
-    </table>
-
-    <div style="text-align:center;margin-bottom:16px;">
-      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;">View Booking</a>
+    <!-- Success header -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;width:60px;height:60px;background:#d1fae5;border-radius:50%;line-height:60px;font-size:28px;margin-bottom:12px;">✓</div>
+      <h1 style="margin:0 0 6px;font-size:26px;font-weight:900;color:#065f46;letter-spacing:-0.5px;">Tour Booking Confirmed!</h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, your adventure is booked!</p>
     </div>
-    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
-      You're receiving this email because you made a booking with Werest Travel.<br/>
-      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
-    </p>
+
+    <!-- Booking ref box -->
+    <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:2px solid #c7d2fe;border-radius:14px;padding:18px 24px;text-align:center;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Booking Reference</p>
+      <p style="margin:0;font-size:30px;font-weight:900;color:#2534ff;letter-spacing:3px;">${booking.bookingRef}</p>
+      <p style="margin:6px 0 0;font-size:11px;color:#9ca3af;">Save this for tracking and support</p>
+    </div>
+
+    <!-- Tour info card -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">🗺️ Tour Details</p>
+      <p style="margin:0 0 16px;font-size:17px;font-weight:800;color:#111827;line-height:1.3;">${escapeHtml(booking.tourTitle)}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:50%;vertical-align:top;padding-right:12px;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">📅 Date</p>
+            <p style="margin:0;font-size:14px;color:#111827;font-weight:700;">${dateStr}</p>
+          </td>
+          <td style="width:50%;vertical-align:top;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">⏰ Departure</p>
+            <p style="margin:0;font-size:14px;color:#2534ff;font-weight:900;">${booking.tourTime ?? 'TBC'}</p>
+          </td>
+        </tr>
+        ${booking.meetingPoint ? `<tr>
+          <td colspan="2" style="padding-top:14px;vertical-align:top;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">📍 Meeting Point</p>
+            <p style="margin:0;font-size:13px;color:#111827;font-weight:700;">${escapeHtml(booking.meetingPoint)}</p>
+          </td>
+        </tr>` : ''}
+        <tr>
+          <td colspan="2" style="padding-top:14px;vertical-align:top;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">👥 Guests</p>
+            <p style="margin:0;font-size:13px;color:#111827;font-weight:700;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''}${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''}` : ''}</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Price summary -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:18px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Price Summary</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="font-size:14px;color:#374151;padding:4px 0;">${booking.adultQty} adult${booking.adultQty !== 1 ? 's' : ''} × ${formatCurrency(booking.adultPrice)}</td>
+          <td align="right" style="font-size:14px;color:#374151;padding:4px 0;">${formatCurrency(booking.adultQty * booking.adultPrice)}</td>
+        </tr>
+        ${booking.childQty > 0 ? `<tr>
+          <td style="font-size:14px;color:#374151;padding:4px 0;">${booking.childQty} child${booking.childQty !== 1 ? 'ren' : ''} × ${formatCurrency(booking.childPrice)}</td>
+          <td align="right" style="font-size:14px;color:#374151;padding:4px 0;">${formatCurrency(booking.childQty * booking.childPrice)}</td>
+        </tr>` : ''}
+        <tr>
+          <td style="font-size:16px;font-weight:900;color:#111827;padding-top:12px;border-top:2px solid #e5e7eb;">Total</td>
+          <td align="right" style="font-size:20px;font-weight:900;color:#2534ff;padding-top:12px;border-top:2px solid #e5e7eb;">${formatCurrency(booking.totalPrice)}</td>
+        </tr>
+      </table>
+    </div>
+
+    ${booking.notes ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#92400e;"><strong>📝 Your notes:</strong> ${escapeHtml(booking.notes)}</p>
+    </div>` : ''}
+
+    <!-- What to bring -->
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:14px;padding:18px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0369a1;">🎒 What to bring</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">👟</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Comfortable walking shoes</td>
+        </tr>
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">☀️</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Sunscreen &amp; sun hat</td>
+        </tr>
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">📷</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Camera or smartphone for photos</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- CTA button -->
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="${confirmUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:15px;padding:16px 40px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;">Track My Booking →</a>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:8px 0 0;">Ref: <strong>${booking.bookingRef}</strong></p>
   `;
 
   try {
@@ -375,38 +526,71 @@ export async function sendAttractionConfirmationEmail(booking: AttractionEmailDa
   const dateStr = formatDate(booking.visitDate);
 
   const body = `
-    <h1 style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">Ticket Booking Confirmed ✓</h1>
-    <p style="margin:0 0 28px;color:#6b7280;font-size:15px;">Hi ${booking.customerName}, your tickets are booked!</p>
+    <!-- Success header -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;width:60px;height:60px;background:#d1fae5;border-radius:50%;line-height:60px;font-size:28px;margin-bottom:12px;">✓</div>
+      <h1 style="margin:0 0 6px;font-size:26px;font-weight:900;color:#065f46;letter-spacing:-0.5px;">Tickets Confirmed!</h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;">Hi ${escapeHtml(booking.customerName)}, enjoy your visit!</p>
+    </div>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-      <tr><td colspan="2" style="padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;">Booking Reference</p>
-        <p style="margin:4px 0 0;font-size:24px;font-weight:800;color:#2534ff;letter-spacing:1px;">${booking.bookingRef}</p>
-      </td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Attraction</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${booking.attractionName}</p>
-        <p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${booking.packageName}</p>
-      </td><td style="padding:10px 0;vertical-align:top;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Visit Date</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">${dateStr}</p>
-      </td></tr>
-      <tr><td colspan="2" style="padding:10px 0;">
-        <p style="margin:0;font-size:11px;color:#9ca3af;text-transform:uppercase;">Tickets</p>
-        <p style="margin:3px 0 0;font-size:14px;color:#111827;font-weight:600;">
-          ${booking.adultQty > 0 ? `${booking.adultQty} adult${booking.adultQty > 1 ? 's' : ''}` : ''}
-          ${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty > 1 ? 'ren' : ''}` : ''}
-        </p>
-      </td></tr>
-    </table>
+    <!-- Booking ref box -->
+    <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:2px solid #c7d2fe;border-radius:14px;padding:18px 24px;text-align:center;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Booking Reference</p>
+      <p style="margin:0;font-size:30px;font-weight:900;color:#2534ff;letter-spacing:3px;">${booking.bookingRef}</p>
+      <p style="margin:6px 0 0;font-size:11px;color:#9ca3af;">Present this reference at the ticket counter</p>
+    </div>
 
-    <p style="font-size:16px;font-weight:800;color:#111827;text-align:right;">Total: <span style="color:#2534ff;">${formatCurrency(booking.totalPrice)}</span></p>
+    <!-- Ticket info card -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">🎫 Your Tickets</p>
+      <p style="margin:0 0 16px;font-size:17px;font-weight:800;color:#111827;line-height:1.3;">${escapeHtml(booking.attractionName)}</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#6b7280;">${escapeHtml(booking.packageName)}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:50%;vertical-align:top;padding-right:12px;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">📅 Visit Date</p>
+            <p style="margin:0;font-size:15px;color:#2534ff;font-weight:900;">${dateStr}</p>
+          </td>
+          <td style="width:50%;vertical-align:top;">
+            <p style="margin:0 0 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:700;">👥 Guests</p>
+            <p style="margin:0;font-size:13px;color:#111827;font-weight:700;">
+              ${booking.adultQty > 0 ? `${booking.adultQty} adult${booking.adultQty > 1 ? 's' : ''}` : ''}${booking.childQty > 0 ? ` · ${booking.childQty} child${booking.childQty > 1 ? 'ren' : ''}` : ''}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
 
-    <p style="font-size:14px;color:#374151;margin-top:20px;">Present this booking reference at the attraction. Payment is due on the day unless otherwise stated.</p>
-    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
-      You're receiving this email because you made a booking with Werest Travel.<br/>
-      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
-    </p>
+    <!-- Price summary -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:18px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Price Summary</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="font-size:16px;font-weight:900;color:#111827;">Total</td>
+          <td align="right" style="font-size:24px;font-weight:900;color:#2534ff;">${formatCurrency(booking.totalPrice)}</td>
+        </tr>
+      </table>
+      <p style="margin:10px 0 0;font-size:12px;color:#f59e0b;background:#fffbeb;border-radius:8px;padding:8px 12px;">💳 Payment is due on the day of your visit unless otherwise stated.</p>
+    </div>
+
+    <!-- What to bring -->
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:14px;padding:18px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0369a1;">🎒 What to bring</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">👟</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Comfortable walking shoes</td>
+        </tr>
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">☀️</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Sunscreen &amp; sun hat</td>
+        </tr>
+        <tr>
+          <td style="width:24px;vertical-align:top;padding:4px 0;font-size:16px;">📷</td>
+          <td style="vertical-align:top;padding:4px 0 4px 8px;font-size:13px;color:#374151;">Camera or smartphone for photos</td>
+        </tr>
+      </table>
+    </div>
   `;
 
   try {
@@ -448,7 +632,7 @@ export async function sendTourBookingConfirmationEmail(booking: TourBookingConfi
   const dateStr    = formatDate(booking.bookingDate);
   const confirmUrl = `${APP_URL}/tours/confirmation/${booking.bookingRef}`;
   const tourUrl    = `${APP_URL}/tours/${booking.tourSlug}`;
-  const waNumber   = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191';
+  const waNumber   = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
   const waUrl      = `https://wa.me/${waNumber}`;
 
   const body = `
@@ -544,7 +728,7 @@ export async function sendAttractionBookingConfirmationEmail(booking: Attraction
   const dateStr        = formatDate(booking.visitDate);
   const confirmUrl     = `${APP_URL}/confirmation/attraction/${booking.bookingRef}`;
   const attractionUrl  = `${APP_URL}/attractions/${booking.attractionSlug}`;
-  const waNumber       = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191';
+  const waNumber       = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
   const waUrl          = `https://wa.me/${waNumber}`;
 
   const body = `

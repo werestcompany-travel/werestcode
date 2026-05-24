@@ -34,7 +34,7 @@ export const ROUTES: RouteInfo[] = [
       { q: 'How long is the drive from Bangkok to Pattaya?', a: 'Approximately 2 hours 30 minutes (150 km) via Highway 7 (Motorway). Traffic around Bangkok can add 30–60 minutes during peak hours (07:00–09:00 and 17:00–19:00 on weekdays).' },
       { q: 'Is there a toll fee?', a: 'Yes — the motorway toll is around ฿60–90. This is included in our quoted price; no surprise extras.' },
       { q: 'Can I be picked up from Suvarnabhumi or Don Mueang?', a: 'Yes, we pick up directly from both Bangkok airports as well as any hotel or address in Bangkok.' },
-      { q: 'How many passengers fit?', a: 'Sedan: up to 3 passengers · SUV: up to 6 · Minivan: up to 10. Choose the right vehicle when booking.' },
+      { q: 'How many passengers fit?', a: 'Sedan: up to 2 passengers · SUV: up to 4 · Minivan: up to 10. Choose the right vehicle when booking.' },
     ],
   },
   {
@@ -325,7 +325,7 @@ export const ALL_ROUTES: TransferRoute[] = [
       { q: 'How long is the drive from Bangkok to Pattaya?', a: 'Approximately 2 hours (150 km) via Highway 7 (Motorway). Traffic around Bangkok can add 30–60 minutes during peak hours on weekdays.' },
       { q: 'Is the motorway toll included?', a: 'Yes — the motorway toll of around ฿60–90 is included in our fixed price. No surprise extras on arrival.' },
       { q: 'Can I be picked up from Suvarnabhumi or Don Mueang airport?', a: 'Yes. We pick up directly from both Bangkok airports as well as any hotel or address in Bangkok.' },
-      { q: 'How many passengers fit in each vehicle?', a: 'Sedan: up to 3 passengers with 2 large bags. SUV: up to 6 passengers. Minivan: up to 10 passengers. Choose your vehicle when booking.' },
+      { q: 'How many passengers fit in each vehicle?', a: 'Sedan: up to 2 passengers with 2 large bags. SUV: up to 4 passengers. Minivan: up to 10 passengers. Choose your vehicle when booking.' },
     ],
   },
   {
@@ -417,7 +417,7 @@ export const ALL_ROUTES: TransferRoute[] = [
       { q: 'How long is the drive from Bangkok to Hua Hin?', a: 'Around 3 hours (210 km) via Phetkasem Road or Highway 35. Expect heavier traffic on Friday evenings and public holidays.' },
       { q: 'Can I request a pickup from Don Mueang airport instead?', a: 'Yes — enter Don Mueang Airport as your pickup address and Hua Hin as your destination when booking.' },
       { q: 'Is there an option for a short stop along the way?', a: 'Yes, you can request a comfort stop at no extra charge. Add a note when booking.' },
-      { q: 'What vehicles are available for large groups?', a: 'We offer Sedans (3 pax), SUVs (6 pax), and Minivans (10 pax). For groups larger than 10, book multiple vehicles.' },
+      { q: 'What vehicles are available for large groups?', a: 'We offer Sedans (2 pax), SUVs (4 pax), and Minivans (10 pax). For groups larger than 10, book multiple vehicles.' },
     ],
   },
   {
@@ -531,7 +531,7 @@ export const ALL_ROUTES: TransferRoute[] = [
     faqs: [
       { q: 'How long is the drive from Phuket Airport to Kata Beach?', a: 'About 35 km, roughly 50–60 minutes depending on traffic through Phuket Town.' },
       { q: 'Do you cover Kata Noi and Karon Beach?', a: 'Yes — we drop off at any hotel or villa in Kata Beach, Kata Noi, and Karon Beach.' },
-      { q: 'What luggage allowance is there?', a: 'Sedan: 2 large bags. SUV: 4 large bags. Minivan: 6 large bags. For extra luggage, book the larger vehicle.' },
+      { q: 'What luggage allowance is there?', a: 'Sedan: 2 large bags. SUV: 4 large bags. Minivan: 7 large bags. For extra luggage, book the larger vehicle.' },
       { q: 'Can I book a return transfer at the same time?', a: 'Yes — book two separate one-way transfers (outbound and return) and we will coordinate both pickups.' },
     ],
   },

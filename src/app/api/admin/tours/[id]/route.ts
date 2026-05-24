@@ -24,7 +24,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
             rating, reviewCount, category, badge, images, highlights, description,
             includes, excludes, itinerary, options, meetingPoint, importantInfo,
             reviews, isActive, sortOrder,
-            isFeatured, isPopular, isTrending, homepageVisible, instantConfirmation, priceFrom } = body;
+            isFeatured, isPopular, isTrending, homepageVisible, instantConfirmation, priceFrom,
+            metaTitle, metaDesc } = body;
 
     const tour = await prisma.tour.update({
       where: { id: params.id },
@@ -52,6 +53,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
         reviews:      reviews    ?? [],
         isActive:     isActive   ?? true,
         sortOrder:    parseInt(sortOrder) || 0,
+        // SEO fields
+        ...(metaTitle !== undefined && { metaTitle: metaTitle || null }),
+        ...(metaDesc  !== undefined && { metaDesc:  metaDesc  || null }),
         // Feature flag fields
         ...(isFeatured         !== undefined && { isFeatured:          Boolean(isFeatured) }),
         ...(isPopular          !== undefined && { isPopular:           Boolean(isPopular) }),

@@ -17,7 +17,7 @@ export async function signAdminToken(payload: { id: string; email: string; name:
 
 export async function verifyAdminToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] });
     return payload as { id: string; email: string; name: string };
   } catch {
     return null;

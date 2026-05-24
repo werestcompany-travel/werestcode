@@ -177,7 +177,9 @@ export default function TourCard({
                 ))}
               </div>
               <span className="text-xs font-bold text-gray-800">{tour.rating.toFixed(1)}</span>
-              <span className="text-xs text-gray-400">({tour.reviewCount.toLocaleString()})</span>
+              {tour.reviewCount > 0 && (
+                <span className="text-xs text-gray-400">Reviews</span>
+              )}
             </div>
             <span className="text-gray-200">·</span>
             <div className="flex items-center gap-1 text-xs text-gray-500">

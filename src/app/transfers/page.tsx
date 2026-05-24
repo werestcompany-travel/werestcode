@@ -66,21 +66,21 @@ const POPULAR_ROUTES = [
     from: 'Bangkok City', fromCode: 'BKK',
     to: 'Pattaya', toCode: 'PTV',
     price: '฿1,800', duration: '1h 45m',
-    image: 'https://images.unsplash.com/photo-1552566626-52f8b828a2bb?w=600&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=600&h=400&fit=crop',
     href: '/results?pickup_address=Bangkok+City+Centre&dropoff_address=Pattaya',
   },
   {
     from: 'Chiang Mai Airport', fromCode: 'CNX',
     to: 'Chiang Rai', toCode: 'CEI',
     price: '฿2,500', duration: '3h 00m',
-    image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=600&h=400&fit=crop',
     href: '/results?pickup_address=Chiang+Mai+Airport&dropoff_address=Chiang+Rai',
   },
   {
     from: 'Krabi Airport', fromCode: 'KBV',
     to: 'Ao Nang', toCode: 'KBI',
     price: '฿800', duration: '30 min',
-    image: 'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=600&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&h=400&fit=crop',
     href: '/results?pickup_address=Krabi+Airport&dropoff_address=Ao+Nang',
   },
 ]
@@ -88,24 +88,24 @@ const POPULAR_ROUTES = [
 const FLEET = [
   {
     type: 'Sedan',
-    pax: 'Up to 3 passengers',
-    bags: 'Up to 3 bags',
+    pax: 'Up to 2 passengers',
+    bags: 'Up to 2 bags',
     example: 'Toyota Camry, Honda Accord',
     image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&h=400&fit=crop',
   },
   {
     type: 'SUV',
-    pax: 'Up to 6 passengers',
-    bags: 'Up to 6 bags',
+    pax: 'Up to 4 passengers',
+    bags: 'Up to 4 bags',
     example: 'Toyota Fortuner, Ford Everest',
     image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&h=400&fit=crop',
   },
   {
     type: 'Minivan',
     pax: 'Up to 10 passengers',
-    bags: 'Up to 10 bags',
+    bags: 'Up to 7 bags',
     example: 'Toyota HiAce, Hyundai H1',
-    image: 'https://images.unsplash.com/photo-1624438532989-e13d61daff39?w=600&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&h=400&fit=crop',
   },
 ]
 
@@ -397,7 +397,7 @@ export default function TransfersPage() {
                 Book a transfer
               </Link>
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl transition-colors text-base"

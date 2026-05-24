@@ -78,6 +78,8 @@ model User {
   phone         String?
   loyaltyPoints Int        @default(0)
   tierLevel     TierLevel  @default(EXPLORER)
+  preferredPaymentMethod String?   // "CREDIT_CARD" | "PROMPTPAY" | "QR_CODE"
+  lastPaymentAt          DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
@@ -86,6 +88,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   loyaltyTransactions LoyaltyTransaction[]
   tourBookings        TourBooking[]
+  pushSubscriptions   PushSubscription[]
+  expoTokens          ExpoToken[]
 
   @@index([email])
 }
@@ -100,6 +104,29 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 
   @@index([tokenHash])
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ExpoToken {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+
   @@index([userId])
 }
 
@@ -201,12 +228,16 @@ model Booking {
   specialNotes  String?
 
   // Pricing
-  basePrice       Float
-  addOnsTotal     Float @default(0)
-  discountAmount  Float @default(0)
-  discountCode    String?  // denormalized code for display (e.g. "WELCOME10")
-  discountCodeId  String?  // FK to DiscountCode (soft — not relational to allow code deletion)
-  totalPrice      Float    // base + addOns + surcharges - discount
+  basePrice             Float
+  addOnsTotal           Float    @default(0)
+  discountAmount        Float    @default(0)
+  discountCode          String?  // denormalized code for display (e.g. "WELCOME10")
+  discountCodeId        String?  // FK to DiscountCode (soft — not relational to allow code deletion)
+  loyaltyPointsRedeemed Int      @default(0)   // points spent at checkout
+  loyaltyDiscount       Float    @default(0)   // THB value of redeemed points
+  giftVoucherCode       String?                // gift voucher code applied
+  giftVoucherDiscount   Float    @default(0)   // THB value of voucher
+  totalPrice            Float    // base + addOns + surcharges - discounts
 
   // Payment
   paymentStatus String?   // "UNPAID" | "AWAITING_PAYMENT" | "PAID" | "FAILED" | "REFUNDED"
@@ -484,6 +515,8 @@ model AttractionListing {
   expectSteps   Json?
   faqs          Json?
   gallery       Json?
+  metaTitle     String?
+  metaDesc      String?
   packages      AttractionPackage[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
@@ -604,17 +637,24 @@ model Driver {
   languages      String[]    // e.g. ["English", "Thai"]
   photoUrl       String?
   isActive       Boolean     @default(true)
+  isOnline       Boolean     @default(false)  // currently on duty
+  currentLat     Float?                        // last known GPS position
+  currentLng     Float?
   rating         Float       @default(5.0)
   totalTrips     Int         @default(0)
   notes          String?
 
-  vehicles       Vehicle[]
-  bookings       Booking[]   @relation("DriverBookings")
+  vehicles        Vehicle[]
+  bookings        Booking[]        @relation("DriverBookings")
+  charterBookings CharterBooking[] @relation("DriverCharterBookings")
+  locations       DriverLocation[] @relation("DriverLocations")
+  authTokens      DriverAuthToken[] @relation("DriverTokens")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([isActive])
+  @@index([isOnline])
   @@index([phone])
 }
 
@@ -719,4 +759,261 @@ model TourNotifyRequest {
   @@index([tourSlug])
   @@index([email])
   @@index([notified])
+}
+
+model GiftVoucher {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  value            Float
+  recipientName    String?
+  recipientEmail   String?
+  purchaserEmail   String?
+  message          String?
+  isUsed           Boolean   @default(false)
+  usedAt           DateTime?
+  usedByEmail      String?
+  usedOnBookingRef String?
+  expiresAt        DateTime?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ─── Dynamic Pricing Rules ────────────────────────────────────────────────────
+
+model DynamicPricingRule {
+  id          String       @id @default(cuid())
+  name        String       // e.g. "Songkran Surge", "Late Night", "Weekend Discount"
+  description String?
+  ruleType    String       // "SURGE" | "DISCOUNT" | "FIXED_SURCHARGE"
+  vehicleType VehicleType? // null = applies to all vehicles
+
+  // Adjustment
+  multiplier  Float        @default(1.0)  // 1.3 = +30%, 0.85 = -15%
+  flatAmount  Float?                      // alternative: fixed THB add/subtract
+
+  // Time conditions (empty array / null = all)
+  daysOfWeek  Int[]        // 0=Sun … 6=Sat
+  startHour   Int?         // 0–23 (null = no time restriction)
+  endHour     Int?         // 0–23
+
+  // Date range conditions
+  startDate   DateTime?
+  endDate     DateTime?
+
+  // Route keyword matching (optional)
+  pickupKeyword   String?  // partial match, e.g. "Airport" / "Suvarnabhumi"
+  dropoffKeyword  String?
+
+  isActive    Boolean      @default(true)
+  priority    Int          @default(0)   // higher = evaluated first
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([isActive, priority])
+}
+
+// ─── Charter / Multi-Stop Bookings ───────────────────────────────────────────
+
+enum CharterType {
+  HOURLY
+  MULTI_STOP
+}
+
+model CharterBooking {
+  id          String      @id @default(cuid())
+  bookingRef  String      @unique
+  charterType CharterType
+
+  // Vehicle
+  vehicleType VehicleType
+
+  // Schedule
+  startDate   DateTime    @db.Date
+  startTime   String      // "09:00"
+  durationHours Float?    // for HOURLY type
+
+  // Stops (JSON array: [{address, lat, lng, note, order}])
+  startAddress  String
+  startLat      Float
+  startLng      Float
+  stops         Json       @default("[]")
+  endAddress    String?
+  endLat        Float?
+  endLng        Float?
+
+  // Customer
+  customerName  String
+  customerEmail String
+  customerPhone String
+  passengers    Int        @default(1)
+  specialNotes  String?
+
+  // Pricing
+  hourlyRate    Float?
+  distanceKm    Float      @default(0)
+  basePrice     Float
+  totalPrice    Float
+
+  // Payment
+  paymentStatus String     @default("AWAITING_PAYMENT")
+  paysoOrderId  String?
+  paymentMethod String?
+  paidAt        DateTime?
+
+  // Driver
+  driverId      String?
+  driver        Driver?    @relation("DriverCharterBookings", fields: [driverId], references: [id])
+  driverName    String?
+
+  // Status
+  currentStatus BookingStatus @default(PENDING)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([customerEmail])
+  @@index([startDate])
+  @@index([currentStatus])
+  @@index([paysoOrderId])
+}
+
+// ─── Live Driver Tracking ─────────────────────────────────────────────────────
+
+model DriverLocation {
+  id        String   @id @default(cuid())
+  driverId  String
+  driver    Driver   @relation("DriverLocations", fields: [driverId], references: [id], onDelete: Cascade)
+  bookingId String?  // booking currently being served
+  lat       Float
+  lng       Float
+  heading   Float?   // degrees 0–360
+  speed     Float?   // km/h
+  createdAt DateTime @default(now())
+
+  @@index([driverId])
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+// ─── Driver PWA Auth ──────────────────────────────────────────────────────────
+
+model DriverAuthToken {
+  id        String   @id @default(cuid())
+  driverId  String
+  driver    Driver   @relation("DriverTokens", fields: [driverId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique  // SHA-256 of raw bearer token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([tokenHash])
+  @@index([driverId])
+}
+
+// ─── WhatsApp Booking Flow ────────────────────────────────────────────────────
+
+enum WhatsAppStep {
+  GREETING
+  PICKUP
+  DROPOFF
+  DATE
+  TIME
+  PASSENGERS
+  VEHICLE
+  CONFIRM
+  PAYMENT
+  DONE
+  CANCELLED
+}
+
+model WhatsAppSession {
+  id          String       @id @default(cuid())
+  phone       String       @unique  // international format e.g. "66812345678"
+  step        WhatsAppStep @default(GREETING)
+  data        Json         @default("{}")   // accumulated booking data
+  bookingRef  String?      // set once booking is created
+  lastMessage DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([phone])
+  @@index([lastMessage])
+}
+
+// ─── Email Journey Automation ─────────────────────────────────────────────────
+
+model EmailJourneyLog {
+  id          String   @id @default(cuid())
+  email       String
+  bookingRef  String
+  journeyType String   // "POST_TRIP_REVIEW" | "RE_ENGAGEMENT" | "ANNIVERSARY"
+  sentAt      DateTime @default(now())
+
+  @@unique([bookingRef, journeyType])
+  @@index([email])
+  @@index([sentAt])
+}
+
+// ─── Currency Rates Cache ─────────────────────────────────────────────────────
+
+model CurrencyRate {
+  id         String   @id @default(cuid())
+  base       String   @default("THB")
+  rates      Json     // { USD: 0.027, EUR: 0.025, GBP: 0.021, CNY: 0.197, JPY: 4.1 }
+  fetchedAt  DateTime @default(now())
+
+  @@index([fetchedAt])
+}
+
+model ItineraryPreset {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  category     String   // "adventure" | "cultural" | "beach" | "family" | "honeymoon" | "luxury"
+  destinations String[]
+  days         Int
+  thumbnail    String?
+  dayBlocks    Json     @default("[]")
+  inclusions   Json     @default("[]")
+  exclusions   Json     @default("[]")
+  terms        String?  @db.Text
+  tags         String[]
+  usageCount   Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model GeneratedItinerary {
+  id             String    @id @default(cuid())
+  ref            String    @unique
+  title          String
+  subtitle       String?
+  clientName     String?
+  clientEmail    String?
+  destination    String
+  destinations   String[]  @default([])
+  startDate      DateTime?
+  endDate        DateTime?
+  travelers      Int       @default(2)
+  hotelCategory  String    @default("standard")
+  language       String    @default("en")
+  status         String    @default("draft")
+  overview       String?   @db.Text
+  highlights     Json      @default("[]")
+  dayBlocks      Json      @default("[]")
+  inclusions     Json      @default("[]")
+  exclusions     Json      @default("[]")
+  terms          String?   @db.Text
+  importantNotes String?   @db.Text
+  pricingLines   Json      @default("[]")
+  totalPrice     Float?
+  currency       String    @default("THB")
+  presetId       String?
+  aiPromptUsed   String?   @db.Text
+  adminNotes     String?
+  exportedAt     DateTime?
+  sentAt         DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }

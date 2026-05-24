@@ -32,12 +32,11 @@ const SERVICE_TABS = [
   },
   { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
   { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
-  { id: 'dinner',      icon: Ship,        label: 'Cruises',             badge: 'New',      badgeColor: 'blue', href: '/cruises',      s: 1 },
   { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
   // § 3 — Planning tools
   { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
   // § 4 — Account / loyalty
-  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: undefined,    s: 4 },
+  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
@@ -100,20 +99,20 @@ const NEW_USER_CARDS = [
 
 /* ── Auto-slider promotional banners ─────────────────────────────────────── */
 const PROMO_BANNERS = [
-  { img: '/images/promos/promo1.avif', tag: 'New User Offer',  title: 'First Booking — 10% Off',   desc: 'Sign in and save on your first private transfer',  cta: 'Claim Now',  href: '#',        openModal: true  },
-  { img: '/images/promos/promo2.avif', tag: 'Free Cancel',     title: 'Book with Confidence',      desc: 'Cancel for free up to 24 hours before pickup',     cta: 'Learn More', href: '/booking', openModal: false },
-  { img: '/images/promos/promo3.avif', tag: 'Earn Rewards',    title: 'Collect Werest Points',     desc: 'Earn on every trip and redeem for free rides',      cta: 'Join Now',   href: '#',        openModal: true  },
-  { img: '/images/promos/promo4.avif', tag: 'Popular Route',   title: 'Bangkok → Pattaya ฿1,800', desc: 'Fixed price · No surge · Available 24/7',           cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false },
-  { img: '/images/promos/promo5.avif', tag: 'Airport Special', title: 'Airport Pickup from ฿900', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
+  { bg: 'from-[#2534ff] to-[#1a26cc]', tag: 'New User Offer',  title: 'First Booking — 10% Off',   desc: 'Sign in and save on your first private transfer',  cta: 'Claim Now',  href: '#',        openModal: true  },
+  { bg: 'from-emerald-500 to-teal-600', tag: 'Free Cancel',    title: 'Book with Confidence',      desc: 'Cancel for free up to 24 hours before pickup',     cta: 'Learn More', href: '/booking', openModal: false },
+  { bg: 'from-violet-600 to-purple-700', tag: 'Earn Rewards',  title: 'Collect Werest Points',     desc: 'Earn on every trip and redeem for free rides',      cta: 'Join Now',   href: '#',        openModal: true  },
+  { bg: 'from-amber-500 to-orange-600', tag: 'Popular Route',  title: 'Bangkok → Pattaya ฿1,800', desc: 'Fixed price · No surge · Available 24/7',           cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false },
+  { bg: 'from-[#0a0e2e] to-[#1a20a0]', tag: 'Airport Special', title: 'Airport Pickup from ฿600', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
 ];
 
 /* ── Where to next — destination cards ─────────────────────────────────── */
 const INSPIRED_DESTS = [
-  { id: 'bangkok',   name: 'Bangkok',    activities: 45, img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
-  { id: 'phuket',    name: 'Phuket',     activities: 38, img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80' },
-  { id: 'chiangmai', name: 'Chiang Mai', activities: 24, img: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=600&q=80' },
-  { id: 'krabi',     name: 'Krabi',      activities: 18, img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80'   },
-  { id: 'pattaya',   name: 'Pattaya',    activities: 22, img: 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=600&q=80' },
+  { id: 'bangkok',   name: 'Bangkok',    img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
+  { id: 'phuket',    name: 'Phuket',     img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80' },
+  { id: 'chiangmai', name: 'Chiang Mai', img: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=600&q=80' },
+  { id: 'krabi',     name: 'Krabi',      img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80'   },
+  { id: 'pattaya',   name: 'Pattaya',    img: 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=600&q=80' },
 ];
 
 
@@ -122,13 +121,13 @@ const CAR_CLASSES = [
   {
     id: 'sedan',
     name: 'Sedan',
-    maxPax: 3,
+    maxPax: 2,
     image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/14png/w=600,h=400,fit=contain',
   },
   {
     id: 'suv',
     name: 'SUV',
-    maxPax: 6,
+    maxPax: 4,
     image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/13png/w=600,h=400,fit=contain',
   },
   {
@@ -299,7 +298,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Full-page sticky sidebar ── */}
         <aside
-          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
+          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
           style={{
             top: navHidden ? '0px' : '64px',
             height: navHidden ? '100vh' : 'calc(100vh - 64px)',
@@ -413,7 +412,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px]"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white dark:bg-gray-900 lg:bg-transparent lg:dark:bg-transparent min-h-0 lg:min-h-[580px]"
         >
           {/* Background landscape — hidden on mobile, visible sm+ */}
           <div className="hidden lg:block absolute inset-0">
@@ -523,7 +522,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     : 'Coming soon — be the first to know when it launches.'}
                 </p>
                 <Link
-                  href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
+                  href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                   className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-brand-50 transition-colors"
                 >
                   {activeService === 'rewards' ? 'Learn More' : activeService === 'deals' ? 'View Deals' : 'Notify Me'}
@@ -538,7 +537,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           2. NEW USER EXCLUSIVE
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 lg:pt-7">
+      <section aria-label="New user exclusive" className="bg-white dark:bg-gray-900 pt-[30px] pb-7 lg:pt-7">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
           {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
@@ -592,7 +591,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           3. PROMOTIONAL BANNER SLIDER
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Promotions" className="bg-white py-6">
+      <section aria-label="Promotions" className="bg-white dark:bg-gray-900 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Slider container */}
           <div className="relative overflow-hidden sm:overflow-visible">
@@ -636,12 +635,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               >
                 {PROMO_BANNERS.map((b) => {
                   const inner = (
-                    <div className="relative h-[145px] sm:h-[165px] overflow-hidden">
-                      <img
-                        src={b.img}
-                        alt={b.title}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className={`relative h-[145px] sm:h-[165px] overflow-hidden bg-gradient-to-br ${b.bg} flex flex-col justify-between p-4`}>
+                      <span className="text-[10px] font-bold uppercase tracking-wide bg-white/20 text-white px-2 py-0.5 rounded-full w-fit">{b.tag}</span>
+                      <div>
+                        <p className="text-white font-extrabold text-base sm:text-lg leading-tight">{b.title}</p>
+                        <p className="text-white/75 text-xs mt-1 leading-snug hidden sm:block">{b.desc}</p>
+                        <p className="text-white/90 text-[11px] font-semibold mt-2">{b.cta} →</p>
+                      </div>
                     </div>
                   );
                   return b.openModal ? (
@@ -687,7 +687,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           WHERE TO NEXT — portrait city card row
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="inspired-heading" className="py-10 bg-white">
+      <section aria-labelledby="inspired-heading" className="py-10 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Section header */}
@@ -747,7 +747,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   {/* City text */}
                   <div className="absolute bottom-0 left-0 px-4 pb-4 text-left">
                     <p className="font-bold text-white text-[18px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{dest.name}</p>
-                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">{dest.activities} activities</p>
+                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">Explore →</p>
                   </div>
                 </button>
               );
@@ -809,13 +809,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white">
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white dark:bg-gray-900">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
           <div className="text-center mb-2 lg:mb-6">
             <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
           <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
@@ -857,7 +857,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           9. TRAVEL BLOG
       ════════════════════════════════════════════════════════════ */}
       {latestPosts.length > 0 && (
-        <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white">
+        <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white dark:bg-gray-900">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between mb-8">
               <div>
@@ -917,7 +917,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           12. SEO ROUTE KEYWORD GRID
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
+      <section aria-label="All transfer routes in Thailand" className="py-14 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t('seo.h2')}</h2>
           <nav aria-label="Transfer route directory">

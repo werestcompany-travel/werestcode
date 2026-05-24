@@ -47,6 +47,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(b.gallery       !== undefined && { gallery: b.gallery }),
       ...(b.infoItems     !== undefined && { infoItems: b.infoItems }),
       ...(b.featureImage  !== undefined && { featureImage: b.featureImage || null }),
+      ...(b.metaTitle !== undefined && { metaTitle: b.metaTitle || null }),
+      ...(b.metaDesc  !== undefined && { metaDesc:  b.metaDesc  || null }),
     },
     include: { packages: { orderBy: { sortOrder: 'asc' } } },
   });

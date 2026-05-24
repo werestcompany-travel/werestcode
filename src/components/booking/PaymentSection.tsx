@@ -5,7 +5,7 @@ import { Building2, CreditCard, CheckCircle2, Copy, Check, Lock, Calendar } from
 import { cn } from '@/lib/utils';
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
-export type PaymentMethod = 'international_transfer' | 'credit_card' | 'crypto';
+export type PaymentMethod = 'international_transfer' | 'credit_card' | 'crypto'; // credit_card and crypto reserved for future use
 
 interface PaymentSectionProps {
   value:    PaymentMethod;
@@ -173,20 +173,14 @@ function CardForm() {
 }
 
 /* ── PaymentSection ──────────────────────────────────────────────────────── */
+// ⚠️  Replace these with real Werest Bangkok Bank account details before going live
 const BANK_DETAILS = [
   { label: 'Bank Name',       value: 'Bangkok Bank PCL' },
   { label: 'Account Name',    value: 'Werest Travel Co., Ltd.' },
-  { label: 'Account Number',  value: '012-3-45678-9' },
+  { label: 'Account Number',  value: '— Contact us for details —' },
   { label: 'SWIFT Code',      value: 'BKKBTHBK' },
   { label: 'Branch',          value: 'Sukhumvit, Bangkok' },
   { label: 'Currency',        value: 'THB / USD / EUR' },
-];
-
-const CRYPTO_WALLETS = [
-  { coin: 'Bitcoin (BTC)',  address: 'bc1qxy2kgdygjrsqtzq2n0yrf249xl0xhcca9sph3x' },
-  { coin: 'Ethereum (ETH)', address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
-  { coin: 'USDT (TRC-20)',  address: 'TKFmV2tqV6h9NmNAZr4VNjEqfr9gXj3RMK' },
-  { coin: 'USDC (ERC-20)',  address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
 ];
 
 export default function PaymentSection({ value, onChange }: PaymentSectionProps) {
@@ -245,80 +239,21 @@ export default function PaymentSection({ value, onChange }: PaymentSectionProps)
           )}
         </div>
 
-        {/* ── Credit Card ── */}
-        <div>
-          <button
-            type="button"
-            onClick={() => onChange('credit_card')}
-            className={cn(
-              'w-full flex items-center gap-4 rounded-2xl border-2 px-4 py-3.5 text-left transition-all duration-150',
-              value === 'credit_card'
-                ? 'border-[#2534ff] bg-blue-50/60 shadow-sm'
-                : 'border-gray-200 bg-white hover:border-blue-200',
-            )}
-          >
-            <span className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
-              value === 'credit_card' ? 'bg-[#2534ff] text-white' : 'bg-gray-100 text-gray-500',
-            )}>
+
+        {/* ── Credit Card (Coming soon) ── */}
+        <div className="opacity-60 cursor-not-allowed">
+          <div className="w-full flex items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white px-4 py-3.5">
+            <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gray-100 text-gray-400">
               <CreditCard className="w-5 h-5" />
             </span>
             <div className="flex-1 min-w-0">
-              <p className={cn('text-sm font-bold', value === 'credit_card' ? 'text-[#2534ff]' : 'text-gray-800')}>
-                Credit Card
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">Visa · Mastercard · Amex · via Paysolution</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-gray-500">Credit / Debit Card</p>
+                <span className="text-[10px] font-semibold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">Visa · Mastercard · Amex</p>
             </div>
-            {value === 'credit_card'
-              ? <CheckCircle2 className="w-5 h-5 text-[#2534ff] shrink-0" />
-              : <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0" />
-            }
-          </button>
-
-          {value === 'credit_card' && <CardForm />}
-        </div>
-
-        {/* ── Crypto ── */}
-        <div>
-          <button
-            type="button"
-            onClick={() => onChange('crypto')}
-            className={cn(
-              'w-full flex items-center gap-4 rounded-2xl border-2 px-4 py-3.5 text-left transition-all duration-150',
-              value === 'crypto'
-                ? 'border-[#F7931A] bg-orange-50/60 shadow-sm'
-                : 'border-gray-200 bg-white hover:border-orange-200',
-            )}
-          >
-            <span className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-              <BitcoinLogo className="w-10 h-10" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className={cn('text-sm font-bold', value === 'crypto' ? 'text-[#F7931A]' : 'text-gray-800')}>
-                Crypto
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">BTC · ETH · USDT · USDC</p>
-            </div>
-            {value === 'crypto'
-              ? <CheckCircle2 className="w-5 h-5 text-[#F7931A] shrink-0" />
-              : <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0" />
-            }
-          </button>
-
-          {/* Wallet addresses */}
-          {value === 'crypto' && (
-            <div className="mt-3 rounded-2xl border border-orange-200 bg-orange-50/30 px-4 py-1">
-              <p className="text-[11px] font-bold text-[#F7931A] uppercase tracking-wide pt-3 pb-1">
-                Wallet Addresses
-              </p>
-              {CRYPTO_WALLETS.map(w => (
-                <CopyField key={w.coin} label={w.coin} value={w.address} />
-              ))}
-              <p className="text-[10px] text-gray-400 py-3 leading-relaxed">
-                Send the exact booking amount and email your transaction hash to confirm payment. Rates locked for 30 minutes after booking.
-              </p>
-            </div>
-          )}
+          </div>
         </div>
 
       </div>

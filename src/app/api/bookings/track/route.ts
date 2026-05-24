@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
+  // Rate limit: 30 lookups per 5 minutes per IP — prevents enumeration of booking refs
+  const ip = getIP(req);
+  const rl = await rateLimitAsync(`track:${ip}`, LIMITS.track);
+  if (!rl.allowed) {
+    return NextResponse.json({ success: false, error: 'Too many requests. Please wait a moment.' }, { status: 429 });
+  }
+
   const ref = req.nextUrl.searchParams.get('ref');
   if (!ref) return NextResponse.json({ success: false, error: 'ref required' }, { status: 400 });
 

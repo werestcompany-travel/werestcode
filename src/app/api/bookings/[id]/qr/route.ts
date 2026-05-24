@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import QRCode from 'qrcode';
 import { prisma } from '@/lib/db';
+import { getAdminFromCookies } from '@/lib/auth';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  // IDOR protection: QR codes contain verification URLs — admin-only
+  const admin = await getAdminFromCookies();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const booking = await prisma.booking.findUnique({ where: { id: params.id }, select: { bookingRef: true } });
   if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 

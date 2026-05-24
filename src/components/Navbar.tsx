@@ -12,6 +12,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useLocale, type Lang, type Currency } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+import LocaleCurrencyModal from './LocaleCurrencyModal';
 
 const LANGUAGES: { code: Lang; label: string; flagSrc: string; native: string }[] = [
   { code: 'EN', flagSrc: 'https://flagcdn.com/w40/gb.png',  label: 'English', native: 'English'  },
@@ -19,17 +21,21 @@ const LANGUAGES: { code: Lang; label: string; flagSrc: string; native: string }[
   { code: 'ZH', flagSrc: 'https://flagcdn.com/w40/cn.png',  label: 'Chinese', native: '中文'     },
 ];
 
-const CURRENCIES: { code: Currency; name: string }[] = [
-  { code: 'USD', name: 'US Dollar'     },
-  { code: 'EUR', name: 'Euro'          },
-  { code: 'GBP', name: 'British Pound' },
-  { code: 'THB', name: 'Thai Baht'     },
+const CURRENCIES: { code: Currency; name: string; flag: string }[] = [
+  { code: 'THB', name: 'Thai Baht',         flag: '🇹🇭' },
+  { code: 'USD', name: 'US Dollar',         flag: '🇺🇸' },
+  { code: 'EUR', name: 'Euro',              flag: '🇪🇺' },
+  { code: 'GBP', name: 'British Pound',     flag: '🇬🇧' },
+  { code: 'CNY', name: 'Chinese Yuan',      flag: '🇨🇳' },
+  { code: 'JPY', name: 'Japanese Yen',      flag: '🇯🇵' },
+  { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
+  { code: 'SGD', name: 'Singapore Dollar',  flag: '🇸🇬' },
 ];
 
 const SEARCH_PLACEHOLDERS = [
   'Things to do in Phuket',
   'Temple tour Bangkok',
-  'Dinner cruise',
+  'Airport transfer Bangkok',
 ];
 
 const POPULAR_SUGGESTIONS = [
@@ -59,12 +65,12 @@ const TRENDING_DESTINATIONS = [
 ];
 
 const MOBILE_TRAVEL_OPTIONS = [
-  { label: 'Private Transfers',  Icon: Car,     href: '/results'      },
-  { label: 'Tours & Experiences',Icon: Compass, href: '/tours'        },
-  { label: 'Attraction Tickets', Icon: Ticket,  href: '/attractions'  },
-  { label: 'Cruises',            Icon: Ship,    href: '/cruises'      },
-  { label: 'Group Tours',        Icon: Users,   href: '/group-booking'},
-  { label: 'Deals & Offers',     Icon: Tag,     href: '/deals'        },
+  { label: 'Private Transfers',   Icon: Car,     href: '/results'      },
+  { label: 'Charter / Hourly',    Icon: Clock,   href: '/charter'      },
+  { label: 'Tours & Experiences', Icon: Compass, href: '/tours'        },
+  { label: 'Attraction Tickets',  Icon: Ticket,  href: '/attractions'  },
+  { label: 'Group Tours',         Icon: Users,   href: '/group-booking'},
+  { label: 'Deals & Offers',      Icon: Tag,     href: '/deals'        },
 ];
 
 export default function Navbar({
@@ -82,7 +88,6 @@ export default function Navbar({
 
   /* ── Desktop state ── */
   const [userMenuOpen,        setUserMenuOpen]        = useState(false);
-  const [localeOpen,          setLocaleOpen]          = useState(false);
   const [scrolled,            setScrolled]            = useState(false);
   const [navHidden,           setNavHidden]           = useState(false);
   const [searchQ,             setSearchQ]             = useState('');
@@ -95,11 +100,12 @@ export default function Navbar({
   /* ── Mobile menu state ── */
   const [mobileMenuOpen,    setMobileMenuOpen]    = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
-  const [langExpanded,      setLangExpanded]      = useState(false);
-  const [currExpanded,      setCurrExpanded]      = useState(false);
+
+  /* ── Locale modal state ── */
+  const [localeModalOpen, setLocaleModalOpen] = useState(false);
+  const [localeModalTab, setLocaleModalTab]   = useState<'language' | 'currency'>('language');
 
   const userMenuRef    = useRef<HTMLDivElement>(null);
-  const localeRef      = useRef<HTMLDivElement>(null);
   const searchWrapRef  = useRef<HTMLDivElement>(null);
   const lastScrollY    = useRef(0);
 
@@ -110,8 +116,6 @@ export default function Navbar({
   };
   const closeMobileMenu = () => {
     setMobileMenuVisible(false);
-    setLangExpanded(false);
-    setCurrExpanded(false);
     setTimeout(() => setMobileMenuOpen(false), 220);
   };
 
@@ -159,7 +163,6 @@ export default function Navbar({
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (userMenuRef.current   && !userMenuRef.current.contains(e.target as Node))   setUserMenuOpen(false);
-      if (localeRef.current     && !localeRef.current.contains(e.target as Node))     setLocaleOpen(false);
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target as Node)) setSearchFocused(false);
     };
     document.addEventListener('mousedown', handler);
@@ -303,7 +306,7 @@ export default function Navbar({
       <header className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
 
         <div className={cn(
-          'absolute inset-0 bg-white border-b border-gray-200 shadow-sm transition-opacity duration-300 pointer-events-none',
+          'absolute inset-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm transition-opacity duration-300 pointer-events-none',
           isDark ? 'opacity-0' : 'opacity-100',
         )} />
 
@@ -388,53 +391,23 @@ export default function Navbar({
               Manage bookings
             </Link>
 
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`} target="_blank" rel="noopener noreferrer"
+            <Link href="/contact"
               className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
               <Headphones className="w-4 h-4 shrink-0" />Customer support
-            </a>
+            </Link>
 
-            <div className="relative" ref={localeRef}>
-              <button type="button" onClick={() => setLocaleOpen(!localeOpen)}
-                className={`flex items-center gap-0.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}>
-                <img src={activeLang.flagSrc} alt={activeLang.label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
-                <span className="text-gray-300 mx-0.5">|</span>
-                <span>{currency}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ml-0.5 ${localeOpen ? 'rotate-180' : ''}`} />
-              </button>
+            <button
+              type="button"
+              onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
+              className={`flex items-center gap-0.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
+            >
+              <img src={activeLang.flagSrc} alt={activeLang.label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+              <span className="text-gray-300 mx-0.5">|</span>
+              <span>{currency}</span>
+              <ChevronDown className="w-3 h-3 ml-0.5" />
+            </button>
 
-              {localeOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-gray-100 shadow-2xl p-4 z-50">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('locale.language')}</p>
-                  <div className="flex flex-col gap-1 mb-4">
-                    {LANGUAGES.map(l => (
-                      <button key={l.code} type="button" onClick={() => { setLang(l.code); setLocaleOpen(false); }}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${lang === l.code ? 'bg-brand-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}>
-                        <img src={l.flagSrc} alt={l.label} className="w-7 h-5 object-cover rounded shrink-0" />
-                        <div>
-                          <p className="font-semibold leading-tight">{l.native}</p>
-                          <p className={`text-xs leading-tight ${lang === l.code ? 'text-white/70' : 'text-gray-400'}`}>{l.label}</p>
-                        </div>
-                        {lang === l.code && (
-                          <svg className="w-4 h-4 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('locale.currency')}</p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {CURRENCIES.map(c => (
-                      <button key={c.code} type="button" onClick={() => { setCurrency(c.code); setLocaleOpen(false); }}
-                        className={`flex flex-col items-start px-3 py-2.5 rounded-xl text-sm transition-colors ${currency === c.code ? 'bg-brand-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
-                        <span className="font-bold">{c.code}</span>
-                        <span className={`text-[11px] ${currency === c.code ? 'text-white/70' : 'text-gray-400'}`}>{c.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <ThemeToggle />
 
             {user ? (
               <div className="relative ml-1" ref={userMenuRef}>
@@ -512,12 +485,12 @@ export default function Navbar({
       {mobileMenuOpen && (
         <div
           className={cn(
-            'fixed inset-0 z-[200] bg-white flex flex-col lg:hidden transition-all duration-200 ease-out',
+            'fixed inset-0 z-[200] bg-white dark:bg-gray-900 flex flex-col lg:hidden transition-all duration-200 ease-out',
             mobileMenuVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3',
           )}
         >
           {/* ── Overlay header (mirrors main nav) ── */}
-          <div className="h-16 flex items-center gap-2 px-4 shrink-0 border-b border-gray-100">
+          <div className="h-16 flex items-center gap-2 px-4 shrink-0 border-b border-gray-100 dark:border-gray-800">
             <Link href="/" onClick={closeMobileMenu} className="flex items-center shrink-0 -ml-[5px]">
               <Image src="/images/logo.png" alt="Werest Travel" height={32} width={106} priority className="object-contain" />
             </Link>
@@ -608,55 +581,31 @@ export default function Navbar({
               <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">Settings</p>
 
               {/* Language row */}
-              <button type="button" onClick={() => { setLangExpanded(v => !v); setCurrExpanded(false); }}
+              <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }, 230); }}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <img src={activeLang.flagSrc} alt={activeLang.label} className="w-7 h-5 object-cover rounded shrink-0" />
                 <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{activeLang.native} (Thailand)</span>
-                <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${langExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className="w-4 h-4 text-gray-400" />
               </button>
-              {langExpanded && (
-                <div className="bg-gray-50 rounded-xl mx-1 mb-1 overflow-hidden">
-                  {LANGUAGES.map(l => (
-                    <button key={l.code} type="button"
-                      onClick={() => { setLang(l.code); setLangExpanded(false); }}
-                      className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-medium transition-colors ${lang === l.code ? 'text-brand-600 bg-brand-50' : 'text-gray-700 hover:bg-gray-100'}`}>
-                      <img src={l.flagSrc} alt={l.label} className="w-6 h-4 object-cover rounded shrink-0" />
-                      <span>{l.native}</span>
-                      {lang === l.code && (
-                        <svg className="w-4 h-4 ml-auto text-brand-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
 
               {/* Currency row */}
-              <button type="button" onClick={() => { setCurrExpanded(v => !v); setLangExpanded(false); }}
-                className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
-                <div className="w-7 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                  <span className="text-white text-[11px] font-bold">$</span>
-                </div>
-                <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{currency}</span>
-                <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${currExpanded ? 'rotate-90' : ''}`} />
-              </button>
-              {currExpanded && (
-                <div className="bg-gray-50 rounded-xl mx-1 mb-1 overflow-hidden">
-                  {CURRENCIES.map(c => (
-                    <button key={c.code} type="button"
-                      onClick={() => { setCurrency(c.code); setCurrExpanded(false); }}
-                      className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium transition-colors ${currency === c.code ? 'text-brand-600 bg-brand-50' : 'text-gray-700 hover:bg-gray-100'}`}>
-                      <span><span className="font-bold">{c.code}</span> <span className="text-gray-400 font-normal">— {c.name}</span></span>
-                      {currency === c.code && (
-                        <svg className="w-4 h-4 text-brand-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const activeCurr = CURRENCIES.find(c => c.code === currency) ?? CURRENCIES[0];
+                return (
+                  <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('currency'); }, 230); }}
+                    className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
+                    <span className="text-2xl leading-none shrink-0">{activeCurr.flag}</span>
+                    <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{currency} — {activeCurr.name}</span>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </button>
+                );
+              })()}
+
+              {/* Dark mode toggle row */}
+              <div className="flex items-center gap-3 w-full py-4 border-b border-gray-100">
+                <div className="flex-1 text-[15px] text-gray-800 font-medium">Dark mode</div>
+                <ThemeToggle />
+              </div>
             </div>
 
             {/* ── Travel options ── */}
@@ -676,22 +625,21 @@ export default function Navbar({
             <div className="px-4 mt-7">
               <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">More</p>
 
-              <Link href="#" onClick={closeMobileMenu}
+              <Link href="/deals" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shrink-0">
                   <Gift className="w-3 h-3 text-white" />
                 </div>
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Werest Rewards</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">Deals & Rewards</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
-              <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
-                target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu}
+              <Link href="/contact" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <Headphones className="w-5 h-5 text-gray-700 shrink-0" />
                 <span className="flex-1 text-[15px] text-gray-800 font-medium">Customer Support</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
-              </a>
+              </Link>
 
               <Link href="/tracking" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
@@ -718,6 +666,14 @@ export default function Navbar({
           </div>
         </div>
       )}
+
+      {/* ── Language & Currency Modal ── */}
+      <LocaleCurrencyModal
+        open={localeModalOpen}
+        tab={localeModalTab}
+        onClose={() => setLocaleModalOpen(false)}
+        onTabChange={setLocaleModalTab}
+      />
     </Fragment>
   );
 }

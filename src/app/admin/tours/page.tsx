@@ -5,6 +5,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import {
   Plus, Search, Edit2, Trash2, ChevronDown, ChevronUp,
   MapPin, Clock, Users, Star, RefreshCw, ListChecks, PenSquare,
+  Sparkles, Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -69,6 +70,8 @@ const BLANK_FORM = {
   isFeatured: false,
   isPopular: false,
   homepageVisible: true,
+  metaTitle: '',
+  metaDesc: '',
 };
 
 type Tab = 'list' | 'form';
@@ -83,6 +86,7 @@ export default function ToursPage() {
   const [expanded,  setExpanded]  = useState<string | null>(null);
   const [form,      setForm]      = useState({ ...BLANK_FORM });
   const [saving,    setSaving]    = useState(false);
+  const [seoGenerating, setSeoGenerating] = useState(false);
 
   const fetchTours = useCallback(async () => {
     setLoading(true);
@@ -139,6 +143,8 @@ export default function ToursPage() {
       isFeatured:    tour.isFeatured    ?? false,
       isPopular:     tour.isPopular     ?? false,
       homepageVisible: tour.homepageVisible ?? true,
+      metaTitle: (tour as any).metaTitle ?? '',
+      metaDesc:  (tour as any).metaDesc  ?? '',
     });
     setEditId(tour.id);
     setTab('form');
@@ -184,7 +190,32 @@ export default function ToursPage() {
     isFeatured:    form.isFeatured,
     isPopular:     form.isPopular,
     homepageVisible: form.homepageVisible,
+    metaTitle: form.metaTitle || null,
+    metaDesc:  form.metaDesc  || null,
   });
+
+  const autoFillSeo = async () => {
+    if (!form.title.trim()) { toast.error('Add a title first'); return; }
+    setSeoGenerating(true);
+    try {
+      const res = await fetch('/api/admin/ai/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'tour', title: form.title, description: form.description, location: form.location, category: form.category }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        setForm(prev => ({
+          ...prev,
+          metaTitle: d.seoTitle || prev.metaTitle,
+          metaDesc:  d.seoDescription || prev.metaDesc,
+        }));
+        toast.success('SEO fields auto-filled');
+      }
+    } catch { toast.error('Generation failed'); }
+    finally { setSeoGenerating(false); }
+  };
 
   const handleSave = async () => {
     if (!form.title || !form.location || !form.category) {
@@ -522,6 +553,46 @@ export default function ToursPage() {
                   <img src={form.imageUrl} alt="preview" className="mt-3 h-40 w-full object-cover rounded-xl border border-gray-100" />
                 )}
                 <p className="text-xs text-gray-400 mt-1.5">Paste a direct image URL (Unsplash, Supabase Storage, etc.)</p>
+              </div>
+            </FormSection>
+
+            {/* Section: SEO */}
+            <FormSection title="SEO">
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={autoFillSeo}
+                  disabled={seoGenerating}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition-colors disabled:opacity-50"
+                >
+                  {seoGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {seoGenerating ? 'Generating…' : 'Auto-fill SEO'}
+                </button>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">SEO Meta Title</label>
+                <input
+                  value={form.metaTitle}
+                  onChange={(e) => setForm({ ...form, metaTitle: e.target.value })}
+                  placeholder="e.g. Bangkok Temples Day Trip | Werest Travel"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 placeholder:text-gray-300"
+                />
+                <p className={`text-xs mt-1 ${form.metaTitle.length > 60 ? 'text-red-500' : form.metaTitle.length >= 50 ? 'text-amber-500' : 'text-gray-400'}`}>
+                  {form.metaTitle.length} / 60 chars{form.metaTitle.length > 60 ? ' — too long' : form.metaTitle.length >= 50 && form.metaTitle.length <= 60 ? ' — ideal' : ''}
+                </p>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">SEO Meta Description</label>
+                <textarea
+                  value={form.metaDesc}
+                  onChange={(e) => setForm({ ...form, metaDesc: e.target.value })}
+                  placeholder="Compelling meta description (140–160 chars) for search results…"
+                  rows={3}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-brand-400 resize-none placeholder:text-gray-300"
+                />
+                <p className={`text-xs mt-1 ${form.metaDesc.length > 160 ? 'text-red-500' : form.metaDesc.length >= 140 ? 'text-amber-500' : 'text-gray-400'}`}>
+                  {form.metaDesc.length} / 160 chars{form.metaDesc.length > 160 ? ' — too long' : form.metaDesc.length >= 140 && form.metaDesc.length <= 160 ? ' — ideal' : ''}
+                </p>
               </div>
             </FormSection>
 

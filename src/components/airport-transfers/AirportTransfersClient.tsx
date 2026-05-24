@@ -18,8 +18,8 @@ const GUARANTEES = [
     icon: Clock,
     color: 'text-blue-600',
     bg: 'bg-blue-50',
-    title: 'Driver running late? We\'ll compensate you!',
-    desc: 'If your driver is more than 15 minutes late, we\'ll compensate you automatically.',
+    title: 'On-time commitment',
+    desc: 'We plan routes in advance and track traffic to ensure your driver arrives on time.',
   },
   {
     icon: Shield,
@@ -39,8 +39,8 @@ const GUARANTEES = [
     icon: AlertCircle,
     color: 'text-orange-600',
     bg: 'bg-orange-50',
-    title: 'Compensation for no-show',
-    desc: 'In the rare case a driver doesn\'t show, you\'ll receive a full refund plus compensation.',
+    title: 'Full refund guarantee',
+    desc: 'In the rare case a driver can\'t fulfil your booking, you\'ll receive a full refund to your original payment method.',
   },
 ];
 
@@ -49,8 +49,8 @@ const VEHICLES = [
   {
     name: 'Standard Sedan',
     image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/14png/w=600,h=400,fit=contain',
-    pax: 'Max 3 passengers',
-    bags: 'Up to 3 bags',
+    pax: 'Max 2 passengers',
+    bags: 'Up to 2 bags',
     price: 'From ฿600',
     example: 'Toyota Camry or similar',
     href: '/results',
@@ -504,7 +504,7 @@ export default function AirportTransfersClient() {
                 Book a transfer
               </Link>
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66819519191'}`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold px-8 py-3.5 rounded-xl transition-colors text-sm"

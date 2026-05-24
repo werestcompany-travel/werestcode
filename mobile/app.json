@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Werest",
+    "slug": "werest-travel",
+    "scheme": "werest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2534ff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.werest.travel"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2534ff"
+      },
+      "package": "com.werest.travel",
+      "permissions": ["ACCESS_FINE_LOCATION", "RECEIVE_BOOT_COMPLETED", "VIBRATE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      ["expo-notifications", {
+        "icon": "./assets/icon.png",
+        "color": "#2534ff"
+      }]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

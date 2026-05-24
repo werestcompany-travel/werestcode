@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Compose WhatsApp message to admin
-    const adminWhatsApp = process.env.WHATSAPP_ADMIN_PHONE ?? '66819519191';
+    const adminWhatsApp = process.env.WHATSAPP_ADMIN_PHONE ?? '66621871392';
     const message = encodeURIComponent(
       `*New Corporate Account Application*\n\n` +
       `Company: ${companyName}\n` +

@@ -129,12 +129,14 @@ export default function KlookCategorySection({ label, tours, bgColor = '#f9fafb'
                     {tour.title}
                   </p>
 
-                  <p className="text-[11px] text-green-600 font-semibold">Book now for today</p>
+                  <p className="text-[11px] text-green-600 font-semibold">Available now</p>
 
                   <div className="flex items-center gap-1">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
                     <span className="text-[11px] font-bold text-gray-800">{tour.rating.toFixed(1)}</span>
-                    <span className="text-[11px] text-gray-400">({tour.reviewCount.toLocaleString()})</span>
+                    {tour.reviewCount > 0 && (
+                      <span className="text-[11px] text-gray-400">Reviews</span>
+                    )}
                   </div>
 
                   {minPrice > 0 && (
