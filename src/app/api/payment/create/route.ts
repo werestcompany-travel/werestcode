@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { createPaysoPayment } from '@/lib/payso'
+import { rateLimitAsync, getIP } from '@/lib/rate-limit'
 
 const paymentCreateSchema = z.object({
   bookingId: z.string().min(1, 'bookingId is required').max(100),
@@ -9,6 +10,13 @@ const paymentCreateSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 10 payment attempts per IP per hour
+    const ip = getIP(req);
+    const rl = await rateLimitAsync(`payment:${ip}`, { limit: 10, windowSec: 60 * 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'Too many payment attempts. Please try again later.' }, { status: 429 });
+    }
+
     const body = await req.json()
     const parsed = paymentCreateSchema.safeParse(body)
     if (!parsed.success) {

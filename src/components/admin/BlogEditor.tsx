@@ -2,8 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, X, ChevronLeft, ImagePlus, Bold, Italic, Link2, Heading2, Heading3, List, ListOrdered, Minus, Sparkles } from 'lucide-react';
+import { Loader2, Plus, X, ChevronLeft, ImagePlus, Bold, Italic, Link2, Heading2, Heading3, List, ListOrdered, Minus, Sparkles, Quote, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import CharacterCount from '@tiptap/extension-character-count';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 export interface BlogPost {
@@ -141,6 +147,23 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
   // SEO auto-fill
   const [seoGenerating, setSeoGenerating] = useState(false);
 
+  /* ── TipTap editor ── */
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Image.configure({ inline: false, allowBase64: false }),
+      Link.configure({ openOnClick: false, autolink: true }),
+      Placeholder.configure({ placeholder: 'Write your article here…' }),
+      CharacterCount,
+    ],
+    content: initialData?.content ?? '',
+    onUpdate: ({ editor: ed }) => {
+      setContent(ed.getHTML());
+    },
+  });
+
+  const charCount = editor?.storage?.characterCount?.characters?.() ?? 0;
+
   const autoFillSeo = async () => {
     if (!title.trim()) { toast.error('Add a title first'); return; }
     setSeoGenerating(true);
@@ -164,7 +187,6 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
   };
 
   // Image insert panel
-  const contentRef  = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImgPanel,  setShowImgPanel]  = useState(false);
   const [imgTab,        setImgTab]        = useState<'url' | 'upload'>('url');
@@ -174,49 +196,15 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadError,   setUploadError]   = useState<string | null>(null);
 
-  // Insert text at cursor position in the content textarea
-  const insertAtCursor = useCallback((text: string) => {
-    const ta = contentRef.current;
-    if (!ta) { setContent(prev => prev + '\n\n' + text + '\n\n'); return; }
-    const start = ta.selectionStart;
-    const end   = ta.selectionEnd;
-    const before = content.substring(0, start);
-    const after  = content.substring(end);
-    const newVal = before + '\n\n' + text + '\n\n' + after;
-    setContent(newVal);
-    setTimeout(() => {
-      ta.focus();
-      ta.selectionStart = ta.selectionEnd = start + text.length + 4;
-    }, 0);
-  }, [content]);
-
-  // Wrap selected text with prefix/suffix (for bold, italic, etc.)
-  const wrapSelection = useCallback((prefix: string, suffix: string, placeholder: string) => {
-    const ta = contentRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end   = ta.selectionEnd;
-    const selected = content.substring(start, end) || placeholder;
-    const before = content.substring(0, start);
-    const after  = content.substring(end);
-    const newVal = before + prefix + selected + suffix + after;
-    setContent(newVal);
-    setTimeout(() => {
-      ta.focus();
-      ta.selectionStart = start + prefix.length;
-      ta.selectionEnd   = start + prefix.length + selected.length;
-    }, 0);
-  }, [content]);
-
-  function buildFigure(src: string, caption: string) {
-    return caption.trim()
-      ? `<figure>\n<img src="${src}" alt="${caption.trim()}" loading="lazy">\n<figcaption>${caption.trim()}</figcaption>\n</figure>`
-      : `<figure>\n<img src="${src}" alt="" loading="lazy">\n</figure>`;
-  }
+  // Insert an image into the TipTap editor
+  const insertImageIntoEditor = useCallback((src: string, alt: string) => {
+    if (!editor) return;
+    editor.chain().focus().setImage({ src, alt }).run();
+  }, [editor]);
 
   function handleInsertImage() {
     if (!imgUrl.trim()) return;
-    insertAtCursor(buildFigure(imgUrl.trim(), imgCaption));
+    insertImageIntoEditor(imgUrl.trim(), imgCaption.trim());
     setImgUrl('');
     setImgCaption('');
     setShowImgPanel(false);
@@ -241,7 +229,7 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Upload failed');
       // Auto-insert once uploaded
-      insertAtCursor(buildFigure(json.url, imgCaption));
+      insertImageIntoEditor(json.url, imgCaption.trim());
       setImgCaption('');
       setUploadPreview(null);
       setShowImgPanel(false);
@@ -440,46 +428,76 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
           <div>
             <Label>Content *</Label>
 
-            {/* ── Toolbar ── */}
+            {/* ── TipTap Toolbar ── */}
             <div className="flex flex-wrap items-center gap-0.5 border border-gray-200 border-b-0 rounded-t-xl bg-gray-50 px-2 py-1.5">
               {/* Heading buttons */}
-              <button type="button" title="Heading 2" onClick={() => wrapSelection('## ', '', 'Section heading')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Heading 1"
+                onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+                className={`px-2 py-1 text-xs font-bold rounded-lg transition-colors ${editor?.isActive('heading', { level: 1 }) ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
+                H1
+              </button>
+              <button type="button" title="Heading 2"
+                onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('heading', { level: 2 }) ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <Heading2 className="w-4 h-4" />
               </button>
-              <button type="button" title="Heading 3" onClick={() => wrapSelection('### ', '', 'Sub-heading')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Heading 3"
+                onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('heading', { level: 3 }) ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <Heading3 className="w-4 h-4" />
               </button>
 
               <div className="w-px h-5 bg-gray-300 mx-1" />
 
               {/* Inline formatting */}
-              <button type="button" title="Bold" onClick={() => wrapSelection('**', '**', 'bold text')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Bold"
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('bold') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <Bold className="w-4 h-4" />
               </button>
-              <button type="button" title="Italic" onClick={() => wrapSelection('*', '*', 'italic text')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Italic"
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('italic') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <Italic className="w-4 h-4" />
               </button>
-              <button type="button" title="Link" onClick={() => wrapSelection('[', '](https://)', 'link text')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Link"
+                onClick={() => {
+                  const url = window.prompt('Enter URL:', 'https://');
+                  if (url) editor?.chain().focus().setLink({ href: url }).run();
+                }}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('link') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <Link2 className="w-4 h-4" />
               </button>
 
               <div className="w-px h-5 bg-gray-300 mx-1" />
 
+              {/* Blockquote + Code */}
+              <button type="button" title="Blockquote"
+                onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('blockquote') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
+                <Quote className="w-4 h-4" />
+              </button>
+              <button type="button" title="Code block"
+                onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('codeBlock') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
+                <Code2 className="w-4 h-4" />
+              </button>
+
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+
               {/* Lists */}
-              <button type="button" title="Bullet list" onClick={() => insertAtCursor('- Item 1\n- Item 2\n- Item 3')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Bullet list"
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('bulletList') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <List className="w-4 h-4" />
               </button>
-              <button type="button" title="Numbered list" onClick={() => insertAtCursor('1. First\n2. Second\n3. Third')}
-                className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
+              <button type="button" title="Numbered list"
+                onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                className={`p-1.5 rounded-lg transition-colors ${editor?.isActive('orderedList') ? 'bg-[#2534ff] text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'}`}>
                 <ListOrdered className="w-4 h-4" />
               </button>
-              <button type="button" title="Horizontal rule" onClick={() => insertAtCursor('---')}
+              <button type="button" title="Horizontal rule"
+                onClick={() => editor?.chain().focus().setHorizontalRule().run()}
                 className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors">
                 <Minus className="w-4 h-4" />
               </button>
@@ -616,17 +634,15 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
               </div>
             )}
 
-            {/* ── Textarea ── */}
-            <textarea
-              ref={contentRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your article here using Markdown. Use the toolbar above to format text and insert images."
-              rows={22}
-              className="border border-gray-200 rounded-b-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2534ff]/20 focus:border-[#2534ff] w-full bg-white font-mono leading-relaxed text-gray-700 resize-y"
-            />
+            {/* ── TipTap Editor ── */}
+            <div className="border border-gray-200 rounded-b-xl bg-white focus-within:border-[#2534ff] focus-within:ring-2 focus-within:ring-[#2534ff]/20 transition-all">
+              <EditorContent
+                editor={editor}
+                className="min-h-[400px] px-4 py-3 prose max-w-none text-sm text-gray-700 [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror]:outline-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-gray-400 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0"
+              />
+            </div>
             <p className="text-xs text-gray-400 mt-1">
-              Supports <strong>Markdown</strong>: # Heading, **bold**, *italic*, - list, [link](url). Use toolbar for quick inserts.
+              {charCount.toLocaleString()} characters · Rich text editor — use the toolbar to format headings, bold, links, lists, and insert images.
             </p>
           </div>
 

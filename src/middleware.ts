@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
   // ── Build CSP header ──────────────────────────────────────────────────────
   const cspHeader = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://maps.googleapis.com https://maps.gstatic.com`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://maps.googleapis.com https://maps.gstatic.com https://connect.facebook.net`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
@@ -42,6 +42,8 @@ export async function middleware(req: NextRequest) {
       "https://api.resend.com",
       "https://*.upstash.io",
       "https://fcm.googleapis.com",
+      "https://connect.facebook.net",
+      "https://www.facebook.com",
     ].join(' '),
     "frame-src 'none'",
     "object-src 'none'",

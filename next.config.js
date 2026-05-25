@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const { withSentryConfig } = require('@sentry/nextjs');
+
 const nextConfig = {
   // @react-pdf/renderer must be treated as an external package so Next.js
   // doesn't try to bundle it (it uses Node.js-specific APIs like canvas/stream).
@@ -55,4 +57,13 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+}, {
+  widenClientFileUpload: true,
+  transpileClientSDK: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+});
