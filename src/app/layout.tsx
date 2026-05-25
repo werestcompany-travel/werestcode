@@ -79,23 +79,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <LocaleProvider>
-            <WishlistProvider>
-              <AuthModalProvider>
-                <ChatProvider>
-                  {children}
-                  <FloatingWidgets />
-                  <CookieConsent />
-                  <Toaster
-                    position="top-center"
-                    toastOptions={{
-                      duration: 4000,
-                      style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-                    }}
-                  />
-                </ChatProvider>
-              </AuthModalProvider>
-            </WishlistProvider>
-          </LocaleProvider>
+          <WishlistProvider>
+            <AuthModalProvider>
+              <ChatProvider>
+                {children}
+                <FloatingWidgets />
+                <CookieConsent />
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    duration: 4000,
+                    style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+                  }}
+                />
+              </ChatProvider>
+            </AuthModalProvider>
+          </WishlistProvider>
+        </LocaleProvider>
 
         {/* Vercel Analytics */}
         <Analytics />
