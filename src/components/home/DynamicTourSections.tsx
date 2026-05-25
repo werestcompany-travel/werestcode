@@ -1,21 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { LayoutGrid, ChevronRight } from 'lucide-react'
-import { tours as allTours } from '@/lib/tours'
-import KlookCategorySection from '@/components/tours/KlookCategorySection'
+import Image from 'next/image'
+import { Star, ChevronRight } from 'lucide-react'
+import { tours as allTours, formatTHB } from '@/lib/tours'
 
-/* ── Category display config ─────────────────────────────────────────────── */
-const CATEGORIES = [
-  { key: 'day-trip',  label: 'Day Trips'    },
-  { key: 'cultural',  label: 'Cruises'      },
-  { key: 'adventure', label: 'Adventure'    },
-  { key: 'food',      label: 'Food & Drink' },
-  { key: 'nature',    label: 'Nature'       },
-  { key: 'water',     label: 'Water'        },
-] as const
+const BADGE_BG: Record<string, string> = {
+  'Best Seller': 'bg-orange-500',
+  'Top Rated':   'bg-emerald-500',
+  'New':         'bg-blue-600',
+}
 
-/* ── Destination → city filter term ─────────────────────────────────────── */
 const DEST_CITY: Record<string, string> = {
   bangkok:   'Bangkok',
   phuket:    'Phuket',
@@ -32,27 +27,17 @@ interface Props {
 export default function DynamicTourSections({ selectedDest, cityName }: Props) {
   const cityFilter = DEST_CITY[selectedDest] ?? ''
 
-  /* Filter tours for the selected city */
-  const cityTours = cityFilter
-    ? allTours.filter(t =>
-        t.cities.some(c => c.toLowerCase().includes(cityFilter.toLowerCase()))
-      )
-    : allTours
+  const visibleTours = (
+    cityFilter
+      ? allTours.filter(t =>
+          t.cities.some(c => c.toLowerCase().includes(cityFilter.toLowerCase()))
+        )
+      : allTours
+  ).slice(0, 4)
 
-  /* Group by category — only categories that have ≥ 1 tour */
-  const grouped = new Map<string, typeof allTours>()
-  for (const tour of cityTours) {
-    const list = grouped.get(tour.category) ?? []
-    list.push(tour)
-    grouped.set(tour.category, list)
-  }
-
-  const hasAny = cityTours.length > 0
   const toursHref = cityFilter
     ? `/tours?location=${encodeURIComponent(cityFilter.toLowerCase())}`
     : '/tours'
-
-  const FLASH_YELLOW = '#feee8c'
 
   return (
     <section className="py-10 bg-white">
@@ -77,59 +62,106 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
           </Link>
         </div>
 
-        {/* ── Yellow Flash Express container ── */}
-        <div className="rounded-[15px] px-6 pt-6 pb-2" style={{ backgroundColor: FLASH_YELLOW }}>
+        {/* ── 4-column grid ── */}
+        {visibleTours.length > 0 ? (
+          <div className="relative">
 
-          {hasAny ? (
-            <>
-              {CATEGORIES.map(({ key, label }) => {
-                const tours = grouped.get(key)
-                if (!tours?.length) return null
+            {/* Card grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {visibleTours.map((tour) => {
+                const minPrice = tour.options.length
+                  ? Math.min(...tour.options.map(o => o.pricePerPerson))
+                  : (tour.priceFrom ?? 0)
+                const city     = tour.location.split(',')[0].trim()
+                const catLabel = tour.category
+                  .replace(/-/g, ' ')
+                  .replace(/\b\w/g, c => c.toUpperCase())
+                const tags = tour.highlights?.slice(0, 2) ?? []
+
                 return (
-                  <KlookCategorySection
-                    key={key}
-                    label={label}
-                    tours={tours.slice(0, 10)}
-                    bgColor={FLASH_YELLOW}
-                  />
+                  <Link
+                    key={tour.slug}
+                    href={`/tours/${tour.slug}`}
+                    className="group flex flex-col rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-xl hover:border-brand-100 transition-all duration-300"
+                  >
+                    {/* Image */}
+                    <div className="relative h-[160px] shrink-0 overflow-hidden">
+                      {tour.images[0] ? (
+                        <Image
+                          src={tour.images[0]}
+                          alt={tour.title}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-brand-400 to-brand-700" />
+                      )}
+                      {tour.badge && (
+                        <span className={`absolute top-2 left-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white shadow ${BADGE_BG[tour.badge] ?? 'bg-gray-600'}`}>
+                          {tour.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-3.5 flex flex-col flex-1 gap-1">
+                      <p className="text-gray-400 text-[11px] font-medium">
+                        {catLabel} · {city}
+                      </p>
+                      <p className="font-bold text-gray-900 text-[14px] leading-snug line-clamp-2 group-hover:text-brand-700 transition-colors">
+                        {tour.title}
+                      </p>
+                      <p className="text-[11px] text-green-600 font-semibold">Available now</p>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                        <span className="text-[11px] font-bold text-gray-800">
+                          {tour.rating.toFixed(1)}
+                        </span>
+                        {tour.reviewCount > 0 && (
+                          <span className="text-[11px] text-gray-400">Reviews</span>
+                        )}
+                      </div>
+                      {minPrice > 0 && (
+                        <p className="font-bold text-gray-900 text-[16px] mt-auto pt-1">
+                          {formatTHB(minPrice)}
+                        </p>
+                      )}
+                      {tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {tags.map(tag => (
+                            <span key={tag} className="text-[10px] font-semibold bg-brand-50 text-brand-700 border border-brand-200 px-2 py-0.5 rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                 )
               })}
-
-              {/* ── Explore all button ── */}
-              <div className="flex justify-center mt-2 mb-4">
-                <Link
-                  href={toursHref}
-                  className="inline-flex items-center gap-2 bg-white/80 hover:bg-white border border-yellow-300 rounded-full px-7 py-2.5 text-sm font-semibold text-gray-800 transition-colors"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  Explore all experiences in {cityName}
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </>
-          ) : (
-            /* ── No tours yet ── */
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-5xl mb-4">🗺️</p>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Coming soon to {cityName}
-              </h3>
-              <p className="text-gray-600 text-sm max-w-xs mb-6">
-                We&apos;re curating the best experiences in {cityName}. In the
-                meantime, explore our Bangkok tours.
-              </p>
-              <Link
-                href="/tours"
-                className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
-              >
-                Browse all experiences
-                <ChevronRight className="w-4 h-4" />
-              </Link>
             </div>
-          )}
 
-        </div>{/* end yellow box */}
-
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-5xl mb-4">🗺️</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Coming soon to {cityName}
+            </h3>
+            <p className="text-gray-600 text-sm max-w-xs mb-6">
+              We&apos;re curating the best experiences in {cityName}. In the
+              meantime, explore our Bangkok tours.
+            </p>
+            <Link
+              href="/tours"
+              className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+            >
+              Browse all experiences <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { createPaysoPayment } from '@/lib/payso'
 
+const paymentCreateSchema = z.object({
+  bookingId: z.string().min(1, 'bookingId is required').max(100),
+})
+
 export async function POST(req: NextRequest) {
   try {
-    const { bookingId } = await req.json()
-
-    if (!bookingId) {
-      return NextResponse.json({ success: false, error: 'bookingId is required' }, { status: 400 })
+    const body = await req.json()
+    const parsed = paymentCreateSchema.safeParse(body)
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message ?? 'Invalid input'
+      return NextResponse.json({ success: false, error: msg }, { status: 400 })
     }
+
+    const { bookingId } = parsed.data
 
     // Fetch the booking
     const booking = await prisma.booking.findUnique({ where: { id: bookingId } })

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db';
 import { signUserToken } from '@/lib/user-auth';
 import { registerSchema } from '@/lib/validation/auth';
 import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
+import { createEmailVerification } from '@/lib/email-verification';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
@@ -39,8 +41,18 @@ export async function POST(req: NextRequest) {
 
     const token = await signUserToken({ id: user.id, email: user.email, name: user.name });
 
+    // Send email verification (non-blocking — don't fail registration if email fails)
+    try {
+      const rawToken  = await createEmailVerification(user.id);
+      const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+      const verifyUrl = `${appUrl}/api/user/verify-email?token=${rawToken}`;
+      await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    } catch (emailErr) {
+      console.error('[register] Failed to send verification email:', emailErr);
+    }
+
     const res = NextResponse.json({
-      user: { id: user.id, email: user.email, name: user.name, phone: user.phone },
+      user: { id: user.id, email: user.email, name: user.name, phone: user.phone, emailVerified: false },
     });
     res.cookies.set('user_token', token, {
       httpOnly: true,

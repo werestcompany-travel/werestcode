@@ -23,6 +23,10 @@ export default function AdminLoginPage() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error ?? 'Login failed');
+      if (json.data?.requires2FA) {
+        router.push('/admin/login/2fa');
+        return;
+      }
       router.push('/admin');
       router.refresh();
     } catch (err: unknown) {

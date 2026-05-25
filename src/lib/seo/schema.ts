@@ -39,13 +39,15 @@ export function tourProductSchema(tour: {
           priceValidUntil: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           seller: { '@type': 'Organization', name: 'Werest Travel', url: SITE },
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: tour.rating.toFixed(1),
-          reviewCount: tour.reviewCount,
-          bestRating: '5',
-          worstRating: '1',
-        },
+        ...(tour.reviewCount > 0 && {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: tour.rating.toFixed(1),
+            reviewCount: tour.reviewCount,
+            bestRating: '5',
+            worstRating: '1',
+          },
+        }),
         review: tour.reviews.slice(0, 5).map(r => ({
           '@type': 'Review',
           reviewRating: { '@type': 'Rating', ratingValue: String(r.rating), bestRating: '5' },

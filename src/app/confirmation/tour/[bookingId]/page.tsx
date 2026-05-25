@@ -38,8 +38,8 @@ export default async function TourConfirmationPage({ params }: Props) {
     color: { dark: '#1e2065', light: '#ffffff' },
   });
 
-  const supportPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE ?? '+66XXXXXXXXX';
-  const supportWa    = `https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}`;
+  const waNumber  = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? process.env.NEXT_PUBLIC_COMPANY_PHONE?.replace(/[^0-9]/g, '') ?? '66621871392';
+  const supportWa = `https://wa.me/${waNumber}`;
   const dateStr      = formatDate(booking.bookingDate);
 
   return (
@@ -248,10 +248,10 @@ export default async function TourConfirmationPage({ params }: Props) {
                   <MessageCircle className="w-4 h-4 text-green-500 shrink-0" />
                   WhatsApp support (30s response)
                 </a>
-                <a href={`tel:${supportPhone}`}
+                <a href={`tel:+${waNumber}`}
                   className="flex items-center gap-2.5 text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors">
                   <PhoneCall className="w-4 h-4 text-brand-500 shrink-0" />
-                  {supportPhone}
+                  +{waNumber}
                 </a>
               </div>
             </div>

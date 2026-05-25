@@ -6,6 +6,7 @@ import Script from 'next/script';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StatusTimeline from '@/components/tracking/StatusTimeline';
+import DriverETA from '@/components/tracking/DriverETA';
 import { StatusBadge } from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { BookingDetail, BookingStatus, BookingStatusHistory } from '@/types';
@@ -409,6 +410,11 @@ function TrackingPageInner() {
                   <span className="font-bold text-brand-700">{formatCurrency(booking.totalPrice)}</span>
                 </div>
               </div>
+
+              {/* Driver ETA — shown when driver is active */}
+              {showDriverMap && (
+                <DriverETA bookingId={booking.id} pickupAddress={booking.pickupAddress} />
+              )}
 
               {/* Live driver map — visible when driver is en-route or has picked up */}
               {showDriverMap && (

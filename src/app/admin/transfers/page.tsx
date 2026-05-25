@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import {
   X, Search, RefreshCw, Eye, TrendingUp,
   Clock, CheckCircle2, XCircle, Car,
-  ChevronLeft, ChevronRight, LayoutGrid, List,
+  ChevronLeft, ChevronRight, LayoutGrid, List, RotateCcw,
 } from 'lucide-react';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
@@ -52,6 +52,12 @@ export default function TransfersPage() {
   const [drivers, setDrivers]         = useState<DriverOption[]>([]);
   const [assigningDriver, setAssigningDriver] = useState(false);
   const [migrating, setMigrating] = useState(false);
+
+  // Refund request state
+  const [refundOpen, setRefundOpen]         = useState(false);
+  const [refundAmount, setRefundAmount]     = useState('');
+  const [refundReason, setRefundReason]     = useState('');
+  const [refundLoading, setRefundLoading]   = useState(false);
 
   const migrateRefs = async () => {
     setMigrating(true);
@@ -119,6 +125,9 @@ export default function TransfersPage() {
     const res = await fetch(`/api/bookings/${id}`);
     const data = (await res.json()).data;
     setDetail(data);
+    setRefundOpen(false);
+    setRefundAmount('');
+    setRefundReason('');
     fetchDrivers();
   };
 
@@ -145,6 +154,34 @@ export default function TransfersPage() {
       toast.error(err.message ?? 'Assignment failed');
     } finally {
       setAssigningDriver(false);
+    }
+  };
+
+  const handleRefundRequest = async () => {
+    if (!detail || !refundAmount || !refundReason) return;
+    setRefundLoading(true);
+    try {
+      const res = await fetch('/api/admin/refunds', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          bookingRef:  detail.bookingRef,
+          bookingType: 'transfer',
+          bookingId:   detail.id,
+          amount:      Number(refundAmount),
+          reason:      refundReason,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed to create refund');
+      toast.success('Refund request created');
+      setRefundOpen(false);
+      setRefundAmount('');
+      setRefundReason('');
+    } catch (err: any) {
+      toast.error(err.message ?? 'Failed to create refund');
+    } finally {
+      setRefundLoading(false);
     }
   };
 
@@ -498,6 +535,59 @@ export default function TransfersPage() {
               <DrawerSection title="Status Timeline">
                 <StatusTimeline currentStatus={detail.currentStatus} history={detail.statusHistory} />
               </DrawerSection>
+
+              {/* Refund section */}
+              <DrawerSection title="Refund">
+                {refundOpen ? (
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] text-gray-400 block mb-1">Amount (THB)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={refundAmount}
+                        onChange={e => setRefundAmount(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder={String(detail.totalPrice)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-gray-400 block mb-1">Reason</label>
+                      <textarea
+                        rows={3}
+                        value={refundReason}
+                        onChange={e => setRefundReason(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                        placeholder="Reason for refund…"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleRefundRequest}
+                        disabled={refundLoading || !refundAmount || !refundReason}
+                        className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
+                      >
+                        {refundLoading ? 'Submitting…' : 'Submit Request'}
+                      </button>
+                      <button
+                        onClick={() => { setRefundOpen(false); setRefundAmount(''); setRefundReason(''); }}
+                        className="text-[11px] font-semibold py-2 px-3 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setRefundOpen(true); setRefundAmount(String(detail.totalPrice)); }}
+                    className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-600 hover:text-brand-800"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Request Refund
+                  </button>
+                )}
+              </DrawerSection>
+
               <DrawerSection title="Update Status">
                 <div className="grid grid-cols-2 gap-2">
                   {(['DRIVER_CONFIRMED','DRIVER_STANDBY','DRIVER_PICKED_UP','COMPLETED','CANCELLED'] as BookingStatus[]).map((s) => (

@@ -116,31 +116,31 @@ const INSPIRED_DESTS = [
 ];
 
 
-/* ── Car classes ─────────────────────────────────────────────────────────── */
+/* ── Car classes — same exteriorImage as VEHICLE_CONFIGS in lib/vehicles.ts ── */
 const CAR_CLASSES = [
   {
     id: 'sedan',
     name: 'Sedan',
     maxPax: 2,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/14png/w=600,h=400,fit=contain',
+    image: 'https://www.toyota.co.th/media/product/series/grades/v/altis/19/8055e76f92e3f8e92b2f16771cebb42db2bcb9eda12ca1565ed5ce5a98ad4d56.webp',
   },
   {
     id: 'suv',
     name: 'SUV',
     maxPax: 4,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/13png/w=600,h=400,fit=contain',
+    image: 'https://www.toyota.co.th/media/product/series/grades/v/fortuner_leader/47/02eff79ee7167df9807c067a0025b87e55458f0203b2b91f70e6b537fc6abf84.webp',
   },
   {
     id: 'minivan',
     name: 'Minivan',
     maxPax: 10,
-    image: 'https://travelthru.com/cdn-cgi/imagedelivery/wZpbJM3t8iED5kIISxeUgQ/10-1png/w=600,h=400,fit=contain',
+    image: 'https://www.toyota.co.th/media/product/series/grades/v/hiace/214/7c64131428daae1b2ac92c35d5cb6432a75c65eb3df845fa0da308e55cd5f116.webp',
   },
   {
     id: 'luxury-mpv',
     name: 'Luxury MPV',
     maxPax: 6,
-    image: 'https://eu2.contabostorage.com/fd5fb40e53894be8a861ffc261151838:cbs-webapi-test/c0f0b52e-1b54-4588-a98f-9a987bc6dd0b.png',
+    image: 'https://www.toyota.co.th/media/product/series/grades/v/alphard/27/9bd8c8811a6213ea1429d91b5bcba32246b73d1255cbb3ae6be04309d1231b08.webp',
   },
 ];
 
@@ -294,7 +294,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           PAGE SHELL — sticky sidebar + scrollable main
       ════════════════════════════════════════════════════════════ */}
-      <div className="flex">
+      <div className="lg:pt-16 flex">
 
         {/* ── Full-page sticky sidebar ── */}
         <aside
@@ -408,25 +408,26 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Hero" className="mb-0 lg:mb-[30px]">
+      <section aria-label="Hero" className="mb-0 lg:mb-[30px] lg:px-6 lg:pt-6">
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px]"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px] lg:rounded-[2rem]"
         >
-          {/* Background landscape — hidden on mobile, visible sm+ */}
+          {/* Background — Grand Palace / Wat Phra Kaew, Bangkok */}
           <div className="hidden lg:block absolute inset-0">
             <Image
-              src="/images/hero-bg.jpg"
-              alt=""
+              src="https://images.unsplash.com/photo-1563492065-6d4f5d007d9a?w=1920&q=85"
+              alt="Wat Phra Kaew — Grand Palace Bangkok"
               fill
               priority
-              className="object-cover object-center"
+              className="object-cover object-[center_60%]"
               sizes="100vw"
+              unoptimized
             />
           </div>
-          {/* Blue gradient overlay — hidden on mobile, visible sm+ */}
-          <div className="hidden lg:block absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(13,28,110,0.93) 0%, rgba(20,53,184,0.88) 20%, rgba(30,82,210,0.83) 42%, rgba(40,112,232,0.78) 62%, rgba(58,143,245,0.73) 82%, rgba(90,176,255,0.68) 100%)' }} />
+          {/* Deep-blue gradient — reveals golden spires at the bottom */}
+          <div className="hidden lg:block absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,18,80,0.94) 0%, rgba(13,30,120,0.88) 22%, rgba(20,50,170,0.80) 44%, rgba(25,60,180,0.65) 62%, rgba(18,45,140,0.45) 80%, rgba(12,30,100,0.30) 100%)' }} />
           {/* Mobile: Trip.com-style icon grid (4-column, 2-row) */}
           <div className="relative z-10 lg:hidden w-full px-3 pt-[18px] pb-0 shrink-0">
             <div className="grid grid-cols-4 gap-y-5">
@@ -712,7 +713,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
           <div
             ref={inspiredSliderRef}
-            className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-4"
           >
             {INSPIRED_DESTS.map((dest) => {
               const isSelected = selectedDest === dest.id;
@@ -721,34 +722,35 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   key={dest.id}
                   type="button"
                   onClick={() => setSelectedDest(dest.id)}
-                  className="relative rounded-2xl overflow-hidden cursor-pointer group focus:outline-none shrink-0 w-[45vw] max-w-[210px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] h-[260px] transition-all duration-200"
+                  className="relative rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none shrink-0 w-[45vw] max-w-[210px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] h-[260px] transition-all duration-200"
                 >
-                  {/* Photo */}
-                  <Image
-                    src={dest.img}
-                    alt={dest.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
-                    unoptimized
-                  />
-
-                  {/* Selected brand overlay */}
-                  <div
-                    className="absolute inset-0 transition-opacity duration-300"
-                    style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.28 : 0 }}
-                  />
-
-                  {/* Selected ring */}
-                  {isSelected && (
-                    <div className="absolute inset-0 rounded-2xl ring-2 ring-brand-500 ring-offset-0" />
-                  )}
+                  {/* Photo + selected overlay — clipped to card corners */}
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                    <Image
+                      src={dest.img}
+                      alt={dest.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
+                      unoptimized
+                    />
+                    {/* #2534ff overlay — 30% opacity when selected */}
+                    <div
+                      className="absolute inset-0 transition-opacity duration-300 pointer-events-none"
+                      style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.3 : 0 }}
+                    />
+                  </div>
 
                   {/* City text */}
                   <div className="absolute bottom-0 left-0 px-4 pb-4 text-left">
                     <p className="font-bold text-white text-[18px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{dest.name}</p>
                     <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">Explore →</p>
                   </div>
+
+                  {/* ▼ Downward triangle — points to the content section below */}
+                  {isSelected && (
+                    <div className="absolute -bottom-[13px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[13px] border-r-[13px] border-t-[13px] border-l-transparent border-r-transparent border-t-[#2534ff] z-20" />
+                  )}
                 </button>
               );
             })}
@@ -781,42 +783,17 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
       />
 
-
-{/* ════════════════════════════════════════════════════════════
-          DISCOVER THE WONDERS OF THAILAND — full-width banner
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Discover Thailand" className="hidden sm:block relative w-full overflow-hidden" style={{ height: 200 }}>
-        {/* Background photo — Phi Phi Island */}
-        <Image
-          src="https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1920&q=80"
-          alt="Discover Thailand — Phi Phi Island aerial view"
-          fill
-          className="object-cover object-center"
-          sizes="100vw"
-          unoptimized
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(5,12,40,0.72) 0%, rgba(10,22,70,0.58) 50%, rgba(5,12,40,0.72) 100%)' }} />
-        {/* Text */}
-        <div className="absolute inset-0 flex items-center justify-center px-4">
-          <p className="text-white tracking-[0.25em] sm:tracking-[0.32em] text-base sm:text-xl md:text-3xl select-none drop-shadow-md uppercase font-light text-center">
-            Discover the wonders of&nbsp;
-            <strong className="font-extrabold tracking-[0.18em]" style={{ color: '#2534ff' }}>Thailand</strong>
-          </p>
-        </div>
-      </section>
-
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="fleet-heading" className="pt-0 pb-4 lg:py-8 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="text-center mb-2 lg:mb-6">
-            <h2 id="fleet-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Vehicle Options</h2>
+      <section aria-labelledby="fleet-heading" className="pt-0 pb-6 lg:py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
+          <div className="text-center mb-4 lg:mb-8">
+            <h2 id="fleet-heading" className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">Vehicle Options</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-3 py-0 lg:px-6 lg:py-2">
-          <div className="flex gap-[6px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-10 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="bg-white rounded-2xl px-3 py-0 lg:px-8 lg:py-3">
+          <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-12 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -826,23 +803,23 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[55vw] max-w-[220px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-1 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[70vw] max-w-[286px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-2 px-5 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-1" style={{ height: 'clamp(90px, 14vw, 150px)' }}>
+                  <div className="relative w-full mb-2" style={{ height: 'clamp(117px, 18vw, 195px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
                       fill
                       className="object-contain drop-shadow-lg"
-                      sizes="(max-width: 640px) 55vw, 25vw"
+                      sizes="(max-width: 640px) 70vw, 25vw"
                       quality={100}
                       unoptimized
                     />
                   </div>
-                  <p className="text-base sm:text-lg font-semibold text-gray-800">{cls.name}</p>
-                  <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-brand-600">
-                    <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <p className="text-lg sm:text-xl font-semibold text-gray-800">{cls.name}</p>
+                  <div className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-brand-600">
+                    <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
                     Up to {cls.maxPax} passengers
                   </div>
                 </button>

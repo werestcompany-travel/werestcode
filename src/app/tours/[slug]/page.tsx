@@ -10,10 +10,11 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ReviewSection from '@/components/reviews/ReviewSection'
 import TourBookingPanel from '@/components/tours/TourBookingPanel'
+import AvailabilityCalendar from '@/components/tours/AvailabilityCalendar'
 import TourCard from '@/components/tours/TourCard'
 import FaqItem from '@/components/tours/FaqItem'
 import TourWishlistButton from '@/components/tours/TourWishlistButton'
-import GalleryLightbox from '@/components/tours/GalleryLightbox'
+import TourGalleryGYG from '@/components/tours/TourGalleryGYG'
 import TourStickyNav from '@/components/tours/TourStickyNav'
 import QuickInfoBar from '@/components/tours/QuickInfoBar'
 import ItineraryItem from '@/components/tours/ItineraryItem'
@@ -197,6 +198,34 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
     ],
   }
 
+  const touristTripLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristTrip',
+    name: tour.title,
+    description: tour.description.slice(0, 160),
+    touristType: 'Tourist',
+    url: `https://www.werest.com/tours/${params.slug}`,
+    itinerary: {
+      '@type': 'ItemList',
+      numberOfItems: tour.itinerary.length,
+      itemListElement: tour.itinerary.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: item.title,
+        description: item.desc,
+      })),
+    },
+    ...(tour.reviewCount > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: tour.rating.toFixed(1),
+        reviewCount: tour.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+  }
+
   return (
     <>
       <JsonLd data={tourProductSchema(tour)} />
@@ -204,16 +233,13 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripLd) }}
+      />
       <Navbar />
 
       <main className="min-h-screen bg-white pt-16">
-
-        {/* ══ GALLERY ═══════════════════════════════════════════════════════════ */}
-        <GalleryLightbox
-          images={tour.images}
-          title={tour.title}
-          slug={tour.slug}
-        />
 
         {/* ══ BREADCRUMB ════════════════════════════════════════════════════════ */}
         <div className="border-b border-gray-100 bg-white">
@@ -232,100 +258,107 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
           </div>
         </div>
 
+        {/* ══ TITLE BLOCK — above gallery (GYG-style) ══════════════════════════ */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-5">
+
+          {/* Top row: badges + rating + wishlist */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              {/* Badge */}
+              {tour.badge && (
+                <span className={`inline-flex items-center text-xs font-bold px-3 py-1 rounded-full ${BADGE_STYLE[tour.badge] ?? 'bg-gray-700 text-white'}`}>
+                  {tour.badge}
+                </span>
+              )}
+              {/* Stars + rating + reviews count */}
+              <a href="#reviews" className="flex items-center gap-1.5 group">
+                <StarRating rating={tour.rating} />
+                <span className="font-bold text-gray-900 text-sm">{tour.rating.toFixed(1)}</span>
+                <span className="text-gray-400 text-sm group-hover:text-[#2534ff] transition-colors underline underline-offset-2">
+                  {tour.reviewCount.toLocaleString()} reviews
+                </span>
+              </a>
+              <span className="text-gray-300 hidden sm:inline">·</span>
+              {/* Location */}
+              <div className="hidden sm:flex items-center gap-1 text-sm text-gray-500">
+                <MapPin className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+                {tour.location}
+              </div>
+            </div>
+            {/* Wishlist button */}
+            <TourWishlistButton slug={tour.slug} title={tour.title} />
+          </div>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl lg:text-[2.1rem] font-extrabold text-gray-900 leading-tight mb-2">
+            {tour.title}
+          </h1>
+          <p className="text-gray-500 text-sm sm:text-base leading-relaxed mb-4">{tour.subtitle}</p>
+
+          {/* Meta row: duration + language */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4 text-sm text-gray-500">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+              {tour.duration}
+            </div>
+            <span className="text-gray-200 hidden sm:inline">|</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Globe2 className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+              {tour.languages.map((lang, i) => {
+                const flags: Record<string, string> = {
+                  'English': '🇬🇧', 'Thai': '🇹🇭', 'Chinese': '🇨🇳', 'Japanese': '🇯🇵',
+                  'French': '🇫🇷', 'German': '🇩🇪', 'Russian': '🇷🇺', 'Korean': '🇰🇷', 'Spanish': '🇪🇸',
+                }
+                return (
+                  <span key={lang} className="flex items-center gap-0.5">
+                    {i > 0 && <span className="text-gray-300">·</span>}
+                    <span title={lang}>{flags[lang] ?? '🌐'}</span>
+                    <span>{lang}</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Trust badge chips */}
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-full px-3 py-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Free cancellation
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">
+              <Zap className="w-3.5 h-3.5 shrink-0" /> Instant confirmation
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5">
+              <Users className="w-3.5 h-3.5 shrink-0" /> Max {tour.maxGroupSize} pax
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-100 rounded-full px-3 py-1.5">
+              <Smartphone className="w-3.5 h-3.5 shrink-0" /> Mobile ticket
+            </div>
+          </div>
+        </div>
+
         {/* ══ STICKY NAV (client island) ════════════════════════════════════════ */}
         <TourStickyNav />
 
         {/* ══ MAIN CONTENT GRID ═════════════════════════════════════════════════ */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
 
             {/* ─ LEFT COLUMN ──────────────────────────────────────────────────── */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2" id="overview">
 
-              {/* ── Overview / Title block ────────────────────────────────────── */}
-              <section id="overview" className="pb-8">
+              {/* ── GYG-style gallery: 1 large + 2×2 grid ─────────────────────── */}
+              <TourGalleryGYG images={tour.images} title={tour.title} />
 
-                {/* Badge + category row */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  {tour.badge && (
-                    <span className={`inline-flex items-center text-xs font-bold px-3 py-1 rounded-full ${BADGE_STYLE[tour.badge] ?? 'bg-gray-700 text-white'}`}>
-                      {tour.badge}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-[#2534ff] border border-blue-100">
-                    {CATEGORY_LABEL[tour.category] ?? tour.category}
-                  </span>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight mb-3">
-                  {tour.title}
-                </h1>
-                <p className="text-gray-500 text-base sm:text-lg mb-5 leading-relaxed">{tour.subtitle}</p>
-
-                {/* Rating + meta row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5">
-                  <a href="#reviews" className="flex items-center gap-2 group">
-                    <StarRating rating={tour.rating} />
-                    <span className="font-extrabold text-gray-900">{tour.rating.toFixed(1)}</span>
-                    <span className="text-gray-400 text-sm group-hover:text-[#2534ff] transition-colors underline underline-offset-2">
-                      ({tour.reviewCount.toLocaleString()} reviews)
-                    </span>
-                  </a>
-                  <span className="text-gray-200 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                    <MapPin className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
-                    {tour.location}
-                  </div>
-                  <span className="text-gray-200 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                    <Clock className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
-                    {tour.duration}
-                  </div>
-                  <span className="text-gray-200 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
-                    <Globe2 className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
-                    {tour.languages.map((lang, idx) => {
-                      const flags: Record<string, string> = {
-                        'English': '🇬🇧', 'Thai': '🇹🇭', 'Chinese': '🇨🇳', 'Japanese': '🇯🇵',
-                        'French': '🇫🇷', 'German': '🇩🇪', 'Russian': '🇷🇺', 'Korean': '🇰🇷', 'Spanish': '🇪🇸',
-                      }
-                      return (
-                        <span key={lang} className="flex items-center gap-0.5">
-                          {idx > 0 && <span className="text-gray-300">·</span>}
-                          <span title={lang}>{flags[lang] ?? '🌐'}</span>
-                          <span>{lang}</span>
-                        </span>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Trust badges */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-full px-3 py-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    Free cancellation
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1.5">
-                    <Zap className="w-3.5 h-3.5 shrink-0" />
-                    Instant confirmation
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5">
-                    <Users className="w-3.5 h-3.5 shrink-0" />
-                    Small group — max {tour.maxGroupSize}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-100 rounded-full px-3 py-1.5">
-                    <Smartphone className="w-3.5 h-3.5 shrink-0" />
-                    Mobile ticket
-                  </div>
-                  <TourWishlistButton slug={tour.slug} title={tour.title} />
-                </div>
-
-                {/* Quick info pill bar */}
+              {/* ── Quick info bar (below gallery) ────────────────────────────── */}
+              <div className="mt-5">
                 <QuickInfoBar tour={tour} />
+              </div>
 
-                {/* Description */}
-                <div className="mt-8 space-y-4">
+              {/* ── Description (About this activity) ─────────────────────────── */}
+              <section className="pt-8 pb-8 border-t border-gray-100 mt-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">About this activity</h2>
+                <div className="space-y-4">
                   {tour.description.split('\n\n').map((para, i) => (
                     <p key={i} className="text-gray-600 leading-relaxed text-[15px]">{para}</p>
                   ))}
@@ -463,7 +496,15 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
 
               {/* ── Customer Reviews ──────────────────────────────────────────── */}
               <section id="reviews" className="py-8 border-t border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Customer reviews</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Customer reviews</h2>
+                  <Link
+                    href={`/review/write?type=tour&entity=${tour.slug}&targetName=${encodeURIComponent(tour.title)}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2534ff] border border-[#2534ff]/30 rounded-xl px-4 py-2 hover:bg-[#2534ff]/5 transition-colors"
+                  >
+                    Write a Review
+                  </Link>
+                </div>
 
                 {/* Rating overview */}
                 {tour.reviews.length > 0 && (
@@ -570,6 +611,12 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
             {/* ─ RIGHT COLUMN: sticky booking panel ───────────────────────────── */}
             <div id="booking-panel" className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
+                {/* Availability calendar */}
+                <AvailabilityCalendar
+                  tourSlug={tour.slug}
+                  maxCapacity={tour.maxGroupSize}
+                />
+
                 <Suspense fallback={
                   <div className="bg-white rounded-2xl border border-gray-200 p-6 h-96 animate-pulse" />
                 }>

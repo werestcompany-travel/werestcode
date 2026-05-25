@@ -13,11 +13,17 @@ function WriteReviewContent() {
   const router      = useRouter();
   const [done, setDone] = useState(false);
 
-  const type       = (params.get('type') ?? 'TRANSFER') as 'ATTRACTION' | 'TOUR' | 'TRANSFER';
-  // targetId can be omitted when arriving via post-trip WhatsApp link (only bookingRef is known)
-  const targetId   = params.get('targetId')   ?? params.get('bookingRef') ?? '';
-  const targetName = params.get('targetName') ?? (type === 'TRANSFER' ? 'Your Private Transfer' : type === 'TOUR' ? 'Your Tour Experience' : 'Your Attraction Visit');
-  const bookingRef = params.get('bookingRef') ?? '';
+  // Support both old param names (targetId/targetName) and new shorthand (entity/ref)
+  const rawType    = params.get('type') ?? 'TRANSFER';
+  const type       = rawType.toUpperCase() as 'ATTRACTION' | 'TOUR' | 'TRANSFER';
+  // targetId: prefer 'entity', fall back to 'targetId', then bookingRef
+  const targetId   = params.get('entity') ?? params.get('targetId') ?? params.get('bookingRef') ?? '';
+  const targetName = params.get('targetName') ?? (
+    type === 'TOUR' ? 'Your Tour Experience'
+    : type === 'ATTRACTION' ? 'Your Attraction Visit'
+    : 'Your Private Transfer'
+  );
+  const bookingRef = params.get('ref') ?? params.get('bookingRef') ?? '';
 
   if (!targetId && !bookingRef) {
     router.replace('/');

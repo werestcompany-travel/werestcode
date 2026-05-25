@@ -10,6 +10,17 @@ import {
   Car, Compass, Ticket, Ship, Users, Tag, Gift, Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+/* ── Gold coin SVG icon ──────────────────────────────────────────────────── */
+function CoinIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 18 18" className={className} fill="none" aria-label="Loyalty coins">
+      <circle cx="9" cy="9" r="8.5" fill="#F59E0B" stroke="#D97706" strokeWidth="0.5" />
+      <circle cx="9" cy="9" r="6" fill="none" stroke="#FDE68A" strokeWidth="1.5" opacity="0.7" />
+      <text x="9" y="12.8" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#78350F" fontFamily="system-ui,sans-serif">฿</text>
+    </svg>
+  );
+}
 import { useLocale, type Lang, type Currency } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import LocaleCurrencyModal from './LocaleCurrencyModal';
@@ -390,9 +401,14 @@ export default function Navbar({
               Bookings
             </Link>
 
+            <Link href="/help-center"
+              className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
+              Help Center
+            </Link>
+
             <Link href="/contact"
               className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
-              <Headphones className="w-4 h-4 shrink-0" />Customer support
+              <Headphones className="w-4 h-4 shrink-0" />Contact Us
             </Link>
 
             <button
@@ -420,8 +436,8 @@ export default function Navbar({
                     </span>
                   )}
                   {user.loyaltyPoints != null && (
-                    <span className="hidden xl:inline text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                      {user.loyaltyPoints.toLocaleString()} pts
+                    <span className="hidden xl:inline-flex items-center justify-center w-6 h-6">
+                      <CoinIcon />
                     </span>
                   )}
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform hidden lg:block ${userMenuOpen ? 'rotate-180' : ''}`} />
@@ -438,7 +454,7 @@ export default function Navbar({
                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>{user.tierLevel}</span>
                           )}
                           {user.loyaltyPoints != null && (
-                            <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">{user.loyaltyPoints.toLocaleString()} pts</span>
+                            <CoinIcon className="w-4 h-4" />
                           )}
                         </div>
                       )}
@@ -550,7 +566,7 @@ export default function Navbar({
                     <div>
                       <p className="font-bold text-gray-900 text-[15px]">{user.name}</p>
                       {user.loyaltyPoints != null && (
-                        <p className="text-xs text-amber-600 font-semibold">{user.loyaltyPoints.toLocaleString()} pts</p>
+                        <CoinIcon className="w-4 h-4 mt-0.5" />
                       )}
                     </div>
                     {user.tierLevel && (
@@ -626,10 +642,17 @@ export default function Navbar({
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
+              <Link href="/help-center" onClick={closeMobileMenu}
+                className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
+                <Search className="w-5 h-5 text-gray-700 shrink-0" />
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">Help Center</span>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </Link>
+
               <Link href="/contact" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <Headphones className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Customer Support</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">Contact Us</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Shield, Plane, MapPin, CheckCircle, Gift } from 'lucide-react';
+import { Shield, Plane, MapPin, CheckCircle, Gift } from 'lucide-react';
 
 // ─── Banner data — inline JSX, no external images ─────────────────────────────
 
@@ -168,17 +168,8 @@ export default function PromoBannerSlider() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Left arrow */}
-      <button
-        onClick={goPrev}
-        aria-label="Previous"
-        className="absolute left-0.5 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-      >
-        <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
-      </button>
-
       {/* Clipping viewport */}
-      <div ref={containerRef} className="overflow-hidden mx-8">
+      <div ref={containerRef} className="overflow-hidden">
         <div
           className="flex"
           style={{
@@ -238,15 +229,6 @@ export default function PromoBannerSlider() {
           })}
         </div>
       </div>
-
-      {/* Right arrow */}
-      <button
-        onClick={goNext}
-        aria-label="Next"
-        className="absolute right-0.5 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-      >
-        <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-      </button>
 
       {/* Dot indicators */}
       <div className="flex justify-center gap-1.5 mt-2.5">

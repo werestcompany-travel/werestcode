@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/about`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/contact`,                       lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/faq`,                           lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SITE_URL}/help-center`,                   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/partner`,                       lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${SITE_URL}/partners`,                      lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${SITE_URL}/group-booking`,                 lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
@@ -92,6 +93,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // skip
   }
 
+  // Destination pages
+  const destinationSlugs = [
+    'bangkok','pattaya','chiang-mai','phuket','krabi','khao-lak',
+    'khao-sok','phang-nga','surat-thani','koh-samui','kanchanaburi',
+    'koh-chang','koh-kood','koh-larn',
+  ];
+  const destinationRoutes: MetadataRoute.Sitemap = destinationSlugs.map(slug => ({
+    url: `${SITE_URL}/destinations/${slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
   // Programmatic SEO route pages — legacy [route] pages
   const routePages: MetadataRoute.Sitemap = ROUTES.map(r => ({
     url: `${SITE_URL}/routes/${r.slug}`,
@@ -111,5 +125,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seen = new Set(routePages.map(r => r.url));
   const dedupedTransferRoutePages = transferRoutePages.filter(r => !seen.has(r.url));
 
-  return [...staticRoutes, ...categoryRoutes, ...tourRoutes, ...blogRoutes, ...attractionRoutes, ...routePages, ...dedupedTransferRoutePages];
+  return [...staticRoutes, ...categoryRoutes, ...tourRoutes, ...blogRoutes, ...attractionRoutes, ...destinationRoutes, ...routePages, ...dedupedTransferRoutePages];
 }

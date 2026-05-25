@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { signAdminToken } from '@/lib/auth';
@@ -36,13 +35,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // If 2FA is enabled, issue a short-lived pending cookie and prompt for TOTP
+    if (admin.totpEnabled) {
+      const res = NextResponse.json({ success: true, data: { requires2FA: true } });
+      res.cookies.set('pending_2fa_admin_id', admin.id, {
+        httpOnly: true,
+        secure:   process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge:   5 * 60, // 5 minutes
+        path:     '/',
+      });
+      return res;
+    }
+
     const token = await signAdminToken({ id: admin.id, email: admin.email, name: admin.name });
 
     const res = NextResponse.json({ success: true, data: { name: admin.name } });
     res.cookies.set('admin_token', token, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge:   8 * 60 * 60,
       path:     '/',
     });

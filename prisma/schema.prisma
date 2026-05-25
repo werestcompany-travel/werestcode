@@ -80,18 +80,24 @@ model User {
   tierLevel     TierLevel  @default(EXPLORER)
   preferredPaymentMethod String?   // "CREDIT_CARD" | "PROMPTPAY" | "QR_CODE"
   lastPaymentAt          DateTime?
+  // Email verification
+  emailVerified          Boolean   @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  wishlist            WishlistItem[]
-  attractionBookings  AttractionBooking[]
-  passwordResetTokens PasswordResetToken[]
-  loyaltyTransactions LoyaltyTransaction[]
-  tourBookings        TourBooking[]
-  pushSubscriptions   PushSubscription[]
-  expoTokens          ExpoToken[]
+  wishlist             WishlistItem[]
+  attractionBookings   AttractionBooking[]
+  passwordResetTokens  PasswordResetToken[]
+  loyaltyTransactions  LoyaltyTransaction[]
+  tourBookings         TourBooking[]
+  pushSubscriptions    PushSubscription[]
+  expoTokens           ExpoToken[]
+  emailVerifications   EmailVerification[]
+  sessions             UserSession[]
+  savedRoutes          SavedRoute[]
 
   @@index([email])
+  @@index([createdAt])
 }
 
 model PasswordResetToken {
@@ -317,12 +323,17 @@ model BookingAddOn {
 }
 
 model AdminUser {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("admin")
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         String   @default("admin")
+  // Two-factor authentication (TOTP)
+  totpSecret   String?  // encrypted TOTP secret
+  totpEnabled  Boolean  @default(false)
+  backupCodes  String[] // bcrypt-hashed one-time backup codes
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
 }
 
 model DiscountCode {
@@ -982,6 +993,147 @@ model ItineraryPreset {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// ─── Email Verification ───────────────────────────────────────────────────────
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 of the raw URL token
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+// ─── User Sessions (for revocation) ──────────────────────────────────────────
+
+model UserSession {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jti       String    @unique // JWT ID claim — matches token
+  userAgent String?
+  ip        String?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime? // null = active
+
+  @@index([userId])
+  @@index([jti])
+  @@index([userId, revokedAt])
+}
+
+// ─── Saved Routes ─────────────────────────────────────────────────────────────
+
+model SavedRoute {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label          String      // e.g. "Home → Airport"
+  pickupAddress  String
+  pickupLat      Float?
+  pickupLng      Float?
+  dropoffAddress String
+  dropoffLat     Float?
+  dropoffLng     Float?
+  vehicleType    VehicleType?
+  createdAt      DateTime    @default(now())
+
+  @@index([userId])
+}
+
+// ─── Admin Audit Log ──────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String   // AdminUser.id
+  adminEmail String
+  action     String   // e.g. "BOOKING_STATUS_UPDATE", "DRIVER_ASSIGN", "REFUND_APPROVE"
+  entityType String   // "Booking" | "TourBooking" | "User" | "Driver" | etc.
+  entityId   String?
+  before     Json?    // snapshot before change
+  after      Json?    // snapshot after change
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ─── Refunds ─────────────────────────────────────────────────────────────────
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  PROCESSED
+  REJECTED
+}
+
+model Refund {
+  id           String       @id @default(cuid())
+  bookingRef   String       // display reference (e.g. WRTF-20250001)
+  bookingType  String       // "transfer" | "tour" | "attraction" | "charter"
+  bookingId    String
+  amount       Float
+  currency     String       @default("THB")
+  reason       String
+  status       RefundStatus @default(PENDING)
+  processedBy  String?      // admin name
+  processedAt  DateTime?
+  paysoRefId   String?      // Payso refund transaction ID if applicable
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([bookingRef])
+  @@index([bookingId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─── Tour Availability ────────────────────────────────────────────────────────
+
+model TourAvailability {
+  id          String   @id @default(cuid())
+  tourSlug    String
+  date        DateTime @db.Date
+  optionId    String?  // null = applies to all options
+  maxCapacity Int      @default(15)
+  booked      Int      @default(0)
+  isBlocked   Boolean  @default(false) // admin can block a date
+  note        String?  // e.g. "Holiday — closed"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tourSlug, date, optionId])
+  @@index([tourSlug, date])
+}
+
+// ─── Abandoned Bookings ───────────────────────────────────────────────────────
+
+model AbandonedBooking {
+  id            String    @id @default(cuid())
+  sessionToken  String    @unique // random token stored in browser cookie
+  bookingType   String    // "transfer" | "tour"
+  step          String    // "vehicle_selected" | "details" | "payment"
+  data          Json      // partial booking data
+  customerEmail String?
+  customerName  String?
+  recoveryEmailSentAt DateTime?
+  recoveredAt   DateTime? // set when user completes the booking
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([customerEmail])
+  @@index([sessionToken])
+  @@index([expiresAt])
 }
 
 model GeneratedItinerary {

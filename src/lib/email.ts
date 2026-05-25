@@ -92,6 +92,37 @@ function baseLayout(title: string, body: string): string {
 </html>`;
 }
 
+// ─── Email verification ────────────────────────────────────────────────────────
+
+export async function sendVerificationEmail(params: {
+  to:        string;
+  name:      string;
+  verifyUrl: string; // full URL, e.g. https://www.werest.com/api/user/verify-email?token=xxx
+}): Promise<void> {
+  if (!resend) {
+    console.warn('[email] Resend not configured — verification email not sent');
+    return;
+  }
+
+  await resend.emails.send({
+    from:    FROM,
+    to:      [params.to],
+    subject: 'Verify your Werest Travel account',
+    html: baseLayout('Verify Your Email', `
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="padding:8px 36px 24px">
+          <h2 style="color:#111827;font-size:22px;margin:0 0 8px">Hi ${escapeHtml(params.name)}, welcome to Werest! 🇹🇭</h2>
+          <p style="color:#4b5563;line-height:1.6;margin:0 0 24px">Please verify your email address to activate your account and receive booking confirmations.</p>
+          <div style="text-align:center;margin:24px 0">
+            <a href="${params.verifyUrl}" style="display:inline-block;background:#2534ff;color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:10px">Verify My Email</a>
+          </div>
+          <p style="color:#9ca3af;font-size:12px;text-align:center;margin:16px 0 0">This link expires in 24 hours. If you didn&apos;t create an account, you can safely ignore this email.</p>
+        </td></tr>
+      </table>
+    `),
+  });
+}
+
 // ─── Booking confirmation ──────────────────────────────────────────────────────
 
 interface BookingEmailData {
@@ -797,6 +828,129 @@ export async function sendAttractionBookingConfirmationEmail(booking: Attraction
   }
 }
 
+// ─── Quote email ──────────────────────────────────────────────────────────────
+
+export async function sendQuoteEmail(params: {
+  to: string;
+  name: string;
+  inquiryRef: string;
+  lineItems: Array<{ description: string; unitPrice: number; qty: number }>;
+  totalAmount: number;
+  validUntil: Date;
+  acceptUrl: string;
+  notes?: string;
+}): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping quote email');
+    return;
+  }
+
+  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
+  const waUrl    = `https://wa.me/${waNumber}`;
+  const validStr = params.validUntil.toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
+
+  const lineItemsHtml = params.lineItems.map(item => {
+    const lineTotal = item.unitPrice * item.qty;
+    return `
+      <tr>
+        <td style="padding:10px 0;font-size:14px;color:#374151;border-bottom:1px solid #f3f4f6;">${escapeHtml(item.description)}</td>
+        <td style="padding:10px 0;font-size:14px;color:#6b7280;text-align:center;border-bottom:1px solid #f3f4f6;">${item.qty}</td>
+        <td style="padding:10px 0;font-size:14px;color:#6b7280;text-align:right;border-bottom:1px solid #f3f4f6;">฿${item.unitPrice.toLocaleString()}</td>
+        <td style="padding:10px 0;font-size:14px;color:#111827;font-weight:600;text-align:right;border-bottom:1px solid #f3f4f6;">฿${lineTotal.toLocaleString()}</td>
+      </tr>`;
+  }).join('');
+
+  const body = `
+    <!-- Header -->
+    <div style="margin-bottom:28px;">
+      <div style="display:inline-block;background:#f0f4ff;border-radius:12px;padding:10px 18px;margin-bottom:16px;">
+        <span style="font-size:13px;font-weight:700;color:#2534ff;letter-spacing:0.5px;">YOUR QUOTE IS READY</span>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:24px;font-weight:900;color:#111827;letter-spacing:-0.5px;">
+        Hi ${escapeHtml(params.name)}, here's your personalised quote 🎉
+      </h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;line-height:1.6;">
+        Thank you for your interest in Werest Travel. We've prepared a detailed quote for your group trip.
+      </p>
+    </div>
+
+    <!-- Ref box -->
+    <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:2px solid #c7d2fe;border-radius:14px;padding:16px 24px;text-align:center;margin-bottom:28px;">
+      <p style="margin:0 0 4px;font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Inquiry Reference</p>
+      <p style="margin:0;font-size:26px;font-weight:900;color:#2534ff;letter-spacing:2px;">${escapeHtml(params.inquiryRef)}</p>
+    </div>
+
+    <!-- Line items table -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 16px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Quote Details</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <thead>
+          <tr>
+            <th style="text-align:left;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:10px;border-bottom:2px solid #e5e7eb;">Description</th>
+            <th style="text-align:center;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:10px;border-bottom:2px solid #e5e7eb;">Qty</th>
+            <th style="text-align:right;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:10px;border-bottom:2px solid #e5e7eb;">Unit Price</th>
+            <th style="text-align:right;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:10px;border-bottom:2px solid #e5e7eb;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lineItemsHtml}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="padding-top:14px;font-size:16px;font-weight:900;color:#111827;">Grand Total</td>
+            <td style="padding-top:14px;font-size:22px;font-weight:900;color:#2534ff;text-align:right;">฿${params.totalAmount.toLocaleString()}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    ${params.notes ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:14px 18px;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#92400e;"><strong>📝 Notes from our team:</strong> ${escapeHtml(params.notes)}</p>
+    </div>` : ''}
+
+    <!-- Validity -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 18px;margin-bottom:28px;text-align:center;">
+      <p style="margin:0;font-size:14px;color:#166534;">
+        ⏳ This quote is valid until <strong>${validStr}</strong>
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${params.acceptUrl}"
+        style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:16px;padding:18px 48px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;box-shadow:0 4px 14px rgba(37,52,255,0.3);">
+        Accept This Quote →
+      </a>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:0 0 28px;">
+      Clicking "Accept" confirms your interest — our team will follow up within 2 hours.
+    </p>
+
+    <!-- Contact strip -->
+    <div style="text-align:center;padding:20px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;">
+      <p style="margin:0 0 8px;font-size:14px;color:#374151;font-weight:600;">Questions about your quote?</p>
+      <p style="margin:0;font-size:13px;color:#6b7280;">
+        Reply to this email or
+        <a href="${waUrl}" style="color:#25D366;font-weight:700;text-decoration:none;"> WhatsApp us</a>
+        — we reply within minutes.
+      </p>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      params.to,
+      subject: `Your Werest Travel Quote — ${params.inquiryRef}`,
+      html:    baseLayout(`Your Quote — ${params.inquiryRef}`, body),
+    });
+  } catch (err) {
+    console.error('[email] sendQuoteEmail failed:', err);
+  }
+}
+
 // ─── 24-hour reminder emails ───────────────────────────────────────────────────
 
 interface TransferReminderData {
@@ -965,5 +1119,152 @@ export async function sendAttractionReminderEmail(booking: AttractionReminderDat
     });
   } catch (err) {
     console.error('[email] sendAttractionReminderEmail failed:', err);
+  }
+}
+
+// ─── Abandoned booking recovery ────────────────────────────────────────────────
+
+export async function sendAbandonedBookingEmail(params: {
+  to:          string;
+  name:        string;
+  bookingType: 'transfer' | 'tour';
+  partialData: Record<string, unknown>;
+  resumeUrl:   string;
+}): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping abandoned booking email');
+    return;
+  }
+
+  const { to, name, bookingType, partialData, resumeUrl } = params;
+  const safeeName = escapeHtml(name);
+  const typeLabel = bookingType === 'transfer' ? 'transfer' : 'tour';
+
+  // Build a human-readable summary from partial data
+  let tripSummary = '';
+  if (bookingType === 'transfer') {
+    const pickup  = typeof partialData.pickupAddress  === 'string' ? escapeHtml(partialData.pickupAddress)  : null;
+    const dropoff = typeof partialData.dropoffAddress === 'string' ? escapeHtml(partialData.dropoffAddress) : null;
+    if (pickup && dropoff) {
+      tripSummary = `<p style="font-size:14px;color:#374151;margin:0 0 4px;"><strong>Route:</strong> ${pickup} → ${dropoff}</p>`;
+    }
+    const date = typeof partialData.pickupDate === 'string' ? escapeHtml(partialData.pickupDate) : null;
+    if (date) {
+      tripSummary += `<p style="font-size:14px;color:#374151;margin:0;">📅 ${date}</p>`;
+    }
+  } else {
+    const tourName = typeof partialData.tourTitle === 'string' ? escapeHtml(partialData.tourTitle) : null;
+    if (tourName) {
+      tripSummary = `<p style="font-size:14px;color:#374151;margin:0;"><strong>Tour:</strong> ${tourName}</p>`;
+    }
+    const date = typeof partialData.bookingDate === 'string' ? escapeHtml(partialData.bookingDate) : null;
+    if (date) {
+      tripSummary += `<p style="font-size:14px;color:#374151;margin:4px 0 0;">📅 ${date}</p>`;
+    }
+  }
+
+  const body = `
+    <!-- Header icon -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;width:60px;height:60px;background:#fff7ed;border-radius:50%;line-height:60px;font-size:28px;margin-bottom:12px;">⏳</div>
+      <h1 style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;">You left something behind</h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;">Hi ${safeeName}, your ${typeLabel} booking is waiting for you.</p>
+    </div>
+
+    <!-- Trip summary card -->
+    ${tripSummary ? `
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:18px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Your saved booking</p>
+      ${tripSummary}
+    </div>` : ''}
+
+    <!-- Urgency notice -->
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 18px;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#92400e;">🔥 <strong>Popular dates fill up fast.</strong> Complete your booking to lock in your spot.</p>
+    </div>
+
+    <!-- CTA button -->
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${resumeUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:16px;padding:16px 44px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;">Complete Your Booking →</a>
+    </div>
+
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:12px 0 0;">This link expires in 24 hours. After that, you can start a new booking at <a href="${APP_URL}" style="color:#2534ff;">werest.com</a></p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      [to],
+      subject: `You left something behind — complete your ${typeLabel} booking`,
+      html:    baseLayout('Complete Your Booking', body),
+    });
+  } catch (err) {
+    console.error('[email] sendAbandonedBookingEmail failed:', err);
+  }
+}
+
+// ─── Post-trip review request ──────────────────────────────────────────────────
+
+export async function sendPostTripReviewEmail(params: {
+  to:          string;
+  name:        string;
+  serviceName: string;
+  serviceType: 'tour' | 'transfer' | 'attraction';
+  entityId:    string;
+  bookingRef:  string;
+}): Promise<void> {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set – skipping post-trip review email');
+    return;
+  }
+
+  const { to, name, serviceName, serviceType, entityId, bookingRef } = params;
+  const reviewUrl   = `${APP_URL}/review/write?ref=${encodeURIComponent(bookingRef)}&type=${encodeURIComponent(serviceType)}&entity=${encodeURIComponent(entityId)}`;
+  const safeeName   = escapeHtml(name);
+  const safeService = escapeHtml(serviceName);
+
+  // Star rating row — each star links to the review page with a pre-selected rating
+  const stars = [1, 2, 3, 4, 5]
+    .map(n => `<a href="${reviewUrl}&rating=${n}" style="font-size:36px;text-decoration:none;line-height:1;">⭐</a>`)
+    .join('&nbsp;');
+
+  const body = `
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;width:60px;height:60px;background:#fef9c3;border-radius:50%;line-height:60px;font-size:28px;margin-bottom:12px;">⭐</div>
+      <h1 style="margin:0 0 6px;font-size:22px;font-weight:900;color:#111827;">How was your experience?</h1>
+      <p style="margin:0;color:#6b7280;font-size:15px;">Hi ${safeeName}, we hope you had an amazing time!</p>
+    </div>
+
+    <!-- Service card -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:18px 24px;margin-bottom:24px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Your recent experience</p>
+      <p style="margin:0;font-size:17px;font-weight:800;color:#111827;">${safeService}</p>
+      <p style="margin:6px 0 0;font-size:12px;color:#9ca3af;">Booking: ${escapeHtml(bookingRef)}</p>
+    </div>
+
+    <!-- Star rating -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <p style="font-size:14px;color:#374151;margin:0 0 16px;font-weight:600;">Tap a star to rate your experience:</p>
+      <div>${stars}</div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <a href="${reviewUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:15px;padding:14px 40px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;">Write a Review →</a>
+    </div>
+
+    <p style="text-align:center;font-size:13px;color:#9ca3af;margin:0;">It only takes 2 minutes and helps other travellers discover great experiences in Thailand 🇹🇭</p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from:    FROM,
+      to:      [to],
+      subject: `How was your experience? Leave a review — ${safeService}`,
+      html:    baseLayout('How was your experience?', body),
+    });
+  } catch (err) {
+    console.error('[email] sendPostTripReviewEmail failed:', err);
   }
 }

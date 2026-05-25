@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import Image from 'next/image';
@@ -189,8 +189,13 @@ function ResultsPageInner() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType | null>(null);
   const [selectedAddOns, setSelectedAddOns]   = useState<SelectedAddOn[]>([]);
   const [duration, setDuration]               = useState('');
+  const [distance, setDistance]               = useState('');
   const [mapsReady, setMapsReady]             = useState(false);
   const [isEditing, setIsEditing]             = useState(false);
+
+  const mapDivRef      = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const rendererRef    = useRef<google.maps.DirectionsRenderer | null>(null);
 
   // Editable trip dates — initialised from URL, updated when user applies edits
   const [tripDate,       setTripDate]       = useState(date);
@@ -210,23 +215,48 @@ function ResultsPageInner() {
       .finally(() => setLoadingPricing(false));
   }, []);
 
-  // Fetch route stats (social proof)
-  // Fetch travel duration via Google Maps Distance Matrix when maps are ready
+  // Render A→B route on map and fetch distance + duration via Directions API
   useEffect(() => {
-    if (!mapsReady || !window.google?.maps) return;
-    const service = new window.google.maps.DistanceMatrixService();
-    service.getDistanceMatrix(
+    if (!mapsReady || !window.google?.maps || !mapDivRef.current) return;
+
+    // Initialise map instance once
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = new window.google.maps.Map(mapDivRef.current, {
+        zoom: 8,
+        center: { lat: (pickupLat + dropoffLat) / 2, lng: (pickupLng + dropoffLng) / 2 },
+        disableDefaultUI: true,
+        gestureHandling: 'none',
+        clickableIcons: false,
+        styles: [
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+        ],
+      });
+    }
+
+    // Initialise renderer once
+    if (!rendererRef.current) {
+      rendererRef.current = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        polylineOptions: { strokeColor: '#2534ff', strokeWeight: 4, strokeOpacity: 0.85 },
+      });
+      rendererRef.current.setMap(mapInstanceRef.current);
+    }
+
+    // Request directions
+    new window.google.maps.DirectionsService().route(
       {
-        origins:      [new window.google.maps.LatLng(pickupLat, pickupLng)],
-        destinations: [new window.google.maps.LatLng(dropoffLat, dropoffLng)],
-        travelMode:   window.google.maps.TravelMode.DRIVING,
-        unitSystem:   window.google.maps.UnitSystem.METRIC,
+        origin:      { lat: pickupLat, lng: pickupLng },
+        destination: { lat: dropoffLat, lng: dropoffLng },
+        travelMode:  window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
         if (status === 'OK' && result) {
-          const element = result.rows[0]?.elements[0];
-          if (element?.status === 'OK') {
-            setDuration(element.duration.text);
+          rendererRef.current!.setDirections(result);
+          const leg = result.routes[0]?.legs[0];
+          if (leg) {
+            setDuration(leg.duration?.text ?? '');
+            setDistance(leg.distance?.text ?? '');
           }
         }
       },
@@ -392,6 +422,31 @@ function ResultsPageInner() {
                   </div>
                 </div>
 
+                {/* A→B route map */}
+                <div
+                  ref={mapDivRef}
+                  className="w-full h-[170px] rounded-xl overflow-hidden mb-2 bg-gray-100"
+                />
+
+                {/* Distance + duration strip */}
+                {(distance || duration) && (
+                  <div className="flex items-center gap-3 text-xs font-semibold text-gray-700 bg-gray-50 rounded-xl px-3 py-2 mb-3">
+                    {distance && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+                        {distance}
+                      </span>
+                    )}
+                    {distance && duration && <span className="text-gray-300">·</span>}
+                    {duration && (
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#2534ff] shrink-0" />
+                        Approx. {duration}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Departure */}
                 {tripDate && (
                   <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5 mb-2">
@@ -420,13 +475,6 @@ function ResultsPageInner() {
                       <span className="text-sm font-bold text-gray-900">{tripReturnTime}</span>
                     </div>
                   </div>
-                )}
-
-                {/* Duration */}
-                {duration && (
-                  <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-                    <Clock className="w-3.5 h-3.5 shrink-0" /> Approx. {duration}
-                  </p>
                 )}
 
                 {/* Edit panel */}

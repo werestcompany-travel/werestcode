@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { headers } from 'next/headers';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/next';
@@ -58,6 +59,9 @@ export const metadata: Metadata = {
 
 /* ── Root layout ──────────────────────────────────────────────────────────── */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read nonce injected by middleware for nonce-based CSP
+  const nonce = headers().get('x-nonce') ?? ''
+
   return (
     <html lang="en">
       <head>
@@ -89,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   position="top-center"
                   toastOptions={{
                     duration: 4000,
-                    style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
+                    style: { borderRadius: '12px', fontFamily: 'Poppins, sans-serif', fontSize: '14px' },
                   }}
                 />
               </ChatProvider>
@@ -101,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
 
         {/* PWA Service Worker — scoped per path */}
-        <Script id="sw-register" strategy="afterInteractive">
+        <Script id="sw-register" strategy="afterInteractive" nonce={nonce}>
           {`
     if ('serviceWorker' in navigator) {
       var path = window.location.pathname;
@@ -120,8 +124,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
+              nonce={nonce}
             />
-            <Script id="ga4-init" strategy="afterInteractive">
+            <Script id="ga4-init" strategy="afterInteractive" nonce={nonce}>
               {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
             </Script>
           </>

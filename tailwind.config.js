@@ -42,8 +42,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
-        poppins: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        sans:    ['Poppins', 'system-ui', 'sans-serif'],
+        poppins: ['Poppins', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'hero-gradient': 'linear-gradient(135deg, #2534ff 0%, #1825b8 45%, #0d1266 100%)',

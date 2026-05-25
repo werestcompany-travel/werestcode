@@ -9,7 +9,7 @@ import {
   Tag, FileText, LogOut, Bell, Settings, Inbox, Users, Star, BookOpen, Mail,
   Calendar, Clock, RefreshCw, ChevronRight, Smartphone,
   DollarSign, Sliders, CreditCard, Gift, Award, BarChart2, UserCog, MessageSquare,
-  Zap, Route, Navigation, Bot, Send, TrendingUp, Wand2,
+  Zap, Route, Navigation, Bot, Send, TrendingUp, Wand2, RotateCcw, ClipboardList,
 } from 'lucide-react';
 import type { NotificationGroup } from '@/app/api/admin/notifications/route';
 
@@ -47,10 +47,12 @@ const NAV_SECTIONS = [
   {
     label: 'Finance',
     items: [
-      { href: '/admin/payments',      icon: CreditCard, label: 'Payments' },
-      { href: '/admin/gift-vouchers', icon: Gift,       label: 'Gift Vouchers' },
-      { href: '/admin/loyalty',       icon: Award,      label: 'Loyalty' },
-      { href: '/admin/reports',       icon: BarChart2,  label: 'Reports' },
+      { href: '/admin/payments',      icon: CreditCard,    label: 'Payments' },
+      { href: '/admin/refunds',       icon: RotateCcw,     label: 'Refunds' },
+      { href: '/admin/gift-vouchers', icon: Gift,          label: 'Gift Vouchers' },
+      { href: '/admin/loyalty',       icon: Award,         label: 'Loyalty' },
+      { href: '/admin/reports',       icon: BarChart2,     label: 'Reports' },
+      { href: '/admin/audit-log',     icon: ClipboardList, label: 'Audit Log' },
     ],
   },
   {

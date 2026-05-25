@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AdminShell from '@/components/admin/AdminShell';
 import {
   Search, RefreshCw, ChevronDown, ChevronUp, Mail, Phone,
-  MapPin, Calendar, Users, MessageCircle,
+  MapPin, Calendar, Users, MessageCircle, FileText, Plus, Trash2, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -65,6 +65,231 @@ function fmt(dateStr?: string | null): string {
   });
 }
 
+// ─── Quote Modal ──────────────────────────────────────────────────────────────
+
+interface LineItem {
+  description: string;
+  qty:         number;
+  unitPrice:   number;
+}
+
+interface QuoteModalProps {
+  inquiry:   Inquiry;
+  onClose:   () => void;
+  onSent:    (updatedInquiry: Inquiry) => void;
+}
+
+function QuoteModal({ inquiry, onClose, onSent }: QuoteModalProps) {
+  const [lineItems, setLineItems] = useState<LineItem[]>([
+    { description: '', qty: 1, unitPrice: 0 },
+  ]);
+  const [validDays,  setValidDays]  = useState(7);
+  const [notes,      setNotes]      = useState('');
+  const [sending,    setSending]    = useState(false);
+
+  const totalAmount = lineItems.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
+
+  function addRow() {
+    setLineItems(prev => [...prev, { description: '', qty: 1, unitPrice: 0 }]);
+  }
+
+  function removeRow(i: number) {
+    setLineItems(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function updateRow(i: number, field: keyof LineItem, value: string | number) {
+    setLineItems(prev => prev.map((row, idx) =>
+      idx === i ? { ...row, [field]: value } : row,
+    ));
+  }
+
+  async function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    if (lineItems.some(item => !item.description.trim())) {
+      toast.error('All line items need a description.');
+      return;
+    }
+    if (totalAmount <= 0) {
+      toast.error('Total amount must be greater than 0.');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const res = await fetch(`/api/admin/inquiries/${inquiry.id}/quote`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ lineItems, totalAmount, validDays, notes: notes || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? 'Failed to send quote');
+        return;
+      }
+      toast.success(`Quote sent to ${inquiry.email}`);
+      onSent(data.inquiry as Inquiry);
+      onClose();
+    } catch {
+      toast.error('Failed to send quote');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <FileText className="w-4 h-4 text-brand-600" />
+              <h2 className="text-base font-bold text-gray-900">Send Quote</h2>
+            </div>
+            <p className="text-xs text-gray-400">{inquiry.fullName} · {inquiry.ref}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSend} className="p-6 space-y-5">
+          {/* Line items */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">
+              Line Items
+            </label>
+            <div className="space-y-2">
+              {lineItems.map((item, i) => (
+                <div key={i} className="grid grid-cols-[1fr_56px_88px_28px] gap-2 items-center">
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={e => updateRow(i, 'description', e.target.value)}
+                    placeholder="e.g. Phuket day tour (per person)"
+                    required
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700 outline-none focus:border-brand-400 bg-white"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.qty}
+                    onChange={e => updateRow(i, 'qty', parseInt(e.target.value, 10) || 1)}
+                    title="Quantity"
+                    className="border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 outline-none focus:border-brand-400 text-center"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    step="100"
+                    value={item.unitPrice}
+                    onChange={e => updateRow(i, 'unitPrice', parseFloat(e.target.value) || 0)}
+                    placeholder="฿ price"
+                    title="Unit price (THB)"
+                    className="border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 outline-none focus:border-brand-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeRow(i)}
+                    disabled={lineItems.length === 1}
+                    className="p-1 rounded text-gray-300 hover:text-red-400 disabled:opacity-30 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            {/* Column labels */}
+            <div className="grid grid-cols-[1fr_56px_88px_28px] gap-2 mt-1.5 px-0.5">
+              <span className="text-[10px] text-gray-400">Description</span>
+              <span className="text-[10px] text-gray-400 text-center">Qty</span>
+              <span className="text-[10px] text-gray-400">Unit (฿ THB)</span>
+              <span />
+            </div>
+            <button
+              type="button"
+              onClick={addRow}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 border border-brand-200 rounded-lg px-3 py-1.5 hover:bg-brand-50 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add row
+            </button>
+          </div>
+
+          {/* Running total */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700">Grand Total</span>
+            <span className="text-xl font-extrabold text-brand-700">
+              ฿{totalAmount.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Valid for */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Quote Valid For
+            </label>
+            <div className="flex gap-2">
+              {[7, 14, 30].map(d => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setValidDays(d)}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                    validDays === d
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                  }`}
+                >
+                  {d} days
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Notes to Customer <span className="font-normal text-gray-400">(optional)</span>
+            </label>
+            <textarea
+              rows={3}
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="e.g. Price includes hotel pick-up. Payment 50% upfront…"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 outline-none focus:border-brand-400 resize-none placeholder:text-gray-300"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={sending || totalAmount <= 0}
+              className="flex-1 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl py-2.5 transition-colors"
+            >
+              {sending ? 'Sending…' : `Send Quote to ${inquiry.email.split('@')[0]}…`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function InquiriesPage() {
@@ -73,8 +298,9 @@ export default function InquiriesPage() {
   const [search,      setSearch]      = useState('');
   const [statusTab,   setStatusTab]   = useState('ALL');
   const [expanded,    setExpanded]    = useState<string | null>(null);
-  const [notesMap,    setNotesMap]    = useState<Record<string, string>>({});
-  const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({});
+  const [notesMap,     setNotesMap]     = useState<Record<string, string>>({});
+  const [savingNotes,  setSavingNotes]  = useState<Record<string, boolean>>({});
+  const [quoteInquiry, setQuoteInquiry] = useState<Inquiry | null>(null);
 
   const fetchInquiries = useCallback(async () => {
     setLoading(true);
@@ -140,6 +366,17 @@ export default function InquiriesPage() {
 
   return (
     <AdminShell title="Inquiries" subtitle="View and manage customer group tour inquiries">
+
+      {/* Quote modal */}
+      {quoteInquiry && (
+        <QuoteModal
+          inquiry={quoteInquiry}
+          onClose={() => setQuoteInquiry(null)}
+          onSent={updated => {
+            setInquiries(prev => prev.map(inq => inq.id === updated.id ? updated : inq));
+          }}
+        />
+      )}
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -315,6 +552,19 @@ export default function InquiriesPage() {
                               ))}
                             </select>
                           </div>
+                          {/* Send Quote button — shown for NEW and CONTACTED */}
+                          {(inq.status === 'NEW' || inq.status === 'CONTACTED') && (
+                            <div>
+                              <button
+                                type="button"
+                                onClick={e => { e.stopPropagation(); setQuoteInquiry(inq); }}
+                                className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl px-4 py-2.5 transition-colors"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                Send Quote
+                              </button>
+                            </div>
+                          )}
                           {/* Admin notes */}
                           <div>
                             <label className="block text-[11px] font-semibold text-gray-600 mb-1">Admin Notes</label>

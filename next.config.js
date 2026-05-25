@@ -45,40 +45,8 @@ const nextConfig = {
           { key: 'Referrer-Policy',        value: 'strict-origin-when-cross-origin' },
           // Restrict powerful features — no camera, mic, payment handled externally
           { key: 'Permissions-Policy',     value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
-          {
-            key: 'Content-Security-Policy',
-            // NOTE: 'unsafe-inline'/'unsafe-eval' in script-src are required by:
-            //   - Next.js App Router hydration scripts
-            //   - Google Maps JS API
-            // Removing them requires a nonce/hash strategy — tracked as a future hardening task.
-            // All other directives are as strict as possible without breaking functionality.
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              // img-src: removed bare http: — only https, data URIs, and blobs allowed
-              "img-src 'self' data: blob: https:",
-              // connect-src: explicit allowlist — no wildcard
-              [
-                "connect-src 'self'",
-                "https://maps.googleapis.com",
-                "https://maps.gstatic.com",
-                "https://graph.facebook.com",
-                "https://api.resend.com",
-                // Upstash Redis REST API (rate limiting)
-                "https://*.upstash.io",
-                // Chrome push relay
-                "https://fcm.googleapis.com",
-              ].join(' '),
-              "frame-src 'none'",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              // Only enforce HTTPS upgrade in production
-              ...(!isDev ? ["upgrade-insecure-requests"] : []),
-            ].join('; '),
-          },
+          // NOTE: Content-Security-Policy is set per-request in middleware.ts with a
+          // per-request nonce so that 'unsafe-inline' is no longer needed for scripts.
           // HSTS only in production
           ...(!isDev ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }] : []),
         ],

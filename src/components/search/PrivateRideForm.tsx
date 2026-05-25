@@ -256,22 +256,6 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   return (
     <Fragment>
 
-        {/* ── Sub-tabs ── */}
-        <div className="flex items-center px-6 pt-4 pb-0 border-b border-gray-100">
-          <button type="button" onClick={() => setHasReturn(false)}
-            className={`pb-3 mr-7 text-sm font-semibold border-b-2 transition-colors ${
-              !hasReturn ? 'border-[#2534ff] text-[#2534ff]' : 'border-transparent text-gray-400 hover:text-gray-700'
-            }`}>
-            {t('form.oneWay')}
-          </button>
-          <button type="button" onClick={() => setHasReturn(true)}
-            className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
-              hasReturn ? 'border-[#2534ff] text-[#2534ff]' : 'border-transparent text-gray-400 hover:text-gray-700'
-            }`}>
-            {t('form.roundTrip')}
-          </button>
-        </div>
-
         {/* ── Single row ── */}
         <div className="flex items-stretch h-[72px] px-2 min-w-[600px]">
 
@@ -423,6 +407,28 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
               {t('form.search')}
             </button>
           </div>
+        </div>
+
+        {/* ── Round trip checkbox — below location fields ── */}
+        <div className="flex items-center gap-2 px-6 pb-3 -mt-1">
+          <input
+            id="round-trip-check"
+            type="checkbox"
+            checked={hasReturn}
+            onChange={e => {
+              setHasReturn(e.target.checked);
+              if (!e.target.checked) { setReturnDate(''); setShowReturn(false); }
+            }}
+            className="w-4 h-4 rounded accent-[#2534ff] cursor-pointer"
+          />
+          <label htmlFor="round-trip-check" className="text-sm text-gray-600 cursor-pointer font-medium select-none">
+            Round trip
+          </label>
+          {hasReturn && returnDate && (
+            <span className="text-xs text-gray-400 ml-1">
+              · Return {fmtDate(returnDate)} {fmtTime(returnTime)}
+            </span>
+          )}
         </div>
 
         {/* ── Error ── */}

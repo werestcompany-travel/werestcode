@@ -8,7 +8,9 @@ export interface ReviewData {
   title?: string | null;
   body: string;
   authorName: string;
-  isVerified: boolean;
+  /** DB returns 'verified'; component also accepts 'isVerified' for backwards compat */
+  verified?: boolean;
+  isVerified?: boolean;
   createdAt: string;
   ownerReply?: string | null;
 }
@@ -31,7 +33,7 @@ export default function ReviewCard({ review }: { review: ReviewData }) {
           <div>
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-gray-900 text-sm">{review.authorName}</p>
-              {review.isVerified && (
+              {(review.verified ?? review.isVerified) && (
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
                   <ShieldCheck className="w-3 h-3" />
                   Verified

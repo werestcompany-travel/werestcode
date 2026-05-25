@@ -10,7 +10,7 @@ export type BookingStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
-export type TabType = 'private-ride' | 'tours' | 'tickets' | 'deals';
+export type TabType = 'private-ride' | 'hourly' | 'tours' | 'tickets' | 'deals';
 
 // ─── Search ───────────────────────────────────────────────────────────────────
 

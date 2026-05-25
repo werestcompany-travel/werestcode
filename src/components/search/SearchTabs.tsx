@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Car, Compass, Ticket } from 'lucide-react';
+import { Car, Compass, Ticket, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { TabType } from '@/types';
 import PrivateRideForm from './PrivateRideForm';
+import HourlyForm from './HourlyForm';
 import ToursForm from './ToursForm';
 import TicketsForm from './TicketsForm';
 
 interface PrefillRoute { from: string; to: string; }
+
+type TransferSubTab = 'transfers' | 'hourly';
 
 export default function SearchTabs({
   prefillRoute,
@@ -17,15 +20,17 @@ export default function SearchTabs({
   prefillRoute?: PrefillRoute | null;
   activeService?: string;
 }) {
-  const [activeTab, setActiveTab] = useState<TabType>('private-ride');
+  const [activeTab,       setActiveTab]       = useState<TabType>('private-ride');
+  const [transferSubTab,  setTransferSubTab]  = useState<TransferSubTab>('transfers');
 
   useEffect(() => {
-    if (prefillRoute) setActiveTab('private-ride');
+    if (prefillRoute) { setActiveTab('private-ride'); setTransferSubTab('transfers'); }
   }, [prefillRoute]);
 
   useEffect(() => {
     if (!activeService) return;
-    if (activeService === 'transfer')         setActiveTab('private-ride');
+    if (activeService === 'transfer')         { setActiveTab('private-ride'); setTransferSubTab('transfers'); }
+    else if (activeService === 'hourly')      { setActiveTab('private-ride'); setTransferSubTab('hourly'); }
     else if (activeService === 'tours')       setActiveTab('tours');
     else if (activeService === 'attractions') setActiveTab('tickets');
   }, [activeService]);
@@ -36,10 +41,15 @@ export default function SearchTabs({
     { id: 'tickets'      as TabType, label: 'Attractions ticket',  Icon: Ticket,  badge: null, href: undefined },
   ];
 
+  const TRANSFER_SUB_TABS: { id: TransferSubTab; label: string; Icon: typeof Car }[] = [
+    { id: 'transfers', label: 'Transfers', Icon: Car   },
+    { id: 'hourly',    label: 'Hourly',    Icon: Clock },
+  ];
+
   return (
     <div className="relative w-full">
 
-      {/* ── Floating pill tab bar — hidden on mobile (replaced by hero circular icons), visible sm+ ── */}
+      {/* ── Floating pill tab bar — hidden on mobile, visible lg+ ── */}
       <div className="relative z-10 hidden lg:flex justify-center overflow-x-auto [&::-webkit-scrollbar]:hidden px-4 lg:px-0">
         <div className="inline-flex shrink-0 items-center bg-[#1a1f35] px-3 py-2 gap-1 rounded-full">
           {TABS.map(({ id, label, Icon, badge, href }) => {
@@ -74,13 +84,41 @@ export default function SearchTabs({
         </div>
       </div>
 
-      {/* ── White search card — on mobile: no overlap margin; on sm+: overlaps under the pill tab bar ── */}
+      {/* ── White search card ── */}
       <div className="mt-0 lg:-mt-5 relative z-0 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-        <div className="pt-4 lg:pt-7">
-          {activeTab === 'private-ride' && <PrivateRideForm prefillRoute={prefillRoute} />}
-          {activeTab === 'tours'        && <ToursForm />}
-          {activeTab === 'tickets'      && <TicketsForm />}
+
+        {/* ── Transfers / Hourly sub-tabs (only for Private Transfers tab) ── */}
+        {activeTab === 'private-ride' && (
+          <div className="flex items-center gap-0 px-6 pt-4 lg:pt-6 pb-0 border-b border-gray-100">
+            {TRANSFER_SUB_TABS.map(({ id, label, Icon }) => {
+              const isActive = transferSubTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTransferSubTab(id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold border-b-2 transition-colors -mb-px whitespace-nowrap ${
+                    isActive
+                      ? 'border-[#2534ff] text-[#2534ff]'
+                      : 'border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Form content ── */}
+        <div className={activeTab === 'private-ride' ? 'pt-2' : 'pt-4 lg:pt-7'}>
+          {activeTab === 'private-ride' && transferSubTab === 'transfers' && <PrivateRideForm prefillRoute={prefillRoute} />}
+          {activeTab === 'private-ride' && transferSubTab === 'hourly'    && <HourlyForm noCard />}
+          {activeTab === 'tours'   && <ToursForm />}
+          {activeTab === 'tickets' && <TicketsForm />}
         </div>
+
       </div>
 
     </div>

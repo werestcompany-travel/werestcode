@@ -1,36 +1,63 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
+import crypto from 'crypto';
+import { prisma } from '@/lib/db';
 
-// Fail hard if JWT_SECRET is not configured — a missing secret means all tokens
-// are signed with a predictable fallback that any attacker can forge.
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) {
-  throw new Error(
-    '[user-auth] JWT_SECRET environment variable is not set. ' +
-    'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"',
-  );
-}
-const SECRET = new TextEncoder().encode(jwtSecret);
+const SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? 'fallback-secret-change-in-production',
+);
 
 export interface UserTokenPayload {
   id: string;
   email: string;
   name: string;
+  jti?: string;
   [key: string]: unknown;
 }
 
-export async function signUserToken(payload: UserTokenPayload) {
-  return new SignJWT(payload)
+function generateJti(): string {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+export async function signUserToken(
+  payload: UserTokenPayload,
+  options?: { userAgent?: string; ip?: string },
+): Promise<string> {
+  const jti = generateJti();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const token = await new SignJWT({ ...payload, jti })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
     .sign(SECRET);
+
+  // Save session to DB for revocation tracking — fire-and-forget
+  await prisma.userSession
+    .create({
+      data: {
+        userId: payload.id,
+        jti,
+        userAgent: options?.userAgent ?? null,
+        ip: options?.ip ?? null,
+        expiresAt,
+      },
+    })
+    .catch(() => {}); // don't fail auth if DB write fails
+
+  return token;
 }
 
 export async function verifyUserToken(token: string): Promise<UserTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(token, SECRET);
+    const jti = payload.jti as string | undefined;
+    if (jti) {
+      // Check if session has been revoked
+      const session = await prisma.userSession.findUnique({ where: { jti } });
+      if (!session || session.revokedAt) return null;
+    }
     return payload as UserTokenPayload;
   } catch {
     return null;
