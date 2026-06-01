@@ -8,6 +8,7 @@ import type { BookingListItem, BookingStatus } from '@/lib/types';
 import { STATUS_LABELS } from '@/lib/types';
 import { useAuthStore } from '@/store/auth';
 import { useState } from 'react';
+import EmptyState from '@/components/ui/EmptyState';
 
 const STATUS_COLORS: Record<BookingStatus, { bg: string; text: string }> = {
   PENDING:          { bg: '#fffbeb', text: '#92400e' },
@@ -94,10 +95,11 @@ export default function BookingsScreen() {
           contentContainerStyle={{ padding: 16, paddingTop: 8 }}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.brand[500]} />}
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', paddingTop: 60 }}>
-              <Text style={{ fontSize: 40, marginBottom: 12 }}>📋</Text>
-              <Text style={{ color: colors.gray[500], fontSize: 15 }}>No {tab} bookings</Text>
-            </View>
+            <EmptyState
+              icon="🗓️"
+              title={tab === 'upcoming' ? 'No upcoming bookings' : 'No past bookings'}
+              subtitle="Your confirmed transfers and tours will appear here."
+            />
           }
         />
       )}

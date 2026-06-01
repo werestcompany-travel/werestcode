@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,15 @@ const VEHICLE_CAPACITY: Record<VehicleType, string> = { SEDAN: 'Up to 2 pax', SU
 
 export default function VehiclesScreen() {
   const params = useLocalSearchParams<{ pickup: string; dropoff: string; passengers: string; date: string }>();
+
+  const pickup  = params.pickup;
+  const dropoff = params.dropoff;
+
+  if (!pickup || !dropoff) {
+    Alert.alert('Missing details', 'Please enter both pickup and drop-off locations.');
+    router.back();
+    return null;
+  }
 
   const { data: pricing, isLoading, error } = useQuery({
     queryKey: ['pricing', params.pickup, params.dropoff],
@@ -47,6 +56,8 @@ export default function VehiclesScreen() {
               pathname: '/booking/details',
               params: { ...params, vehicleType: item.vehicleType, basePrice: String(item.basePrice), totalPrice: String(item.totalPrice), distanceKm: String(item.distanceKm), durationMin: String(item.durationMin) },
             })}
+            accessibilityLabel={`${VEHICLE_LABELS[item.vehicleType as VehicleType] ?? item.vehicleType}, ${VEHICLE_CAPACITY[item.vehicleType as VehicleType]}, from ฿${item.totalPrice.toLocaleString()}`}
+            accessibilityRole="button"
             style={{ backgroundColor: colors.white, borderRadius: 16, padding: 20, marginBottom: 12, borderWidth: 1, borderColor: colors.gray[100] }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>

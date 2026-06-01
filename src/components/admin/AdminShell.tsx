@@ -33,6 +33,7 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin/attractions',        icon: Package,    label: 'Manage Attractions' },
       { href: '/admin/tours',              icon: MapPin,     label: 'Manage Tours' },
+      { href: '/admin/tours/availability', icon: Calendar,   label: 'Tour Availability' },
       { href: '/admin/itinerary',          icon: Wand2,      label: 'Itinerary Builder' },
       { href: '/admin/blog',               icon: FileText,   label: 'Manage Blog' },
       { href: '/admin/drivers',            icon: Users,      label: 'Drivers' },
@@ -58,7 +59,8 @@ const NAV_SECTIONS = [
   {
     label: 'Users',
     items: [
-      { href: '/admin/users', icon: UserCog, label: 'Users' },
+      { href: '/admin/users',     icon: UserCog, label: 'Users' },
+      { href: '/admin/customers', icon: Users,   label: 'Customers CRM' },
     ],
   },
   {

@@ -1,7 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
-import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 
 const SECRET = new TextEncoder().encode(
@@ -17,7 +16,8 @@ export interface UserTokenPayload {
 }
 
 function generateJti(): string {
-  return crypto.randomBytes(16).toString('hex');
+  // Uses Web Crypto global — Edge-compatible (no Node.js crypto import needed)
+  return crypto.randomUUID().replace(/-/g, '');
 }
 
 export async function signUserToken(
@@ -49,6 +49,22 @@ export async function signUserToken(
   return token;
 }
 
+/**
+ * Edge-compatible JWT verification — signature + expiry only, no DB call.
+ * Use this in middleware (Edge runtime) where Prisma cannot run.
+ */
+export async function verifyUserTokenEdge(token: string): Promise<UserTokenPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    return payload as UserTokenPayload;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Full verification with DB revocation check — use in API routes (Node.js runtime).
+ */
 export async function verifyUserToken(token: string): Promise<UserTokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, SECRET);

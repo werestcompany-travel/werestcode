@@ -28,29 +28,67 @@ const FALLBACK_ADDONS = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const { prisma } = await import('@/lib/db');
-    const [vehicles, addOns] = await Promise.all([
+    const url = new URL(req.url);
+    const vehicleTypeParam = url.searchParams.get('vehicleType') as VehicleType | null;
+    const pickupAddress   = url.searchParams.get('pickup') ?? '';
+    const dropoffAddress  = url.searchParams.get('dropoff') ?? '';
+    const pickupDate      = url.searchParams.get('date') ? new Date(url.searchParams.get('date')!) : new Date();
+    const pickupHour      = pickupDate.getHours();
+    const dayOfWeek       = pickupDate.getDay();
+
+    const [vehicles, addOns, dynamicRules] = await Promise.all([
       prisma.pricingRule.findMany({ where: { isActive: true }, orderBy: { baseFare: 'asc' } }),
       prisma.addOn.findMany({ where: { isActive: true } }),
+      prisma.dynamicPricingRule.findMany({
+        where: { isActive: true },
+        orderBy: { priority: 'desc' },
+      }),
     ]);
 
+    // ── Apply dynamic pricing rules to each vehicle ──────────────────────────
+    function applyRules(baseFare: number, vType: string): { adjustedFare: number; appliedRule: string | null } {
+      for (const rule of dynamicRules) {
+        // Vehicle type filter
+        if (rule.vehicleType && rule.vehicleType !== vType) continue;
+        // Day-of-week filter
+        if (rule.daysOfWeek.length > 0 && !rule.daysOfWeek.includes(dayOfWeek)) continue;
+        // Hour filter
+        if (rule.startHour !== null && rule.endHour !== null) {
+          if (pickupHour < rule.startHour || pickupHour >= rule.endHour) continue;
+        }
+        // Date range filter
+        if (rule.startDate && pickupDate < rule.startDate) continue;
+        if (rule.endDate   && pickupDate > rule.endDate)   continue;
+        // Keyword filter
+        if (rule.pickupKeyword  && !pickupAddress.toLowerCase().includes(rule.pickupKeyword.toLowerCase()))   continue;
+        if (rule.dropoffKeyword && !dropoffAddress.toLowerCase().includes(rule.dropoffKeyword.toLowerCase())) continue;
+
+        // Rule matches — apply adjustment
+        const adjustedFare = rule.flatAmount !== null
+          ? baseFare + rule.flatAmount
+          : baseFare * rule.multiplier;
+        return { adjustedFare: Math.max(0, adjustedFare), appliedRule: rule.name };
+      }
+      return { adjustedFare: baseFare, appliedRule: null };
+    }
+
     if (vehicles.length > 0) {
-      // Always override name/description from VEHICLE_CONFIGS so vehicles.ts
-      // is the single source of truth — DB rows never go stale.
       const enriched = vehicles.map(v => {
         const cfg = VEHICLE_CONFIGS[v.vehicleType as VehicleType];
+        const { adjustedFare, appliedRule } = applyRules(v.baseFare, v.vehicleType);
         return cfg
-          ? { ...v, name: cfg.name, description: cfg.description }
-          : v;
+          ? { ...v, name: cfg.name, description: cfg.description, adjustedBaseFare: adjustedFare, appliedPricingRule: appliedRule }
+          : { ...v, adjustedBaseFare: adjustedFare, appliedPricingRule: appliedRule };
       });
-      return NextResponse.json({ success: true, vehicles: enriched, addOns });
+      // Filter by vehicleType if provided
+      const result = vehicleTypeParam ? enriched.filter(v => v.vehicleType === vehicleTypeParam) : enriched;
+      return NextResponse.json({ success: true, vehicles: result, addOns });
     }
-    // DB connected but empty — return fallback data
     return NextResponse.json({ success: true, vehicles: FALLBACK_VEHICLES, addOns: FALLBACK_ADDONS });
   } catch {
-    // DB not configured — return static fallback so the page always works
     return NextResponse.json({ success: true, vehicles: FALLBACK_VEHICLES, addOns: FALLBACK_ADDONS });
   }
 }

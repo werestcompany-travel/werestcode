@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Users, Search, X, Check } from 'lucide-react';
 import AdminShell from '@/components/admin/AdminShell';
 
@@ -140,7 +141,8 @@ export default function AdminUsersPage() {
                   {users.map(u => (
                     <button key={u.id} onClick={() => openUser(u)}
                       className="w-full grid grid-cols-[1fr_1fr_80px_90px_100px_80px] gap-4 px-5 py-3.5 items-center hover:bg-brand-50 transition-colors text-left">
-                      <p className="font-semibold text-sm text-gray-900 truncate">{u.name}</p>
+                      <Link href={`/admin/customers/${u.id}`} onClick={e => e.stopPropagation()}
+                        className="font-semibold text-sm text-brand-600 hover:underline truncate">{u.name}</Link>
                       <p className="text-xs text-gray-500 truncate">{u.email}</p>
                       <p className="text-xs text-gray-500">{u.phone ?? '—'}</p>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${TIER_PILL[u.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>

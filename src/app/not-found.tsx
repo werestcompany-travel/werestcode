@@ -1,21 +1,36 @@
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
-      <div className="max-w-md">
-        <p className="text-6xl font-extrabold text-brand-600 mb-2">404</p>
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Page not found</h2>
-        <p className="text-gray-500 text-sm mb-6">
-          The page you&apos;re looking for doesn&apos;t exist or has been moved.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 bg-brand-600 text-white font-semibold text-sm px-6 py-3 rounded-full hover:bg-brand-700 transition-colors"
-        >
-          Back to home
-        </Link>
-      </div>
-    </div>
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
+        <div className="text-center px-4 max-w-md mx-auto">
+          <div className="text-8xl font-extrabold text-[#2534ff] opacity-20 mb-4">404</div>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Page not found</h1>
+          <p className="text-gray-500 text-sm mb-8">
+            The page you&apos;re looking for doesn&apos;t exist or has been moved.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/" className="bg-[#2534ff] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#1a26cc] transition-colors">
+              Back to Home
+            </Link>
+            <Link href="/airport-transfers" className="border border-[#2534ff] text-[#2534ff] font-bold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors">
+              Book a Transfer
+            </Link>
+          </div>
+          <p className="text-xs text-gray-400 mt-8">
+            Need help?{' '}
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
+              className="text-[#2534ff] hover:underline">
+              WhatsApp us
+            </a>
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

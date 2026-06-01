@@ -42,15 +42,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Always verify webhook signature — sandbox mode does NOT skip this check.
-  // Setting PAYSO_SANDBOX=true only adjusts behaviour (e.g. logging), never auth.
   if (!verifyWebhookSignature(payload)) {
-    const isSandbox = process.env.PAYSO_SANDBOX === 'true'
-    if (!isSandbox) {
-      console.warn('[payment/webhook] Invalid signature for orderId:', payload.orderId)
-      return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 })
-    }
-    // In sandbox Payso may send unsigned test webhooks — log but allow so dev testing works
-    console.warn('[payment/webhook] Sandbox: signature check failed — orderId:', payload.orderId)
+    console.warn('[payment/webhook] Invalid signature for orderId:', payload.orderId)
+    return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 })
   }
 
   const { orderId, txnId, status, amount } = payload

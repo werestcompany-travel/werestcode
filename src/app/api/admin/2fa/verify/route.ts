@@ -3,12 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { signAdminToken } from '@/lib/auth';
 import { decryptSecret, verifyTOTP, verifyBackupCode } from '@/lib/totp';
+import { rateLimit, getIP } from '@/lib/rate-limit';
 
 // POST /api/admin/2fa/verify  body: { token: string, useBackup?: boolean }
 // Called as step 2 of admin login when 2FA is required.
 // Reads the pending_2fa_admin_id cookie (set in step 1), verifies the code,
 // then issues the full admin_token and clears the pending cookie.
 export async function POST(req: NextRequest) {
+  const ip = getIP(req);
+  const rl = rateLimit(`2fa-verify:${ip}`, { limit: 5, windowSec: 300 });
+  if (!rl.allowed) return NextResponse.json({ error: 'Too many attempts. Try again in 5 minutes.' }, { status: 429 });
+
   const pendingAdminId = req.cookies.get('pending_2fa_admin_id')?.value;
   if (!pendingAdminId) {
     return NextResponse.json(

@@ -310,6 +310,15 @@ export default async function ConfirmationPage({ params }: Props) {
             </Link>
           </div>
 
+          {/* Upsell: Add a tour */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5 sm:p-6 mb-6">
+            <h3 className="text-base font-bold text-gray-900 mb-1">🌴 While you&apos;re in Thailand...</h3>
+            <p className="text-sm text-gray-600 mb-4">Add a day tour to make the most of your trip. Book now and save 10% on your first tour.</p>
+            <Link href="/tours" className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#1a26cc] transition-colors">
+              Browse day tours <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
           {/* You might also like */}
           {recommendedTours.length > 0 && (
             <div>

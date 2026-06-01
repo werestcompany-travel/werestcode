@@ -35,7 +35,6 @@ jobs:
 
       - name: ESLint
         run: npx next lint --max-warnings 0
-        continue-on-error: true   # remove once existing lint warnings are resolved
 
       - name: Prisma schema validate
         run: npx prisma validate

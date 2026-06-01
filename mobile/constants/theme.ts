@@ -6,4 +6,4 @@ export const colors = {
   amber:  { 50: '#fffbeb', 500: '#f59e0b' },
   white:  '#ffffff',
 };
-export const BASE_URL = 'http://192.168.1.102:3000'; // change to your LAN IP in dev
+// BASE_URL is now read from EXPO_PUBLIC_API_URL env var in lib/api.ts

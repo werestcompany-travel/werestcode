@@ -95,9 +95,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Destination pages
   const destinationSlugs = [
-    'bangkok','pattaya','chiang-mai','phuket','krabi','khao-lak',
-    'khao-sok','phang-nga','surat-thani','koh-samui','kanchanaburi',
-    'koh-chang','koh-kood','koh-larn',
+    'bangkok','phuket','krabi','chiang-mai','koh-samui',
+    'pattaya','hua-hin','koh-chang','koh-larn','koh-kood',
+    'khao-lak','khao-sok','phang-nga','surat-thani','kanchanaburi',
   ];
   const destinationRoutes: MetadataRoute.Sitemap = destinationSlugs.map(slug => ({
     url: `${SITE_URL}/destinations/${slug}`,

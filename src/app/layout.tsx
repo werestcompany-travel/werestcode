@@ -1,7 +1,28 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { headers } from 'next/headers';
+import { Poppins, Noto_Sans_Thai, Noto_Sans_SC } from 'next/font/google';
 import './globals.css';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ['thai'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-noto-thai',
+  display: 'swap',
+});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const notoSansSC = (Noto_Sans_SC as any)({
+  subsets: ['chinese-simplified'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sc',
+  display: 'swap',
+});
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
@@ -59,30 +80,48 @@ export const metadata: Metadata = {
 };
 
 /* ── Root layout ──────────────────────────────────────────────────────────── */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Read nonce injected by middleware for nonce-based CSP
-  const nonce = headers().get('x-nonce') ?? ''
+  const headersList = await headers();
+  const nonce = headersList.get('x-nonce') ?? ''
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${poppins.variable} ${notoSansThai.variable} ${notoSansSC.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light" />
         <meta name="theme-color" content="#2534ff" />
+
+        {/* LocalBusiness / TravelAgency JSON-LD */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': ['TravelAgency', 'LocalBusiness'],
+              name: 'Werest Travel',
+              url: 'https://www.werest.com',
+              logo: 'https://www.werest.com/logo.png',
+              telephone: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ? `+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}` : '+66621871392',
+              address: { '@type': 'PostalAddress', addressCountry: 'TH', addressLocality: 'Bangkok' },
+              description: 'Private transfers, day tours and attraction tickets across Thailand. Fixed prices, instant confirmation.',
+              priceRange: '฿฿',
+              currenciesAccepted: 'THB',
+              paymentAccepted: 'Credit Card, PromptPay, TrueMoney',
+              areaServed: { '@type': 'Country', name: 'Thailand' },
+              sameAs: ['https://www.facebook.com/weresttravel', 'https://www.instagram.com/weresttravel'],
+            }),
+          }}
+        />
 
         {/* DNS prefetch for external assets */}
         <link rel="dns-prefetch" href="//images.unsplash.com" />
         <link rel="dns-prefetch" href="//maps.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-
-        {/* Google Fonts — Thai & Simplified Chinese support */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#2534ff] text-white font-semibold px-4 py-2 rounded-lg z-50">
+          Skip to main content
+        </a>
         <LocaleProvider>
           <WishlistProvider>
             <AuthModalProvider>

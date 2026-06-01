@@ -47,6 +47,7 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            accessibilityLabel="Email address"
             style={{ borderWidth: 1, borderColor: colors.gray[200], borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, backgroundColor: colors.gray[50] }}
           />
           <TextInput
@@ -54,11 +55,14 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             placeholder="Password"
             secureTextEntry
+            accessibilityLabel="Password"
             style={{ borderWidth: 1, borderColor: colors.gray[200], borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, backgroundColor: colors.gray[50] }}
           />
           <TouchableOpacity
             onPress={handleLogin}
             disabled={loading}
+            accessibilityLabel="Sign in to your account"
+            accessibilityRole="button"
             style={{ backgroundColor: colors.brand[600], borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 8, opacity: loading ? 0.7 : 1 }}
           >
             {loading

@@ -8,6 +8,8 @@ import BlogSubscribeForm from '@/components/blog/BlogSubscribeForm'
 import { BLOG_CATEGORIES, type BlogPostSummary, formatBlogDate } from '@/lib/blog'
 import { prisma } from '@/lib/db'
 
+export const revalidate = 300; // ISR: revalidate every 5 minutes
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {

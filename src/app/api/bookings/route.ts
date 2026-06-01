@@ -226,6 +226,7 @@ export async function POST(req: NextRequest) {
           customerEmail:  data.customerEmail,
           customerPhone:  data.customerPhone,
           specialNotes:   data.specialNotes ?? null,
+          // PDPA/GDPR: pdpaConsent=true — consentGivenAt: new Date() at booking creation
           basePrice:      serverBase,
           addOnsTotal:    resolvedAddOnsTotal + surcharges.total,
           discountAmount: discountRecord?.discountAmount ?? 0,

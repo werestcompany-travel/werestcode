@@ -5,13 +5,10 @@ import { createPaysoPayment } from '@/lib/payso'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { attractionBookingId, amount } = body as { attractionBookingId?: string; amount?: number }
+    const { attractionBookingId } = body as { attractionBookingId?: string }
 
     if (!attractionBookingId) {
       return NextResponse.json({ success: false, error: 'attractionBookingId is required' }, { status: 400 })
-    }
-    if (typeof amount !== 'number' || amount <= 0) {
-      return NextResponse.json({ success: false, error: 'amount must be a positive number' }, { status: 400 })
     }
 
     // Fetch the attraction booking
@@ -29,7 +26,7 @@ export async function POST(req: NextRequest) {
     // Create Payso payment session
     const paysoRes = await createPaysoPayment({
       orderId,
-      amount,
+      amount: booking.totalPrice,
       description:   `Werest Attraction: ${booking.attractionName} – ${booking.packageName} on ${new Date(booking.visitDate).toLocaleDateString('en-GB')}`,
       customerName:  booking.customerName,
       customerEmail: booking.customerEmail,
@@ -51,7 +48,7 @@ export async function POST(req: NextRequest) {
         attractionBookingId,
         paysoOrderId: orderId,
         paymentUrl:   paysoRes.paymentUrl,
-        amount,
+        amount: booking.totalPrice,
         currency:     'THB',
         status:       'AWAITING_PAYMENT',
       },

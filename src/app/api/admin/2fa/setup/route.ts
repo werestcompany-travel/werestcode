@@ -30,7 +30,7 @@ export async function POST(_req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { otpauthUrl, secret },
+      data: { otpauthUrl },
     });
   } catch (err) {
     console.error('[admin/2fa/setup] POST error:', err);

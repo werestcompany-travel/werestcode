@@ -11,6 +11,7 @@ import KlookCategorySection from '@/components/tours/KlookCategorySection'
 import { tours as TOURS, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 
+export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 

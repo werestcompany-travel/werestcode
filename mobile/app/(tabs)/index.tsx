@@ -1,5 +1,5 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { useState, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { useState, useCallback, useRef } from 'react';
 import { router } from 'expo-router';
 import { api } from '@/lib/api';
 import { colors } from '@/constants/theme';
@@ -7,14 +7,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Prediction { place_id: string; description: string; }
 
-function PlaceInput({ label, value, onSelect }: { label: string; value: string; onSelect: (desc: string) => void }) {
+function PlaceInput({ label, value, onSelect, accessibilityLabel: a11yLabel }: { label: string; value: string; onSelect: (desc: string) => void; accessibilityLabel?: string }) {
   const [query,    setQuery]    = useState(value);
   const [results,  setResults]  = useState<Prediction[]>([]);
   const [loading,  setLoading]  = useState(false);
   const [focused,  setFocused]  = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const search = useCallback(async (text: string) => {
-    setQuery(text);
+  const fetchAutocomplete = useCallback(async (text: string) => {
     if (text.length < 3) { setResults([]); return; }
     setLoading(true);
     try {
@@ -25,6 +25,14 @@ function PlaceInput({ label, value, onSelect }: { label: string; value: string; 
     finally   { setLoading(false); }
   }, []);
 
+  const search = useCallback((text: string) => {
+    setQuery(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAutocomplete(text);
+    }, 300);
+  }, [fetchAutocomplete]);
+
   return (
     <View style={{ marginBottom: 12, zIndex: focused ? 10 : 1 }}>
       <Text style={{ fontSize: 12, color: colors.gray[500], fontWeight: '600', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Text>
@@ -34,6 +42,7 @@ function PlaceInput({ label, value, onSelect }: { label: string; value: string; 
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 200)}
         placeholder={`Enter ${label.toLowerCase()}`}
+        accessibilityLabel={a11yLabel ?? label}
         style={{ borderWidth: 1, borderColor: focused ? colors.brand[500] : colors.gray[200], borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, backgroundColor: colors.white }}
       />
       {focused && (results.length > 0 || loading) && (
@@ -61,7 +70,8 @@ export default function HomeScreen() {
 
   function handleSearch() {
     if (!pickup || !dropoff) {
-      return; // show validation
+      Alert.alert('Missing details', 'Please enter both pickup and drop-off locations.');
+      return;
     }
     router.push({
       pathname: '/booking/vehicles',
@@ -80,8 +90,8 @@ export default function HomeScreen() {
 
         {/* Search card */}
         <View style={{ margin: 16, backgroundColor: colors.white, borderRadius: 20, padding: 20, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 }}>
-          <PlaceInput label="Pickup"   value={pickup}  onSelect={setPickup}  />
-          <PlaceInput label="Drop-off" value={dropoff} onSelect={setDropoff} />
+          <PlaceInput label="Pickup"   value={pickup}  onSelect={setPickup}  accessibilityLabel="Pickup location" />
+          <PlaceInput label="Drop-off" value={dropoff} onSelect={setDropoff} accessibilityLabel="Drop-off location" />
 
           {/* Date */}
           <View style={{ marginBottom: 12 }}>
@@ -110,6 +120,8 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             onPress={handleSearch}
+            accessibilityLabel="Search for vehicles"
+            accessibilityRole="button"
             style={{ backgroundColor: colors.brand[600], borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}
           >
             <Text style={{ color: colors.white, fontWeight: '800', fontSize: 16 }}>Search Transfers</Text>

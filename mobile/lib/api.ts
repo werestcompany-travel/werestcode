@@ -1,5 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
-import { BASE_URL } from '@/constants/theme';
+import { useAuthStore } from '@/store/auth';
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://www.werest.com';
 
 async function authHeaders(): Promise<Record<string, string>> {
   const token = await SecureStore.getItemAsync('werest_token');
@@ -12,10 +14,16 @@ async function authHeaders(): Promise<Record<string, string>> {
 
 async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const headers = await authHeaders();
-  return fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: { ...headers, ...(options.headers as Record<string, string> ?? {}) },
   });
+  if (response.status === 401) {
+    await SecureStore.deleteItemAsync('werest_token');
+    useAuthStore.getState().logout();
+    // Return the 401 response so callers can handle it too
+  }
+  return response;
 }
 
 export const api = {

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import AirportTransfersClient from '@/components/airport-transfers/AirportTransfersClient';
 
 export const metadata: Metadata = {
@@ -40,5 +41,29 @@ export const metadata: Metadata = {
 };
 
 export default function AirportTransfersPage() {
-  return <AirportTransfersClient />;
+  return (
+    <>
+      <Script
+        id="airport-transfers-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: 'Private Airport Transfer Thailand',
+            provider: { '@type': 'TravelAgency', name: 'Werest Travel', url: 'https://www.werest.com' },
+            serviceType: 'Private Transfer',
+            areaServed: { '@type': 'Country', name: 'Thailand' },
+            description: 'Fixed-price private airport transfers across Thailand. Professional drivers, instant confirmation, free cancellation.',
+            offers: {
+              '@type': 'Offer',
+              priceCurrency: 'THB',
+              availability: 'https://schema.org/InStock',
+            },
+          }),
+        }}
+      />
+      <AirportTransfersClient />
+    </>
+  );
 }

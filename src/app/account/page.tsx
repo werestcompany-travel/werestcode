@@ -135,7 +135,28 @@ function SidebarBtn({
 
 // ─── Booking row ──────────────────────────────────────────────────────────────
 
-function BookingRow({ booking }: { booking: UnifiedBooking }) {
+function BookingRow({ booking, onCancel }: { booking: UnifiedBooking; onCancel?: (id: string) => void }) {
+  const canCancel =
+    booking.serviceType === 'transfer' &&
+    (booking.status === 'PENDING' || booking.status === 'DRIVER_CONFIRMED') &&
+    new Date(booking.date).getTime() - Date.now() > 24 * 60 * 60 * 1000;
+
+  async function handleCancel() {
+    if (!confirm('Cancel this booking? You will receive a full refund within 3–7 business days.')) return;
+    const res = await fetch(`/api/bookings/${booking.id}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      alert('Booking cancelled.');
+      onCancel?.(booking.id);
+    } else {
+      const d = await res.json();
+      alert(d.error ?? 'Failed to cancel');
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-shadow">
       <div className="flex items-start gap-3">
@@ -150,13 +171,23 @@ function BookingRow({ booking }: { booking: UnifiedBooking }) {
             </span>
           </div>
           <p className="font-semibold text-gray-900 text-sm leading-snug">{booking.serviceName}</p>
-          <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               {new Date(booking.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
             <span className="font-semibold text-gray-700">฿{booking.price.toLocaleString()}</span>
           </div>
+          {canCancel && (
+            <div className="mt-2">
+              <button
+                onClick={handleCancel}
+                className="text-xs font-semibold text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                Cancel booking
+              </button>
+            </div>
+          )}
         </div>
         {booking.viewUrl && (
           <Link href={booking.viewUrl} className="shrink-0 text-xs text-[#2534ff] font-semibold hover:underline">
@@ -649,7 +680,15 @@ function AccountContent() {
                     </div>
                   ) : (
                     <div className="space-y-2.5">
-                      {filteredBookings.map(bk => <BookingRow key={bk.id} booking={bk} />)}
+                      {filteredBookings.map(bk => (
+                        <BookingRow
+                          key={bk.id}
+                          booking={bk}
+                          onCancel={id => setAllBookings(prev =>
+                            prev.map(b => b.id === id ? { ...b, status: 'CANCELLED' } : b)
+                          )}
+                        />
+                      ))}
                     </div>
                   )}
                 </div>

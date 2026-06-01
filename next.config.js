@@ -18,8 +18,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       { protocol: 'https', hostname: 'storage.googleapis.com' },
       { protocol: 'https', hostname: 'www.toyota.co.th' },
-      // Vercel Blob (production uploads)
-      { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
+      // Vercel Blob (production uploads) — wildcard hostname removed; add explicit
+      // blob store hostnames here as needed (e.g. '<store-id>.public.blob.vercel-storage.com')
       { protocol: 'https', hostname: 'public.blob.vercel-storage.com' },
     ],
   },

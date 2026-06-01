@@ -26,8 +26,8 @@ export default function StarRating({ value, onChange, readonly, size = 'md' }: P
           onClick={interactive ? () => onChange!(n) : undefined}
           onMouseEnter={interactive ? () => setHover(n) : undefined}
           onMouseLeave={interactive ? () => setHover(0) : undefined}
-          className={interactive ? 'focus:outline-none' : 'cursor-default pointer-events-none'}
-          aria-label={interactive ? `Rate ${n} stars` : undefined}
+          className={interactive ? 'focus:ring-2 focus:ring-[#2534ff] rounded' : 'cursor-default pointer-events-none'}
+          aria-label={interactive ? `Rate ${n} out of 5 stars` : undefined}
           tabIndex={interactive ? 0 : -1}
         >
           <Star

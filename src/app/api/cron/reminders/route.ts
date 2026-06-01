@@ -71,12 +71,8 @@ export async function GET(req: NextRequest) {
   // Admin dashboard manual triggers must pass: Authorization: Bearer <CRON_SECRET>
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get('authorization');
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!cronSecret) {
-    // Warn loudly — an unprotected cron endpoint can be spam-triggered
-    console.warn('[cron/reminders] CRON_SECRET not set — endpoint is unprotected. Set CRON_SECRET in env.');
   }
 
   const { start, end } = getTomorrow();

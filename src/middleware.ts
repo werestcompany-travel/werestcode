@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminToken } from '@/lib/auth'
-import { verifyUserToken } from '@/lib/user-auth'
+import { verifyUserTokenEdge } from '@/lib/user-auth'
 
 // Paths that are exempt from CSRF validation even when they receive mutation requests
 const CSRF_EXEMPT = [
@@ -23,6 +23,9 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const isDev = process.env.NODE_ENV === 'development'
 
+  // ── Generate request ID ───────────────────────────────────────────────────
+  const requestId = crypto.randomUUID()
+
   // ── Generate nonce for CSP ────────────────────────────────────────────────
   const nonce = btoa(crypto.randomUUID())
 
@@ -43,24 +46,28 @@ export async function middleware(req: NextRequest) {
       "https://fcm.googleapis.com",
       "https://connect.facebook.net",
       "https://www.facebook.com",
+      "https://*.ingest.sentry.io",
     ].join(' '),
-    "frame-src 'none'",
+    // frame-src omitted: X-Frame-Options: SAMEORIGIN is set in next.config.js headers — no conflict
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     ...(isDev ? [] : ['upgrade-insecure-requests']),
   ].join('; ')
 
-  // ── Propagate nonce to layout via request headers ─────────────────────────
+  // ── Propagate nonce + request ID to layout via request headers ───────────
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('x-request-id', requestId)
   requestHeaders.set('Content-Security-Policy', cspHeader)
 
   // ── Admin routes ──────────────────────────────────────────────────────────
   if (
     (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) &&
     pathname !== '/admin/login' &&
-    pathname !== '/api/admin/auth'
+    !pathname.startsWith('/admin/login/2fa') &&
+    pathname !== '/api/admin/auth' &&
+    !pathname.startsWith('/api/admin/2fa')
   ) {
     const token = req.cookies.get('admin_token')?.value
     if (!token) return NextResponse.redirect(new URL('/admin/login', req.url))
@@ -76,7 +83,7 @@ export async function middleware(req: NextRequest) {
         new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, req.url)
       )
     }
-    const payload = await verifyUserToken(token)
+    const payload = await verifyUserTokenEdge(token)
     if (!payload) {
       return NextResponse.redirect(
         new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, req.url)
@@ -95,14 +102,6 @@ export async function middleware(req: NextRequest) {
 
     if (!cookieToken || !headerToken) {
       return new NextResponse(JSON.stringify({ error: 'CSRF token missing' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Constant-time comparison to prevent timing attacks
-    if (cookieToken.length !== headerToken.length) {
-      return new NextResponse(JSON.stringify({ error: 'CSRF token invalid' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
       })
@@ -127,8 +126,9 @@ export async function middleware(req: NextRequest) {
   // ── Build response with nonce headers + CSRF cookie ───────────────────────
   const response = NextResponse.next({ request: { headers: requestHeaders } })
 
-  // Forward CSP to the response as well
+  // Forward CSP and request ID to the response
   response.headers.set('Content-Security-Policy', cspHeader)
+  response.headers.set('x-request-id', requestId)
 
   // Set CSRF cookie if not already present
   if (!req.cookies.get('csrf_token')) {

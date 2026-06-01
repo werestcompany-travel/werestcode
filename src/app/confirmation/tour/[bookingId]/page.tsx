@@ -237,6 +237,29 @@ export default async function TourConfirmationPage({ params }: Props) {
             </div>
           </div>
 
+          {/* ── Add to calendar ── */}
+          {(() => {
+            const startISO = new Date(booking.bookingDate).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const endTime = new Date(new Date(booking.bookingDate).getTime() + 2 * 60 * 60 * 1000)
+              .toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const title = encodeURIComponent(`Tour — Ref: ${booking.bookingRef}`);
+            const details = encodeURIComponent(`Tour: ${booking.tourTitle}\nBooking ref: ${booking.bookingRef}\n${tour?.meetingPoint ? `Meeting point: ${tour.meetingPoint}` : ''}`);
+            const location = encodeURIComponent(tour?.meetingPoint ?? '');
+            const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startISO}/${endTime}&details=${details}&location=${location}`;
+
+            return (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                <p className="text-sm font-bold text-gray-900 mb-3">📅 Add to calendar</p>
+                <div className="flex flex-wrap gap-2">
+                  <a href={googleCalUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+                    Google Calendar
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ── Support + actions row ── */}
           <div className="grid sm:grid-cols-2 gap-4">
             {/* Contact support */}
@@ -269,6 +292,18 @@ export default async function TourConfirmationPage({ params }: Props) {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ── Upsell: Add a transfer ── */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5 sm:p-6">
+            <h3 className="text-base font-bold text-gray-900 mb-1">🚗 Need a transfer too?</h3>
+            <p className="text-sm text-gray-600 mb-4">Book a private transfer to or from your tour. Comfortable, door-to-door service across Thailand.</p>
+            <Link
+              href="/booking"
+              className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#1a26cc] transition-colors"
+            >
+              Book a transfer <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
           {/* ── CTA ── */}

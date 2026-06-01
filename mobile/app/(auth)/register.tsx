@@ -45,10 +45,10 @@ export default function RegisterScreen() {
 
         <View style={{ gap: 12 }}>
           {[
-            { value: name,     onChange: setName,     placeholder: 'Full name',         keyboard: 'default' as const,       secure: false },
-            { value: email,    onChange: setEmail,    placeholder: 'Email address',      keyboard: 'email-address' as const, secure: false },
-            { value: phone,    onChange: setPhone,    placeholder: 'Phone (optional)',   keyboard: 'phone-pad' as const,     secure: false },
-            { value: password, onChange: setPassword, placeholder: 'Password',           keyboard: 'default' as const,       secure: true  },
+            { value: name,     onChange: setName,     placeholder: 'Full name',         label: 'Full name',         keyboard: 'default' as const,       secure: false },
+            { value: email,    onChange: setEmail,    placeholder: 'Email address',      label: 'Email address',     keyboard: 'email-address' as const, secure: false },
+            { value: phone,    onChange: setPhone,    placeholder: 'Phone (optional)',   label: 'Phone number',      keyboard: 'phone-pad' as const,     secure: false },
+            { value: password, onChange: setPassword, placeholder: 'Password',           label: 'Password',          keyboard: 'default' as const,       secure: true  },
           ].map((f) => (
             <TextInput
               key={f.placeholder}
@@ -58,6 +58,7 @@ export default function RegisterScreen() {
               keyboardType={f.keyboard}
               autoCapitalize={f.keyboard === 'email-address' ? 'none' : 'words'}
               secureTextEntry={f.secure}
+              accessibilityLabel={f.label}
               style={{ borderWidth: 1, borderColor: colors.gray[200], borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, backgroundColor: colors.gray[50] }}
             />
           ))}
@@ -65,6 +66,8 @@ export default function RegisterScreen() {
           <TouchableOpacity
             onPress={handleRegister}
             disabled={loading}
+            accessibilityLabel="Create your Werest account"
+            accessibilityRole="button"
             style={{ backgroundColor: colors.brand[600], borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 8, opacity: loading ? 0.7 : 1 }}
           >
             {loading

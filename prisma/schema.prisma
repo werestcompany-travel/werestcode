@@ -68,6 +68,21 @@ enum LoyaltyTxType {
   ADJUST
 }
 
+enum PaymentStatus {
+  UNPAID
+  AWAITING_PAYMENT
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum AdminRole {
+  ADMIN
+  SUPERADMIN
+  SUPPORT
+  FINANCE
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -137,6 +152,8 @@ model ExpoToken {
 }
 
 model WishlistItem {
+  // TODO: Normalize attractionId — currently encodes type as "tour:<slug>" string hack.
+  // Future: add entityType enum (ATTRACTION | TOUR) + entityId field.
   id             String   @id @default(cuid())
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -200,6 +217,8 @@ model AttractionBooking {
   @@index([userId])
   @@index([visitDate])
   @@index([status])
+  @@index([attractionId])
+  @@index([packageId])
 }
 
 model Booking {
@@ -271,6 +290,7 @@ model Booking {
   @@index([pickupDate])
   @@index([customerEmail])
   @@index([paysoOrderId])
+  @@index([driverId])
 }
 
 model BookingStatusHistory {
@@ -327,13 +347,13 @@ model AdminUser {
   email        String   @unique
   password     String
   name         String
-  role         String   @default("admin")
+  role         AdminRole @default(ADMIN)
   // Two-factor authentication (TOTP)
   totpSecret   String?  // encrypted TOTP secret
   totpEnabled  Boolean  @default(false)
   backupCodes  String[] // bcrypt-hashed one-time backup codes
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  updatedAt    DateTime @updatedAt
 }
 
 model DiscountCode {
@@ -448,6 +468,7 @@ model TourBooking {
   @@index([bookingDate])
   @@index([status])
   @@index([paysoOrderId])
+  @@index([tourSlug])
 }
 
 model TourBookingStatusHistory {
@@ -724,6 +745,7 @@ model LoyaltyTransaction {
   createdAt   DateTime      @default(now())
 
   @@index([userId])
+  @@index([bookingRef])
 }
 
 model AttractionPackage {
@@ -972,7 +994,9 @@ model CurrencyRate {
   base       String   @default("THB")
   rates      Json     // { USD: 0.027, EUR: 0.025, GBP: 0.021, CNY: 0.197, JPY: 4.1 }
   fetchedAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 
+  // @@unique([base]) -- pending data deduplication in CurrencyRate table
   @@index([fetchedAt])
 }
 
@@ -1062,6 +1086,7 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([adminId])
+  @@index([adminEmail])
   @@index([entityType, entityId])
   @@index([createdAt])
 }

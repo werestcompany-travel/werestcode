@@ -7,13 +7,10 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { tourBookingId, amount } = body as { tourBookingId?: string; amount?: number }
+    const { tourBookingId } = body as { tourBookingId?: string }
 
     if (!tourBookingId) {
       return NextResponse.json({ success: false, error: 'tourBookingId is required' }, { status: 400 })
-    }
-    if (typeof amount !== 'number' || amount <= 0) {
-      return NextResponse.json({ success: false, error: 'amount must be a positive number' }, { status: 400 })
     }
 
     // Fetch the tour booking
@@ -31,7 +28,7 @@ export async function POST(req: NextRequest) {
     // Create Payso payment session
     const paysoRes = await createPaysoPayment({
       orderId,
-      amount,
+      amount: tourBooking.totalPrice,
       description: `Werest Tour: ${tourBooking.tourTitle}`,
       customerName: tourBooking.customerName,
       customerEmail: tourBooking.customerEmail,
@@ -53,7 +50,7 @@ export async function POST(req: NextRequest) {
       data: {
         paysoOrderId: orderId,
         paymentUrl: paysoRes.paymentUrl,
-        amount,
+        amount: tourBooking.totalPrice,
         currency: 'THB',
         status: 'AWAITING_PAYMENT',
       },

@@ -1,3 +1,6 @@
+// IMPORTANT: Add ?connection_limit=5&pool_timeout=20 to your DATABASE_URL
+// environment variable to prevent Supabase connection pool exhaustion on
+// serverless cold starts.
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
