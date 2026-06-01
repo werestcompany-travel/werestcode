@@ -9,14 +9,25 @@
 
   html {
     scroll-behavior: smooth;
+    /* Inter rendering — crisp like GetYourGuide */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   }
 
   body {
     @apply font-sans text-gray-900 bg-white;
+    font-size: 15px; /* Inter reads slightly larger than Poppins at 16px */
+    line-height: 1.6;
     min-height: 100vh;
-    overflow-x: clip; /* prevent horizontal scroll without breaking sticky positioning */
+    overflow-x: clip;
+  }
+
+  /* GYG-style heading weight & tracking */
+  h1, h2, h3, h4, h5, h6 {
+    font-feature-settings: 'kern' 1;
+    letter-spacing: -0.02em; /* tighter headings like GYG */
   }
 }
 

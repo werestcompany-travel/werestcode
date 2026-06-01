@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import { Poppins, Noto_Sans_Thai } from 'next/font/google';
+import { Inter, Noto_Sans_Thai } from 'next/font/google';
 import './globals.css';
 
-const poppins = Poppins({
+// Inter — GetYourGuide-style clean geometric sans-serif
+const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-poppins',
+  variable: '--font-inter',
   display: 'swap',
 });
 const notoSansThai = Noto_Sans_Thai({
@@ -89,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const nonce = headersList.get('x-nonce') ?? ''
 
   return (
-    <html lang="en" className={`${poppins.variable} ${notoSansThai.variable} ${notoSansSCVariable}`}>
+    <html lang="en" className={`${inter.variable} ${notoSansThai.variable} ${notoSansSCVariable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="color-scheme" content="light" />
@@ -148,7 +149,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   position="top-center"
                   toastOptions={{
                     duration: 4000,
-                    style: { borderRadius: '12px', fontFamily: 'Poppins, sans-serif', fontSize: '14px' },
+                    style: { borderRadius: '12px', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px' },
                   }}
                 />
               </ChatProvider>

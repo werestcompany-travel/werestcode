@@ -42,8 +42,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans:    ['Poppins', 'system-ui', 'sans-serif'],
-        poppins: ['Poppins', 'system-ui', 'sans-serif'],
+        sans:    ['var(--font-inter)', 'var(--font-noto-thai)', 'Inter', 'system-ui', 'sans-serif'],
+        inter:   ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+        // keep 'poppins' alias pointing to Inter so any hardcoded font-poppins classes still work
+        poppins: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'hero-gradient': 'linear-gradient(135deg, #2534ff 0%, #1825b8 45%, #0d1266 100%)',
