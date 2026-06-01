@@ -9,7 +9,7 @@ import {
   Tag, FileText, LogOut, Bell, Settings, Inbox, Users, Star, BookOpen, Mail,
   Calendar, Clock, RefreshCw, ChevronRight, Smartphone,
   DollarSign, Sliders, CreditCard, Gift, Award, BarChart2, UserCog, MessageSquare,
-  Zap, Route, Navigation, Bot, Send, TrendingUp, Wand2, RotateCcw, ClipboardList,
+  Zap, Route, Navigation, Bot, Send, TrendingUp, Wand2, RotateCcw, ClipboardList, Globe,
 } from 'lucide-react';
 import type { NotificationGroup } from '@/app/api/admin/notifications/route';
 
@@ -52,6 +52,7 @@ const NAV_SECTIONS = [
       { href: '/admin/refunds',       icon: RotateCcw,     label: 'Refunds' },
       { href: '/admin/gift-vouchers', icon: Gift,          label: 'Gift Vouchers' },
       { href: '/admin/loyalty',       icon: Award,         label: 'Loyalty' },
+      { href: '/admin/analytics',      icon: TrendingUp,    label: 'Analytics' },
       { href: '/admin/reports',       icon: BarChart2,     label: 'Reports' },
       { href: '/admin/audit-log',     icon: ClipboardList, label: 'Audit Log' },
     ],
@@ -70,6 +71,7 @@ const NAV_SECTIONS = [
       { href: '/admin/tour-notify',           icon: Bell,           label: 'Tour Notify' },
       { href: '/admin/whatsapp-templates',    icon: MessageSquare,  label: 'WA Templates' },
       { href: '/admin/whatsapp-bot',          icon: Bot,            label: 'WA Bot Sessions' },
+      { href: '/admin/google-business',       icon: Globe,          label: 'Google Business' },
     ],
   },
 ];

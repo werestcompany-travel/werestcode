@@ -252,6 +252,161 @@ export async function sendTourBookingToAdmin(params: {
   }
 }
 
+// ─── Driver Details (3 hours before pickup) ───────────────────────────────────
+
+export async function sendDriverDetailsToCustomer(params: {
+  customerPhone: string;
+  customerName: string;
+  bookingRef: string;
+  driverName: string;
+  driverPhone: string;
+  vehicleModel: string;
+  vehiclePlate: string;
+  pickupTime: string;
+  pickupAddress: string;
+  trackingUrl: string;
+}): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  if (!phoneNumberId || !accessToken) return;
+
+  const cleanPhone = params.customerPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone) return;
+
+  const message =
+    `🚗 *Your driver is on the way — ${params.bookingRef}*\n\n` +
+    `Hi ${params.customerName}! Your Werest Travel driver details:\n\n` +
+    `👤 Driver: ${params.driverName}\n` +
+    `📞 Driver Phone: ${params.driverPhone}\n` +
+    `🚙 Vehicle: ${params.vehicleModel} (${params.vehiclePlate})\n` +
+    `📍 Pickup: ${params.pickupAddress} at ${params.pickupTime}\n\n` +
+    `Track live: ${params.trackingUrl}\n\n` +
+    `Need help? Reply to this message or call us.`;
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: cleanPhone,
+        type: 'text',
+        text: { body: message },
+      }),
+    });
+    if (!res.ok) console.warn('[WhatsApp] sendDriverDetailsToCustomer failed:', await res.text());
+  } catch (err) {
+    console.warn('[WhatsApp] sendDriverDetailsToCustomer error:', err);
+  }
+}
+
+// ─── Post-trip Review Request ──────────────────────────────────────────────────
+
+export async function sendPostTripReviewRequest(params: {
+  customerPhone: string;
+  customerName: string;
+  bookingRef: string;
+  serviceType: 'transfer' | 'tour';
+  destination: string;
+  reviewUrl: string;
+  googleReviewUrl?: string;
+}): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  if (!phoneNumberId || !accessToken) return;
+
+  const cleanPhone = params.customerPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone) return;
+
+  const message =
+    `⭐ *How was your experience? — ${params.bookingRef}*\n\n` +
+    `Hi ${params.customerName}! Hope you enjoyed your ${params.serviceType} in ${params.destination} with Werest Travel.\n\n` +
+    `We'd love your feedback — it takes just 30 seconds:\n` +
+    `👉 Leave a review: ${params.reviewUrl}\n` +
+    (params.googleReviewUrl ? `⭐ Google review: ${params.googleReviewUrl}\n` : '') +
+    `\nThank you for choosing Werest Travel! 🙏`;
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: cleanPhone,
+        type: 'text',
+        text: { body: message },
+      }),
+    });
+    if (!res.ok) console.warn('[WhatsApp] sendPostTripReviewRequest failed:', await res.text());
+  } catch (err) {
+    console.warn('[WhatsApp] sendPostTripReviewRequest error:', err);
+  }
+}
+
+// ─── Post-booking Upsell ───────────────────────────────────────────────────────
+
+const DESTINATION_TOURS: Record<string, { name: string; slug: string; price: number; emoji: string }> = {
+  'phuket':      { name: 'Phi Phi Island Day Trip',        slug: 'phi-phi-island-day-trip',       price: 1200, emoji: '🏝️' },
+  'krabi':       { name: 'James Bond Island Tour',         slug: 'james-bond-island-tour',        price: 1100, emoji: '⛰️' },
+  'bangkok':     { name: 'Grand Palace & Temples Tour',    slug: 'grand-palace-temples-tour',     price: 900,  emoji: '🛕' },
+  'chiang mai':  { name: 'Elephant Sanctuary Day Trip',    slug: 'elephant-sanctuary-day-trip',   price: 2200, emoji: '🐘' },
+  'pattaya':     { name: 'Coral Island Speedboat Tour',    slug: 'coral-island-speedboat',        price: 800,  emoji: '🚤' },
+  'hua hin':     { name: 'Hua Hin City & Beach Tour',      slug: 'hua-hin-city-tour',             price: 700,  emoji: '🌊' },
+};
+
+function getUpsellTour(destination: string): typeof DESTINATION_TOURS[string] | null {
+  const lower = destination.toLowerCase();
+  for (const [key, tour] of Object.entries(DESTINATION_TOURS)) {
+    if (lower.includes(key)) return tour;
+  }
+  return null;
+}
+
+export async function sendPostBookingUpsell(params: {
+  customerPhone: string;
+  customerName: string;
+  bookingRef: string;
+  destination: string;
+  bookingDate: string;
+}): Promise<void> {
+  const tour = getUpsellTour(params.destination);
+  if (!tour) return;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const tourUrl = `${appUrl}/tours/${tour.slug}?ref=${params.bookingRef}`;
+
+  const message =
+    `${tour.emoji} *While you're in ${params.destination.split(',')[0]}...*\n\n` +
+    `Hi ${params.customerName}! We noticed you're heading that way on ${params.bookingDate}.\n\n` +
+    `Many of our guests also love:\n` +
+    `*${tour.name}*\n` +
+    `฿${tour.price.toLocaleString()} per person · Free cancellation\n\n` +
+    `👉 Book now: ${tourUrl}\n\n` +
+    `_Reply STOP to opt out of recommendations_`;
+
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  if (!phoneNumberId || !accessToken) return;
+
+  const cleanPhone = params.customerPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone) return;
+
+  try {
+    await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: cleanPhone,
+        type: 'text',
+        text: { body: message },
+      }),
+    });
+  } catch (err) {
+    console.warn('[WhatsApp] Upsell send error:', err);
+  }
+}
+
 /**
  * Send a WhatsApp template message (for outbound to customers outside 24h session).
  * The templateName must be pre-approved at business.facebook.com.

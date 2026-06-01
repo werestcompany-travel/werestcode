@@ -11,6 +11,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { type BlogPostSummary } from '@/lib/blog';
 import DynamicTourSections from '@/components/home/DynamicTourSections'
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 import {
   Star, CheckCircle2, BookOpen, Heart,
   Car, Plane, Users, ArrowRight,
@@ -782,6 +783,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         selectedDest={selectedDest}
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
       />
+
+      {/* ════════════════════════════════════════════════════════════
+          GOOGLE REVIEWS — live widget (only shows when GOOGLE_PLACE_ID configured)
+      ════════════════════════════════════════════════════════════ */}
+      <GoogleReviewsWidget />
 
       {/* ════════════════════════════════════════════════════════════
           5. VEHICLE OPTIONS — fleet showcase

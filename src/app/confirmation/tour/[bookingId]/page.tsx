@@ -306,6 +306,22 @@ export default async function TourConfirmationPage({ params }: Props) {
             </Link>
           </div>
 
+          {/* Google Review prompt */}
+          {process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL && (
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 text-center">
+              <p className="text-sm font-semibold text-amber-900 mb-1">Enjoying Werest Travel?</p>
+              <p className="text-xs text-amber-700 mb-3">Your Google review helps other travellers find us</p>
+              <a
+                href={process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+              >
+                <Star className="w-4 h-4 fill-white" /> Leave a Google Review
+              </a>
+            </div>
+          )}
+
           {/* ── CTA ── */}
           <div className="text-center pb-6 space-y-3">
             <Link

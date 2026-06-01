@@ -77,6 +77,9 @@ export const metadata: Metadata = {
     apple:       '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 /* ── Root layout ──────────────────────────────────────────────────────────── */
@@ -100,15 +103,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               '@context': 'https://schema.org',
               '@type': ['TravelAgency', 'LocalBusiness'],
               name: 'Werest Travel',
+              description: 'Private transfers, day tours and attraction tickets across Thailand. Fixed prices, professional drivers, instant confirmation.',
               url: 'https://www.werest.com',
-              logo: 'https://www.werest.com/logo.png',
-              telephone: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ? `+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}` : '+66621871392',
-              address: { '@type': 'PostalAddress', addressCountry: 'TH', addressLocality: 'Bangkok' },
-              description: 'Private transfers, day tours and attraction tickets across Thailand. Fixed prices, instant confirmation.',
-              priceRange: '฿฿',
-              currenciesAccepted: 'THB',
-              paymentAccepted: 'Credit Card, PromptPay, TrueMoney',
+              logo: 'https://www.werest.com/icon-512.png',
+              image: 'https://www.werest.com/og-default.jpg',
+              telephone: '+66621871392',
+              email: 'werestcompany@gmail.com',
+              address: { '@type': 'PostalAddress', addressCountry: 'TH', addressRegion: 'Bangkok' },
+              geo: { '@type': 'GeoCoordinates', latitude: '13.7563', longitude: '100.5018' },
               areaServed: { '@type': 'Country', name: 'Thailand' },
+              openingHoursSpecification: [{
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+                opens: '00:00',
+                closes: '23:59',
+              }],
+              priceRange: '฿฿',
+              currenciesAccepted: 'THB,USD,EUR,GBP',
+              paymentAccepted: 'Credit Card, PromptPay, TrueMoney',
               sameAs: ['https://www.facebook.com/weresttravel', 'https://www.instagram.com/weresttravel'],
             }),
           }}

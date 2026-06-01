@@ -7,7 +7,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { bookingReservationSchema } from '@/lib/seo/schema';
 import { StatusBadge } from '@/components/ui/Badge';
 import { formatCurrency, formatDate, VEHICLE_LABELS } from '@/lib/utils';
-import { CheckCircle2, MapPin, Calendar, Clock, Users, Briefcase, ArrowRight, Car, Phone } from 'lucide-react';
+import { CheckCircle2, MapPin, Calendar, Clock, Users, Briefcase, ArrowRight, Car, Phone, Star } from 'lucide-react';
 import { tours } from '@/lib/tours';
 import PickupCountdown from '@/components/booking/PickupCountdown';
 import ConfirmationActions from '@/components/booking/ConfirmationActions';
@@ -309,6 +309,22 @@ export default async function ConfirmationPage({ params }: Props) {
               Back to Home
             </Link>
           </div>
+
+          {/* Google Review prompt */}
+          {process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL && (
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 text-center mb-6">
+              <p className="text-sm font-semibold text-amber-900 mb-1">Enjoying Werest Travel?</p>
+              <p className="text-xs text-amber-700 mb-3">Your Google review helps other travellers find us</p>
+              <a
+                href={process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+              >
+                <Star className="w-4 h-4 fill-white" /> Leave a Google Review
+              </a>
+            </div>
+          )}
 
           {/* Upsell: Add a tour */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5 sm:p-6 mb-6">

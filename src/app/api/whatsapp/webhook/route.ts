@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleIncomingMessage } from '@/lib/whatsapp-bot';
 import { rateLimitAsync } from '@/lib/rate-limit';
+import { prisma } from '@/lib/db';
 
 // ── Webhook verification (GET) ────────────────────────────────────────────────
 
@@ -53,6 +54,35 @@ export async function POST(req: NextRequest) {
             '';
 
           if (!phone) continue;
+
+          // ── STOP opt-out handling ──────────────────────────────────────────
+          if (messageType === 'text' && text.trim().toUpperCase() === 'STOP') {
+            const cleanPhone = phone.replace(/\D/g, '');
+            const user = await prisma.user.findFirst({
+              where: { phone: { contains: cleanPhone.slice(-9) } },
+              select: { id: true },
+            });
+            if (user) {
+              await prisma.user.update({ where: { id: user.id }, data: { whatsappOptOut: true } });
+              console.log(`[WA-Webhook] STOP opt-out recorded for user ${user.id}`);
+            }
+            // Acknowledge opt-out to sender
+            const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+            const accessToken   = process.env.WHATSAPP_ACCESS_TOKEN;
+            if (phoneNumberId && accessToken) {
+              fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  messaging_product: 'whatsapp',
+                  to:   cleanPhone,
+                  type: 'text',
+                  text: { body: "You've been unsubscribed from Werest Travel recommendations. Reply START to re-subscribe." },
+                }),
+              }).catch((err: unknown) => console.warn('[WA-Webhook] STOP ack error:', err));
+            }
+            continue; // don't pass STOP to the booking bot
+          }
 
           // Rate limit: 60 messages per minute per phone
           const rl = await rateLimitAsync(`wa-bot:${phone}`, { limit: 60, windowSec: 60 });

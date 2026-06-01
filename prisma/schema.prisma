@@ -95,6 +95,7 @@ model User {
   tierLevel     TierLevel  @default(EXPLORER)
   preferredPaymentMethod String?   // "CREDIT_CARD" | "PROMPTPAY" | "QR_CODE"
   lastPaymentAt          DateTime?
+  whatsappOptOut         Boolean   @default(false)
   // Email verification
   emailVerified          Boolean   @default(false)
   createdAt     DateTime   @default(now())
@@ -277,6 +278,9 @@ model Booking {
 
   // Status
   currentStatus BookingStatus @default(PENDING)
+
+  // Automation flags
+  driverDetailsSentAt DateTime?  // set when 3-hour driver details message is sent
 
   // Relations
   statusHistory        BookingStatusHistory[]

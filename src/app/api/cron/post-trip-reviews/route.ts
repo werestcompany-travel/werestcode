@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendPostTripReviewEmail } from '@/lib/email';
+import { sendPostTripReviewRequest } from '@/lib/whatsapp';
 
 // ─── GET /api/cron/post-trip-reviews ─────────────────────────────────────────
 // Vercel Cron: runs every day at 08:00 ("0 8 * * *").
@@ -56,6 +57,17 @@ export async function GET(req: NextRequest) {
           bookingRef:  tb.bookingRef,
         });
 
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+        sendPostTripReviewRequest({
+          customerPhone: tb.customerPhone,
+          customerName:  tb.customerName,
+          bookingRef:    tb.bookingRef,
+          serviceType:   'tour',
+          destination:   tb.tourTitle,
+          reviewUrl:     `${appUrl}/review/write?type=tour&bookingRef=${tb.bookingRef}`,
+          googleReviewUrl: process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL,
+        }).catch((err: unknown) => console.warn('[cron/post-trip-reviews] WhatsApp tour error:', err));
+
         await prisma.emailJourneyLog.create({
           data: {
             email:       tb.customerEmail,
@@ -97,6 +109,17 @@ export async function GET(req: NextRequest) {
           entityId:    booking.bookingRef,
           bookingRef:  booking.bookingRef,
         });
+
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+        sendPostTripReviewRequest({
+          customerPhone: booking.customerPhone,
+          customerName:  booking.customerName,
+          bookingRef:    booking.bookingRef,
+          serviceType:   'transfer',
+          destination:   booking.dropoffAddress.split(',')[0],
+          reviewUrl:     `${appUrl}/review/write?type=transfer&bookingRef=${booking.bookingRef}`,
+          googleReviewUrl: process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL,
+        }).catch((err: unknown) => console.warn('[cron/post-trip-reviews] WhatsApp transfer error:', err));
 
         await prisma.emailJourneyLog.create({
           data: {

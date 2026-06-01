@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
 import { sendBookingConfirmationEmail } from '@/lib/email'
-import { sendCustomerBookingConfirmation } from '@/lib/whatsapp'
+import { sendCustomerBookingConfirmation, sendPostBookingUpsell } from '@/lib/whatsapp'
 
 /** Map Payso/internal raw method strings to our canonical values. */
 const PAYMENT_METHOD_MAP: Record<string, string> = {
@@ -142,6 +142,17 @@ export async function POST(req: NextRequest) {
             fullBooking.pickupAddress,
             `${appUrl}/tracking`,
           ).catch(console.error)
+
+          // Fire-and-forget upsell message
+          if (fullBooking.customerPhone && fullBooking.dropoffAddress) {
+            sendPostBookingUpsell({
+              customerPhone: fullBooking.customerPhone,
+              customerName:  fullBooking.customerName,
+              bookingRef:    fullBooking.bookingRef,
+              destination:   fullBooking.dropoffAddress,
+              bookingDate:   new Date(fullBooking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }),
+            }).catch(console.warn)
+          }
         }
       }
     }
