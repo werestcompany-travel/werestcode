@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import { Poppins, Noto_Sans_Thai, Noto_Sans_SC } from 'next/font/google';
+import { Poppins, Noto_Sans_Thai } from 'next/font/google';
 import './globals.css';
 
 const poppins = Poppins({
@@ -16,13 +16,8 @@ const notoSansThai = Noto_Sans_Thai({
   variable: '--font-noto-thai',
   display: 'swap',
 });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const notoSansSC = (Noto_Sans_SC as any)({
-  subsets: ['chinese-simplified'],
-  weight: ['400', '500', '700'],
-  variable: '--font-noto-sc',
-  display: 'swap',
-});
+// Noto Sans SC loaded via <link> in metadata (next/font doesn't support chinese-simplified subset)
+const notoSansSCVariable = '--font-noto-sc';
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
@@ -94,7 +89,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const nonce = headersList.get('x-nonce') ?? ''
 
   return (
-    <html lang="en" className={`${poppins.variable} ${notoSansThai.variable} ${notoSansSC.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${notoSansThai.variable} ${notoSansSCVariable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="color-scheme" content="light" />
@@ -132,6 +127,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
 
         {/* DNS prefetch for external assets */}
+        {/* Noto Sans SC — next/font doesn't support chinese-simplified subset */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
         <link rel="dns-prefetch" href="//images.unsplash.com" />
         <link rel="dns-prefetch" href="//maps.googleapis.com" />
       </head>
