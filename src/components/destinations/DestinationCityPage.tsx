@@ -1,18 +1,30 @@
 'use client';
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { getToursForDestination, formatTHB } from '@/lib/tours'
+import { formatTHB } from '@/lib/tours'
 import type { CityConfig } from '@/lib/destination-cities'
 import { CITY_IMAGES } from '@/lib/destination-cities'
 import DestinationHeroClient from '@/components/destinations/DestinationHeroClient'
 import DestinationHeroOverlay from '@/components/destinations/DestinationHeroOverlay'
 import {
   ChevronRight, ArrowRight, Clock, Star,
-  Shield, Phone, Smile, Zap, MapPin, ChevronDown, Share2
+  MapPin, ChevronDown, Share2
 } from 'lucide-react'
+
+/* ── DB types ─────────────────────────────────────────────────────────────── */
+interface DBTour {
+  slug: string; title: string; images: string[]; duration: string;
+  maxGroupSize: number; rating: number; badge?: string | null;
+  options: { pricePerPerson: number }[];
+}
+interface DBAttraction {
+  slug: string; name: string; featureImage: string | null;
+  location: string; rating: number; price: number; badge: string | null;
+}
 
 /* ── Split image route card ─────────────────────────────────────────────────── */
 function RouteCard({ route }: { route: { fromCity: string; toCity: string; price: number; duration: string; distance: string } }) {
@@ -83,23 +95,34 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 interface Props { city: CityConfig }
 
 export default function DestinationCityPage({ city }: Props) {
-  const tours = getToursForDestination(city.toursKey).slice(0, 6)
+  const [tours,       setTours]       = useState<DBTour[]>([])
+  const [attractions, setAttractions] = useState<DBAttraction[]>([])
+  const [loading,     setLoading]     = useState(true)
+
+  useEffect(() => {
+    const name = city.name
+    Promise.all([
+      fetch(`/api/tours?destination=${encodeURIComponent(name)}&limit=6`).then(r => r.json()).catch(() => ({ tours: [] })),
+      fetch(`/api/attractions?location=${encodeURIComponent(name)}&limit=6`).then(r => r.json()).catch(() => ({ data: [] })),
+    ]).then(([tourData, attrData]) => {
+      setTours(tourData.tours ?? tourData.data ?? [])
+      setAttractions(attrData.data ?? attrData.listings ?? [])
+    }).finally(() => setLoading(false))
+  }, [city.name])
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-white pt-16">
 
-        {/* ════ BREADCRUMB — Klook style ════ */}
+        {/* ════ BREADCRUMB — real path from city data ════ */}
         <nav aria-label="Breadcrumb" className="px-4 sm:px-5 py-2.5 border-b border-gray-100">
           <ol className="flex items-center gap-1 text-[13px] text-gray-500 flex-nowrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <li className="shrink-0"><Link href="/" className="hover:text-gray-800 transition-colors">Home</Link></li>
             <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
             <li className="shrink-0"><Link href="/destinations/thailand" className="hover:text-gray-800 transition-colors">Thailand</Link></li>
             <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
-            <li className="shrink-0"><Link href={`/destinations/${city.slug}`} className="hover:text-gray-800 transition-colors">{city.name}</Link></li>
-            <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
-            <li className="text-gray-400 truncate min-w-0">Things to do in {city.name}</li>
+            <li className="text-gray-400 truncate min-w-0">{city.name}</li>
           </ol>
         </nav>
 
@@ -213,32 +236,44 @@ export default function DestinationCityPage({ city }: Props) {
         </section>
 
         {/* ════ TOURS ════ */}
-        {tours.length > 0 && (
-          <section className="bg-gray-50 py-14">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6">
-              <div className="flex items-end justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Experiences in {city.name}</h2>
-                  <p className="text-gray-500 text-sm mt-1">Hand-picked tours — just show up and enjoy</p>
-                </div>
-                <Link href={`/tours?destination=${encodeURIComponent(city.name)}`}
-                  className="hidden sm:flex items-center gap-1 text-sm font-semibold text-[#2534ff] hover:underline">
-                  View all <ChevronRight className="w-4 h-4" />
-                </Link>
+        {/* ════ TOURS FROM DB ════ */}
+        <section className="bg-gray-50 py-14">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Things to do in {city.name}</h2>
+                <p className="text-gray-500 text-sm mt-1">Tours & experiences — just show up and enjoy</p>
               </div>
+              <Link href={`/tours?destination=${encodeURIComponent(city.name)}`}
+                className="hidden sm:flex items-center gap-1 text-sm font-semibold text-[#2534ff] hover:underline">
+                View all <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
 
+            {loading ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                    <div className="h-44 bg-gray-200" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : tours.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {tours.map(tour => {
-                  const minPrice = Math.min(...tour.options.map(o => o.pricePerPerson))
+                  const minPrice = tour.options?.length ? Math.min(...tour.options.map(o => o.pricePerPerson)) : 0
                   return (
                     <Link key={tour.slug} href={`/tours/${tour.slug}`}
                       className="group bg-white rounded-2xl border border-gray-100 hover:border-[#2534ff]/30 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-                      <div className="relative h-44 overflow-hidden">
-                        {tour.images[0] && (
+                      <div className="relative h-44 overflow-hidden bg-gray-100">
+                        {tour.images?.[0] && (
                           <Image src={tour.images[0]} alt={tour.title} fill sizes="400px"
                             className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                         {tour.badge && (
                           <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">
                             {tour.badge}
@@ -246,9 +281,6 @@ export default function DestinationCityPage({ city }: Props) {
                         )}
                       </div>
                       <div className="p-4 flex flex-col flex-1">
-                        <p className="text-[11px] text-gray-400 mb-1">
-                          {tour.category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} · {tour.location.split(',')[0]}
-                        </p>
                         <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-[#2534ff] transition-colors">
                           {tour.title}
                         </h3>
@@ -257,15 +289,83 @@ export default function DestinationCityPage({ city }: Props) {
                             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{tour.duration}</span>
                             <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400" />{tour.rating.toFixed(1)}</span>
                           </div>
-                          <p className="text-sm font-extrabold text-[#2534ff]">
-                            {formatTHB(minPrice)}<span className="text-[10px] font-normal text-gray-400">/pp</span>
-                          </p>
+                          {minPrice > 0 && (
+                            <p className="text-sm font-extrabold text-[#2534ff]">
+                              {formatTHB(minPrice)}<span className="text-[10px] font-normal text-gray-400">/pp</span>
+                            </p>
+                          )}
                         </div>
                       </div>
                     </Link>
                   )
                 })}
               </div>
+            ) : (
+              <p className="text-gray-400 text-sm py-8 text-center">No tours listed yet — check back soon.</p>
+            )}
+          </div>
+        </section>
+
+        {/* ════ ATTRACTIONS FROM DB ════ */}
+        {(loading || attractions.length > 0) && (
+          <section className="py-14">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Attraction Tickets in {city.name}</h2>
+                  <p className="text-gray-500 text-sm mt-1">Skip-the-line tickets & experiences</p>
+                </div>
+                <Link href={`/attractions?location=${encodeURIComponent(city.name)}`}
+                  className="hidden sm:flex items-center gap-1 text-sm font-semibold text-[#2534ff] hover:underline">
+                  View all <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+              {loading ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                      <div className="h-44 bg-gray-200" />
+                      <div className="p-4 space-y-2">
+                        <div className="h-3 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {attractions.map(a => (
+                    <Link key={a.slug} href={`/attractions/${a.slug}`}
+                      className="group bg-white rounded-2xl border border-gray-100 hover:border-[#2534ff]/30 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+                      <div className="relative h-44 bg-gray-100 overflow-hidden">
+                        {a.featureImage && (
+                          <Image src={a.featureImage} alt={a.name} fill sizes="400px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                        )}
+                        {a.badge && (
+                          <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">
+                            {a.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-4 flex flex-col flex-1">
+                        <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />{a.location}
+                        </p>
+                        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-[#2534ff] transition-colors">
+                          {a.name}
+                        </h3>
+                        <div className="mt-auto flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />{a.rating.toFixed(1)}
+                          </span>
+                          <p className="text-sm font-extrabold text-[#2534ff]">{formatTHB(a.price)}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -275,14 +375,14 @@ export default function DestinationCityPage({ city }: Props) {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10">Why choose Werest Travel?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { Icon: Shield, title: 'Fixed prices, no surprises', desc: 'What you see is what you pay — no surge pricing, no hidden fees.' },
-              { Icon: Phone,  title: '24/7 support',              desc: 'Our team is available around the clock via WhatsApp, Line and phone.' },
-              { Icon: Smile,  title: 'Local expert drivers',      desc: 'Vetted professionals who know Thailand inside out.' },
-              { Icon: Zap,    title: 'Instant confirmation',      desc: 'Your booking confirmed in seconds with voucher sent immediately.' },
-            ].map(({ Icon, title, desc }) => (
+              { emoji: '💰', title: 'Fixed prices, no surprises', desc: 'What you see is what you pay — no surge pricing, no hidden fees.' },
+              { emoji: '📞', title: '24/7 support',              desc: 'Our team is available around the clock via WhatsApp, Line and phone.' },
+              { emoji: '😊', title: 'Local expert drivers',      desc: 'Vetted professionals who know Thailand inside out.' },
+              { emoji: '⚡', title: 'Instant confirmation',      desc: 'Your booking confirmed in seconds with voucher sent immediately.' },
+            ].map(({ emoji, title, desc }) => (
               <div key={title} className="text-center p-6 rounded-2xl border border-gray-100 hover:border-[#2534ff]/30 hover:shadow-md transition-all">
-                <div className="w-11 h-11 bg-[#2534ff]/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-5 h-5 text-[#2534ff]" />
+                <div className="w-11 h-11 bg-[#2534ff]/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl">{emoji}
+                  {/* emoji rendered by parent div */}
                 </div>
                 <h3 className="font-bold text-gray-900 text-sm mb-1.5">{title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{desc}</p>
