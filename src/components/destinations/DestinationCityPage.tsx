@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
@@ -102,7 +104,7 @@ export default function DestinationCityPage({ city }: Props) {
         </nav>
 
         {/* ════ HERO IMAGE — title + description overlaid ════ */}
-        <div className="relative w-full" style={{ height: 'clamp(240px, 56vw, 440px)' }}>
+        <div className="relative w-full overflow-hidden rounded-none" style={{ height: 'clamp(260px, 52vw, 480px)' }}>
           <Image src={city.heroImage} alt={`Things to do in ${city.name}`} fill className="object-cover" priority sizes="100vw" />
           {/* Stronger gradient so text is always legible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
