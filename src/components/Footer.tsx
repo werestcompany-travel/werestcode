@@ -49,6 +49,16 @@ function SocialBtn({ href, label, children }: { href: string; label: string; chi
 }
 
 /* ── Payment badge ───────────────────────────────────────────────────────── */
+const PAYMENT_LOGOS = [
+  { src: '/payments/visa.svg',       alt: 'Visa',        w: 52, h: 33 },
+  { src: '/payments/mastercard.svg', alt: 'Mastercard',  w: 52, h: 33 },
+  { src: '/payments/amex.svg',       alt: 'Amex',        w: 52, h: 33 },
+  { src: '/payments/jcb.svg',        alt: 'JCB',         w: 52, h: 33 },
+  { src: '/payments/promptpay.svg',  alt: 'PromptPay',   w: 72, h: 33 },
+  { src: '/payments/truemoney.svg',  alt: 'TrueMoney',   w: 72, h: 33 },
+]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PayBadge({ label, bg, color }: { label: string; bg: string; color: string }) {
   return (
     <span
@@ -213,13 +223,22 @@ export default function Footer() {
             {/* Secure payment */}
             <div>
               <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Secure your transaction</p>
-              <div className="flex flex-wrap gap-1.5">
-                <PayBadge label="VISA"      bg="#1a1f71" color="#fff" />
-                <PayBadge label="MC"        bg="#eb001b" color="#fff" />
-                <PayBadge label="AMEX"      bg="#007bc1" color="#fff" />
-                <PayBadge label="JCB"       bg="#003087" color="#fff" />
-                <PayBadge label="PromptPay" bg="#4b2d80" color="#fff" />
-                <PayBadge label="TrueMoney" bg="#f37021" color="#fff" />
+              <div className="flex flex-wrap items-center gap-2">
+                {PAYMENT_LOGOS.map((p) => (
+                  <div
+                    key={p.alt}
+                    className="bg-white rounded-md border border-gray-200 shadow-sm flex items-center justify-center overflow-hidden"
+                    style={{ width: p.w, height: p.h }}
+                  >
+                    <Image
+                      src={p.src}
+                      alt={p.alt}
+                      width={p.w}
+                      height={p.h}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
