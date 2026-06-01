@@ -114,12 +114,12 @@ export default function DestinationCityPage({ city }: Props) {
             <Share2 className="w-4 h-4 text-gray-700" />
           </button>
 
-          {/* Headline + subheadline bottom-left */}
-          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-4 sm:pb-6 max-w-xl">
-            <p className="text-white/75 text-xs font-semibold uppercase tracking-widest mb-1.5 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+          {/* Headline + subheadline — both pinned bottom-left */}
+          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-5 sm:pb-7 max-w-xl">
+            <p className="text-white/80 text-[11px] font-bold uppercase tracking-[0.15em] mb-2 [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]">
               {city.tagline}
             </p>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">
+            <h1 className="text-[22px] sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.7)]">
               Things to do in {city.name}
             </h1>
           </div>
