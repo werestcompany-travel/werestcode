@@ -20,6 +20,7 @@ export interface BlogPost {
   relatedServices: { title: string; href: string; description?: string }[] | null
   relatedSlugs: string[]
   readingTimeMin: number
+  viewCount: number
   createdAt: string
   updatedAt: string
 }

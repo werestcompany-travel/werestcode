@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Search } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BlogSubscribeForm from '@/components/blog/BlogSubscribeForm'
-import { BLOG_CATEGORIES, type BlogPostSummary, formatBlogDate } from '@/lib/blog'
+import { BLOG_CATEGORIES, type BlogPostSummary, formatBlogDate, type BlogCategoryKey } from '@/lib/blog'
 import { prisma } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 
 export const revalidate = 300; // ISR: revalidate every 5 minutes
 
@@ -35,10 +36,20 @@ const FALLBACK_BG: Record<string, string> = {
 
 const LIMIT = 12
 
-async function fetchPosts(page = 1) {
+async function fetchPosts(page = 1, query?: string, category?: string) {
   try {
     const skip = (page - 1) * LIMIT
-    const where = { status: 'PUBLISHED' as const }
+    const where: Prisma.BlogPostWhereInput = {
+      status: 'PUBLISHED',
+      ...(query ? {
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { excerpt: { contains: query, mode: 'insensitive' } },
+          { tags: { has: query } },
+        ],
+      } : {}),
+      ...(category ? { category: category as BlogCategoryKey } : {}),
+    }
     const [posts, total] = await Promise.all([
       prisma.blogPost.findMany({
         where,
@@ -62,14 +73,22 @@ async function fetchPosts(page = 1) {
 }
 
 interface BlogIndexProps {
-  searchParams: { page?: string }
+  searchParams: { page?: string; q?: string; category?: string }
 }
 
 export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
   const currentPage = Math.max(1, parseInt(searchParams.page ?? '1', 10))
-  const { posts, pages } = await fetchPosts(currentPage)
+  const query    = searchParams.q?.trim() || undefined
+  const category = searchParams.category || undefined
+  const { posts, pages } = await fetchPosts(currentPage, query, category)
 
-  const pageUrl = (p: number) => `/blog?page=${p}`
+  const pageUrl = (p: number) => {
+    const params = new URLSearchParams()
+    params.set('page', String(p))
+    if (query)    params.set('q', query)
+    if (category) params.set('category', category)
+    return `/blog?${params.toString()}`
+  }
 
   return (
     <>
@@ -94,21 +113,77 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
         </section>
 
         {/* ════════════════════════════════════════════
+            SEARCH + CATEGORY FILTER
+        ════════════════════════════════════════════ */}
+        <div className="max-w-4xl mx-auto px-4 mb-10">
+          {/* Search input — wraps in a GET form so it works without JS */}
+          <form method="get" action="/blog" className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              name="q"
+              placeholder="Search articles..."
+              defaultValue={query}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2534ff]"
+            />
+            {/* Preserve category param when searching */}
+            {category && <input type="hidden" name="category" value={category} />}
+          </form>
+
+          {/* Category pills */}
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={query ? `/blog?q=${encodeURIComponent(query)}` : '/blog'}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                !category
+                  ? 'bg-[#2534ff] text-white border-[#2534ff]'
+                  : 'border-gray-200 text-gray-600 hover:border-[#2534ff]'
+              }`}
+            >
+              All
+            </Link>
+            {(Object.entries(BLOG_CATEGORIES) as [BlogCategoryKey, typeof BLOG_CATEGORIES[BlogCategoryKey]][]).map(([key, cat]) => {
+              const href = query
+                ? `/blog?category=${key}&q=${encodeURIComponent(query)}`
+                : `/blog?category=${key}`
+              return (
+                <Link
+                  key={key}
+                  href={href}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    category === key
+                      ? 'bg-[#2534ff] text-white border-[#2534ff]'
+                      : 'border-gray-200 text-gray-600 hover:border-[#2534ff]'
+                  }`}
+                >
+                  {cat.label}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════════
             RECENT BLOG POSTS — grid only
         ════════════════════════════════════════════ */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3">
-            Recent Blog Posts
+            {query ? `Results for "${query}"` : category ? `${BLOG_CATEGORIES[category as BlogCategoryKey]?.label ?? category} Posts` : 'Recent Blog Posts'}
           </h2>
           <p className="text-gray-400 text-sm text-center mb-10">Expert guides from our Thailand travel team</p>
 
           {posts.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-5xl mb-4">✍️</p>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No posts yet</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No posts found</h3>
               <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">
-                No published articles yet. Check back soon.
+                {query || category ? 'Try adjusting your search or filter.' : 'No published articles yet. Check back soon.'}
               </p>
+              {(query || category) && (
+                <Link href="/blog" className="inline-flex items-center gap-2 bg-[#2534ff] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#1a26e0] transition-colors">
+                  Clear filters
+                </Link>
+              )}
             </div>
           ) : (
             <>
@@ -194,8 +269,10 @@ function BlogPostCard({ post }: { post: BlogPostSummary }) {
         {/* Date + reading time */}
         <div className="flex items-center gap-2 text-xs text-gray-400">
           {post.publishedAt && <span>{formatBlogDate(post.publishedAt)}</span>}
-          <span>·</span>
-          <span>{post.readingTimeMin} min read</span>
+          {post.publishedAt && <span>·</span>}
+          {post.readingTimeMin && (
+            <span>{post.readingTimeMin} min read</span>
+          )}
         </div>
 
         {/* Title */}

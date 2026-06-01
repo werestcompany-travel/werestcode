@@ -10,6 +10,10 @@ import ArticleBody from '@/components/blog/ArticleBody'
 import BlogFAQ from '@/components/blog/BlogFAQ'
 import BlogCTA from '@/components/blog/BlogCTA'
 import RelatedServices from '@/components/blog/RelatedServices'
+import TableOfContents from '@/components/blog/TableOfContents'
+import SocialShare from '@/components/blog/SocialShare'
+import RelatedPosts from '@/components/blog/RelatedPosts'
+import ViewTracker from '@/components/blog/ViewTracker'
 import { prisma } from '@/lib/db'
 import {
   BLOG_CATEGORIES,
@@ -129,13 +133,14 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   const { post, relatedPosts } = data
   const category  = BLOG_CATEGORIES[post.category]
   const fallback  = FALLBACK_BG[post.category] ?? 'from-gray-400 to-gray-600'
+  const postUrl   = `${PUBLIC_SITE_URL}/blog/${post.slug}`
 
   const articleSchema    = generateBlogSchema(post, PUBLIC_SITE_URL)
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home',          url: PUBLIC_SITE_URL },
     { name: 'Blog',          url: `${PUBLIC_SITE_URL}/blog` },
     { name: category.label,  url: `${PUBLIC_SITE_URL}/blog/category/${category.slug}` },
-    { name: post.title,      url: `${PUBLIC_SITE_URL}/blog/${post.slug}` },
+    { name: post.title,      url: postUrl },
   ])
   const faqSchema = post.faqs && post.faqs.length > 0 ? generateFAQSchema(post.faqs) : null
 
@@ -145,6 +150,9 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
+
+      {/* Client-side view tracker */}
+      <ViewTracker slug={post.slug} />
 
       <ReadingProgress />
       <Navbar />
@@ -209,16 +217,17 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 &ldquo;{post.excerpt}&rdquo;
               </blockquote>
 
-              {/* Tags */}
+              {/* Tags — clickable pills */}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {post.tags.slice(0, 4).map(tag => (
-                    <span
+                    <Link
                       key={tag}
-                      className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full"
+                      href={`/blog/tag/${encodeURIComponent(tag)}`}
+                      className="px-3 py-1 bg-gray-100 hover:bg-blue-50 hover:text-[#2534ff] text-gray-500 text-xs font-medium rounded-full transition-colors"
                     >
                       #{tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -255,7 +264,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               <div className="hidden xl:flex flex-col gap-3 absolute -left-14 top-0">
                 {/* Facebook */}
                 <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${PUBLIC_SITE_URL}/blog/${post.slug}`}
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${postUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Share on Facebook"
@@ -282,7 +291,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 </a>
                 {/* Twitter/X */}
                 <a
-                  href={`https://twitter.com/intent/tweet?url=${PUBLIC_SITE_URL}/blog/${post.slug}&text=${encodeURIComponent(post.title)}`}
+                  href={`https://twitter.com/intent/tweet?url=${postUrl}&text=${encodeURIComponent(post.title)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Share on X"
@@ -294,7 +303,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 </a>
                 {/* LinkedIn */}
                 <a
-                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${PUBLIC_SITE_URL}/blog/${post.slug}`}
+                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${postUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Share on LinkedIn"
@@ -315,13 +324,13 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               {/* Mobile share row */}
               <div className="flex xl:hidden items-center gap-3 mt-8 pt-6 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 mr-1">Share:</p>
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${PUBLIC_SITE_URL}/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-90 transition-opacity">
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${postUrl}`} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-90 transition-opacity">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
                 </a>
-                <a href={`https://twitter.com/intent/tweet?url=${PUBLIC_SITE_URL}/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label="X" className="w-8 h-8 rounded-full bg-black flex items-center justify-center hover:opacity-80 transition-opacity">
+                <a href={`https://twitter.com/intent/tweet?url=${postUrl}`} target="_blank" rel="noopener noreferrer" aria-label="X" className="w-8 h-8 rounded-full bg-black flex items-center justify-center hover:opacity-80 transition-opacity">
                   <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
-                <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${PUBLIC_SITE_URL}/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-8 h-8 rounded-full bg-[#0A66C2] flex items-center justify-center hover:opacity-90 transition-opacity">
+                <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${postUrl}`} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-8 h-8 rounded-full bg-[#0A66C2] flex items-center justify-center hover:opacity-90 transition-opacity">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
                 </a>
               </div>
@@ -347,20 +356,32 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 </div>
               )}
 
-              {/* Tags */}
+              {/* Tags — clickable pills */}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-10 pt-8 border-t border-gray-100">
                   {post.tags.map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-gray-100 hover:bg-blue-50 hover:text-[#2534ff] text-gray-500 text-xs font-medium rounded-full transition-colors cursor-default">
+                    <Link
+                      key={tag}
+                      href={`/blog/tag/${encodeURIComponent(tag)}`}
+                      className="px-3 py-1 bg-gray-100 hover:bg-blue-50 hover:text-[#2534ff] text-gray-500 text-xs font-medium rounded-full transition-colors"
+                    >
                       #{tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               )}
+
+              {/* Social share component — above author bio area */}
+              <div className="mt-8">
+                <SocialShare url={postUrl} title={post.title} />
+              </div>
             </div>
 
             {/* ── Right sidebar ── */}
             <aside className="flex flex-col gap-8 lg:sticky lg:top-24">
+
+              {/* Table of Contents */}
+              <TableOfContents content={post.content} />
 
               {/* Author card */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
@@ -370,6 +391,10 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 <p className="font-bold text-gray-900 text-base">{post.authorName}</p>
                 {post.authorTitle && (
                   <p className="text-gray-400 text-xs mt-0.5">{post.authorTitle}</p>
+                )}
+                {/* View count */}
+                {post.viewCount > 100 && (
+                  <p className="text-xs text-gray-400 mt-1">{post.viewCount.toLocaleString()} views</p>
                 )}
                 {/* Social links */}
                 <div className="flex items-center justify-center gap-3 mt-4">
@@ -509,6 +534,15 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               </div>
             </div>
           </section>
+        )}
+
+        {/* ════════════════════════════════════════════
+            RELATED POSTS — BlogCard grid
+        ════════════════════════════════════════════ */}
+        {relatedPosts.length > 0 && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <RelatedPosts posts={relatedPosts} />
+          </div>
         )}
 
       </main>

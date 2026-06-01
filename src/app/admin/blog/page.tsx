@@ -21,6 +21,7 @@ interface BlogPost {
   status: string;
   publishedAt: string | null;
   readingTimeMin: number;
+  viewCount: number;
   authorName: string;
   createdAt: string;
 }
@@ -55,6 +56,8 @@ function SkeletonRow() {
       <td className="px-5 py-4"><div className="h-5 bg-gray-100 rounded-full w-20" /></td>
       <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-24" /></td>
       <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-12" /></td>
+      <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-12" /></td>
+      <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-20" /></td>
       <td className="px-5 py-4"><div className="h-8 bg-gray-100 rounded-xl w-24" /></td>
     </tr>
   );
@@ -209,6 +212,8 @@ export default function AdminBlogPage() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Published</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Read</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Views</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tags</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
@@ -217,7 +222,7 @@ export default function AdminBlogPage() {
                   Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-16 text-center">
+                    <td colSpan={8} className="px-5 py-16 text-center">
                       <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                       <p className="font-semibold text-gray-500">No posts found</p>
                       <p className="text-xs text-gray-400 mt-1">
@@ -267,6 +272,27 @@ export default function AdminBlogPage() {
                       {/* Reading time */}
                       <td className="px-5 py-4 text-xs text-gray-500 whitespace-nowrap">
                         {post.readingTimeMin} min
+                      </td>
+
+                      {/* View count */}
+                      <td className="px-5 py-4 text-xs text-gray-500 whitespace-nowrap">
+                        {(post.viewCount ?? 0).toLocaleString()}
+                      </td>
+
+                      {/* Tags */}
+                      <td className="px-5 py-4 max-w-[180px]">
+                        <div className="flex flex-wrap gap-1">
+                          {(post.tags ?? []).slice(0, 3).map((tag) => (
+                            <span key={tag} className="inline-block text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                          {(post.tags ?? []).length > 3 && (
+                            <span className="inline-block text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
+                              +{post.tags.length - 3}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Actions */}

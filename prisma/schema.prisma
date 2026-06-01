@@ -592,6 +592,7 @@ model BlogPost {
   relatedSlugs   String[]     // slugs of related BlogPost records
 
   readingTimeMin Int          @default(5)
+  viewCount      Int          @default(0)
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
