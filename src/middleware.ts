@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 import { verifyAdminToken } from '@/lib/auth'
 import { verifyUserToken } from '@/lib/user-auth'
 
@@ -25,7 +24,7 @@ export async function middleware(req: NextRequest) {
   const isDev = process.env.NODE_ENV === 'development'
 
   // ── Generate nonce for CSP ────────────────────────────────────────────────
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const nonce = btoa(crypto.randomUUID())
 
   // ── Build CSP header ──────────────────────────────────────────────────────
   const cspHeader = [
@@ -109,10 +108,14 @@ export async function middleware(req: NextRequest) {
       })
     }
 
-    const valid = crypto.timingSafeEqual(
-      Buffer.from(cookieToken),
-      Buffer.from(headerToken)
-    )
+    // Edge-runtime safe constant-time comparison (no Node.js Buffer/crypto)
+    const enc = new TextEncoder()
+    const a = enc.encode(cookieToken)
+    const b = enc.encode(headerToken)
+    let diff = a.length === b.length ? 0 : 1
+    const len = Math.min(a.length, b.length)
+    for (let i = 0; i < len; i++) diff |= a[i] ^ b[i]
+    const valid = diff === 0
     if (!valid) {
       return new NextResponse(JSON.stringify({ error: 'CSRF token invalid' }), {
         status: 403,
