@@ -91,7 +91,7 @@ export default function PrivateTransferClient() {
 
   return (
     <>
-      <Navbar transparent />
+      <Navbar />
 
       {/* ── HERO ── */}
       <section aria-label="Hero" className="relative flex flex-col justify-center overflow-hidden" style={{ minHeight: '92vh' }}>

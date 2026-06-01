@@ -5,9 +5,10 @@ import Footer from '@/components/Footer'
 import { getToursForDestination, formatTHB } from '@/lib/tours'
 import type { CityConfig } from '@/lib/destination-cities'
 import { CITY_IMAGES } from '@/lib/destination-cities'
+import DestinationHeroClient from '@/components/destinations/DestinationHeroClient'
 import {
   ChevronRight, ArrowRight, Clock, Star,
-  Shield, Phone, Smile, Zap, MapPin, ChevronDown
+  Shield, Phone, Smile, Zap, MapPin, ChevronDown, Share2
 } from 'lucide-react'
 
 /* ── Split image route card ─────────────────────────────────────────────────── */
@@ -86,43 +87,48 @@ export default function DestinationCityPage({ city }: Props) {
       <Navbar />
       <main className="min-h-screen bg-white">
 
-        {/* ════ HERO ════ */}
-        <div className="relative h-[65vh] min-h-[460px] max-h-[640px]">
-          <Image src={city.heroImage} alt={city.name} fill className="object-cover" priority sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-5">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <ChevronRight className="w-3 h-3" />
-              <Link href="/destinations/thailand" className="hover:text-white transition-colors">Thailand</Link>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-white/90">Transfers in {city.name}</span>
-            </nav>
+        {/* ════ BREADCRUMB ════ */}
+        <nav aria-label="Breadcrumb" className="px-4 sm:px-6 pt-3 pb-1">
+          <ol className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
+            <li><Link href="/" className="hover:text-gray-600 transition-colors">Home</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li><Link href="/destinations/thailand" className="hover:text-gray-600 transition-colors">Thailand</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li><Link href={`/destinations/${city.slug}`} className="hover:text-gray-600 transition-colors">{city.name}</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li className="text-gray-500 truncate max-w-[140px]">Things to do in {city.name}</li>
+          </ol>
+        </nav>
 
-            <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-2">{city.province} · Thailand</p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4 leading-tight">
-              Private Transfers<br className="hidden sm:block" /> in {city.name}
+        {/* ════ HERO IMAGE ════ */}
+        <div className="relative w-full" style={{ height: 'clamp(220px, 52vw, 420px)' }}>
+          <Image src={city.heroImage} alt={`Things to do in ${city.name}`} fill className="object-cover" priority sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+
+          {/* Share button */}
+          <button
+            type="button"
+            aria-label="Share"
+            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+          >
+            <Share2 className="w-4 h-4 text-gray-700" />
+          </button>
+
+          {/* Title bottom-left */}
+          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-4 sm:pb-6">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">
+              Things to do in {city.name}
             </h1>
-            <p className="text-white/80 text-base sm:text-lg max-w-2xl leading-relaxed mb-8">{city.description}</p>
-
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/" className="bg-[#2534ff] hover:bg-[#1a27e0] text-white font-bold px-7 py-3.5 rounded-xl transition-colors text-sm shadow-lg">
-                Book a Transfer
-              </Link>
-              <Link href={`/tours?destination=${encodeURIComponent(city.name)}`}
-                className="bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white font-bold px-7 py-3.5 rounded-xl transition-colors text-sm border border-white/30">
-                Explore Experiences
-              </Link>
-            </div>
-
-            {/* Trust */}
-            <div className="mt-6 flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5">
-              <span className="text-amber-400 text-sm">★★★★★</span>
-              <span className="text-white/90 text-xs font-medium">Fixed prices · No surge · Instant confirmation</span>
-            </div>
           </div>
         </div>
+
+        {/* ════ DESCRIPTION + TABS (client) ════ */}
+        <DestinationHeroClient
+          description={city.description}
+          descriptionFull={city.descriptionFull}
+          destName={city.name}
+          slug={city.slug}
+        />
 
         {/* ════ STATS STRIP ════ */}
         <div className="bg-[#2534ff] text-white">

@@ -17,12 +17,11 @@ import {
   Car, Plane, Users, ArrowRight,
   ArrowLeftRight,
   Compass, Ticket, Ship, Gift, ChevronRight, Tag,
-  Clock, Umbrella, Headphones,
+  Clock,
 } from 'lucide-react';
 
-/* ── Service sidebar tabs (with section groupings) ────────────────────────── */
+/* ── Mobile icon grid tabs ─────────────────────────────────────────────────── */
 const SERVICE_TABS = [
-  // § 1 — Core services
   {
     id: 'transfer', icon: Car, label: 'Private Transfers', badge: null, badgeColor: '', href: undefined, s: 1,
     children: [
@@ -31,13 +30,11 @@ const SERVICE_TABS = [
       { id: 'charter',       icon: Clock,          label: 'Charter Rental',   href: '#' },
     ],
   },
-  { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
-  { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
-  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
-  // § 3 — Planning tools
-  { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
-  // § 4 — Account / loyalty
-  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
+  { id: 'tours',       icon: Compass, label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',         s: 1 },
+  { id: 'attractions', icon: Ticket,  label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',   s: 1 },
+  { id: 'group',       icon: Users,   label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking', s: 1 },
+  { id: 'deals',       icon: Tag,     label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',         s: 3 },
+  { id: 'rewards',     icon: Gift,    label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',         s: 4 },
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
@@ -154,30 +151,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   const [prefillRoute, setPrefillRoute] = useState<{ from: string; to: string } | null>(null);
   const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
   const [activeService, setActiveService] = useState('transfer');
-  const [sidebarPinned,  setSidebarPinned]  = useState(true);
-  const [sidebarHover,   setSidebarHover]   = useState(false);
-  const [hoveredSidebarTab, setHoveredSidebarTab] = useState<string | null>(null);
   const [selectedDest,   setSelectedDest]   = useState('bangkok');
   const { isWishlisted, toggle, isLoggedIn } = useWishlist();
   const inspiredSliderRef                   = useRef<HTMLDivElement>(null);
   const [inspiredShowLeft,  setInspiredShowLeft]  = useState(false);
   const [inspiredShowRight, setInspiredShowRight] = useState(false);
   const [placesVisible,  setPlacesVisible]  = useState(true);
-  const [navHidden,      setNavHidden]      = useState(false);
-  const sidebarVisible = sidebarPinned || sidebarHover;
-
-  /* ── Mirror navbar hide/show so sidebar top slides in sync ── */
-  useEffect(() => {
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y > lastY && y > 80) setNavHidden(true);
-      else setNavHidden(false);
-      lastY = y;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     setPlacesVisible(false);
@@ -288,123 +267,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
   return (
     <Fragment>
-      <Navbar
-        onHamburgerClick={() => setSidebarPinned(p => !p)}
-        onHamburgerHoverEnter={() => { if (!sidebarPinned) setSidebarHover(true); }}
-      />
-      {/* ════════════════════════════════════════════════════════════
-          PAGE SHELL — sticky sidebar + scrollable main
-      ════════════════════════════════════════════════════════════ */}
-      <div className="lg:pt-16 flex">
-
-        {/* ── Full-page sticky sidebar ── */}
-        <aside
-          className={`hidden lg:flex flex-col shrink-0 self-start sticky bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden ${sidebarVisible ? 'w-[238px]' : 'w-[56px]'}`}
-          style={{
-            top: navHidden ? '0px' : '64px',
-            height: navHidden ? '100vh' : 'calc(100vh - 64px)',
-            transition: 'top 300ms ease-in-out, height 300ms ease-in-out, width 300ms',
-          }}
-          onMouseLeave={() => { if (!sidebarPinned) setSidebarHover(false); }}
-        >
-          <div className="w-[238px] flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
-            <nav className="flex-1 pb-2">
-              {SERVICE_TABS.map((tab, idx) => {
-                const showDivider = idx > 0 && tab.s !== SERVICE_TABS[idx - 1].s;
-                const active    = activeService === tab.id;
-                const Icon      = tab.icon;
-                const expanded  = sidebarVisible;
-                const cls = `group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] ${
-                  expanded ? 'gap-3 px-5' : 'pl-[19px]'
-                } ${
-                  active
-                    ? 'bg-gray-100 text-gray-900 border-gray-300'
-                    : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-gray-900'
-                }`;
-                const inner = (
-                  <>
-                    <Icon className={`w-[17px] h-[17px] shrink-0 ${active ? 'text-gray-700' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                    {expanded && <span className="flex-1 text-left truncate">{tab.label}</span>}
-                    {expanded && tab.badge && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-                        tab.badgeColor === 'red'   ? 'bg-red-100 text-red-600' :
-                        tab.badgeColor === 'blue'  ? 'bg-brand-100 text-brand-700' :
-                        tab.badgeColor === 'amber' ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-500'
-                      }`}>{tab.badge}</span>
-                    )}
-                    {expanded && active && <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
-                  </>
-                );
-                const isTabHovered = hoveredSidebarTab === tab.id;
-                return (
-                  <span
-                    key={tab.id}
-                    className="block mb-[5px]"
-                    onMouseEnter={() => tab.children && setHoveredSidebarTab(tab.id)}
-                    onMouseLeave={() => tab.children && setHoveredSidebarTab(null)}
-                  >
-                    {showDivider && tab.s === 3 && (
-                      <span className="block h-px bg-gray-100 mx-3 my-2" />
-                    )}
-                    {tab.href ? (
-                      <Link href={tab.href} className={cls}>{inner}</Link>
-                    ) : (
-                      <button type="button" onClick={() => setActiveService(tab.id)} className={cls}>{inner}</button>
-                    )}
-                    {tab.children && sidebarVisible && (
-                      <span
-                        className="block overflow-hidden transition-all duration-200"
-                        style={{ maxHeight: isTabHovered ? `${tab.children.length * 36}px` : '0px', opacity: isTabHovered ? 1 : 0 }}
-                      >
-                        {tab.children.map((child) => {
-                          const ChildIcon = child.icon;
-                          return (
-                            <Link
-                              key={child.id}
-                              href={child.href}
-                              className="group flex items-center gap-2.5 py-2 pl-[52px] pr-4 text-[12px] font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50/60 transition-all duration-150"
-                            >
-                              <ChildIcon className="w-[13px] h-[13px] shrink-0 text-gray-400 group-hover:text-brand-500" />
-                              <span className="truncate">{child.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </span>
-                    )}
-                  </span>
-                );
-              })}
-            </nav>
-
-            {/* ── Pinned bottom: Why travel with us? ── */}
-            <div className="mt-auto shrink-0">
-              <span className="block h-px bg-gray-100 mx-3 mb-2" />
-              {sidebarVisible && (
-                <p className="px-5 pt-1 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Why travel with us?
-                </p>
-              )}
-              <Link
-                href="#"
-                className={`group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 mb-[5px] ${sidebarVisible ? 'gap-3 px-5' : 'pl-[19px]'}`}
-              >
-                <Umbrella className="w-[17px] h-[17px] shrink-0 text-gray-400 group-hover:text-gray-600" />
-                {sidebarVisible && <span className="flex-1 text-left truncate">Insurance benefits</span>}
-              </Link>
-              <Link
-                href="#"
-                className={`group w-full flex items-center py-3 text-[13.5px] font-medium transition-all duration-200 border-l-[3px] border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 mb-[5px] ${sidebarVisible ? 'gap-3 px-5' : 'pl-[19px]'}`}
-              >
-                <Headphones className="w-[17px] h-[17px] shrink-0 text-gray-400 group-hover:text-gray-600" />
-                {sidebarVisible && <span className="flex-1 text-left truncate">24/7 Local Support</span>}
-              </Link>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── Main scrollable content ── */}
-        <main className="flex-1 min-w-0">
+      <Navbar />
+      <main className="min-h-screen">
 
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
@@ -413,7 +277,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
         {/* ── Right: Trip.com-style blue gradient hero ── */}
         <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden pt-16 relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px] lg:rounded-[2rem]"
+          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px] lg:rounded-[2rem]"
         >
           {/* Background — Grand Palace / Wat Phra Kaew, Bangkok */}
           <div className="hidden lg:block absolute inset-0">
@@ -932,8 +796,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
         <Footer />
-        </main>{/* end main */}
-      </div>{/* end flex shell */}
+      </main>
 
     </Fragment>
   );

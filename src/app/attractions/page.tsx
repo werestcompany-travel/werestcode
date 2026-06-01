@@ -391,9 +391,9 @@ export default function AttractionsPage() {
           {/* ── POPULAR DESTINATIONS ── */}
           <section>
             <h2 className="text-xl font-extrabold text-gray-900 mb-5">Popular destinations in Thailand</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
               {POPULAR_DESTINATIONS.map(d => (
-                <button key={d.name} className="group relative rounded-2xl overflow-hidden cursor-pointer text-left" style={{ minHeight: 120 }}>
+                <button key={d.name} className="group relative rounded-2xl overflow-hidden cursor-pointer text-left shrink-0 w-40 sm:w-48" style={{ minHeight: 120 }}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${d.gradient} opacity-90 group-hover:opacity-100 transition-opacity`} />
                   <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
                   <div className="absolute top-3 right-3 text-3xl opacity-30 group-hover:opacity-50 transition-opacity select-none">{d.emoji}</div>

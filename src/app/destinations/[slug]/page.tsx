@@ -6,7 +6,8 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { prisma } from '@/lib/db'
 import { getToursForDestination, formatTHB } from '@/lib/tours'
-import { MapPin, Star, ArrowRight, Clock, Users, Globe2, Ticket } from 'lucide-react'
+import { MapPin, Star, ArrowRight, Clock, Users, Globe2, Ticket, Share2, ChevronRight } from 'lucide-react'
+import DestinationHeroClient from '@/components/destinations/DestinationHeroClient'
 
 // ─── Destination config ───────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ const DESTINATIONS: Record<string, DestinationConfig> = {
   'bangkok': {
     name:        'Bangkok',
     tagline:     'The City of Angels',
-    description: 'A dazzling metropolis of ornate temples, legendary street food, sky-high rooftop bars and one of Asia\'s greatest shopping scenes. Bangkok is a city that never stops surprising.',
+    description: 'Bangkok offers a captivating array of attractions and places to visit. Explore Thailand\'s rich heritage at Ancient City Bangkok and Erawan Museum. Experience the city\'s iconic waterways with a scenic Chao Phraya River cruise. Discover vibrant street life at Chatuchak Weekend Market and Asiatique The Riverfront. Marvel at the grandeur of the Grand Palace and Wat Pho. Indulge in world-class street food, sky-high rooftop bars, and legendary nightlife that make Bangkok one of Asia\'s most exciting cities.',
     heroImage:   'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1600&q=80',
     searchTerms: ['Bangkok', 'BKK', 'Suvarnabhumi'],
     highlights: [
@@ -198,30 +199,59 @@ export default async function DestinationPage({ params }: { params: { slug: stri
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-white">
 
-        {/* ── Hero ── */}
-        <div className="relative h-[60vh] min-h-[400px] max-h-[600px]">
-          <Image src={dest.heroImage} alt={dest.name} fill className="object-cover" priority sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-          <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 px-4 text-center">
-            <p className="text-white/80 text-sm font-semibold uppercase tracking-widest mb-2">{dest.tagline}</p>
-            <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-4">{dest.name}</h1>
-            <p className="text-white/85 text-base sm:text-lg max-w-2xl leading-relaxed">{dest.description}</p>
-            <div className="flex flex-wrap gap-3 justify-center mt-6">
-              <Link href={`/tours?destination=${dest.name}`}
-                className="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl transition-colors text-sm flex items-center gap-2">
-                <Globe2 className="w-4 h-4" /> Explore Tours
-              </Link>
-              <Link href={`/attractions?location=${dest.name}`}
-                className="bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white font-bold px-6 py-3 rounded-xl transition-colors text-sm border border-white/30 flex items-center gap-2">
-                <Ticket className="w-4 h-4" /> Browse Attractions
-              </Link>
-            </div>
+        {/* ── Breadcrumb ── */}
+        <nav aria-label="Breadcrumb" className="px-4 sm:px-6 pt-3 pb-1">
+          <ol className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
+            <li><Link href="/" className="hover:text-gray-600 transition-colors">Home</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li><Link href="/destinations/thailand" className="hover:text-gray-600 transition-colors">Thailand</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li><Link href={`/destinations/${params.slug}`} className="hover:text-gray-600 transition-colors">{dest.name}</Link></li>
+            <li><ChevronRight className="w-3 h-3" /></li>
+            <li className="text-gray-500 truncate max-w-[140px]">Things to do in {dest.name}</li>
+          </ol>
+        </nav>
+
+        {/* ── Hero image with overlaid title ── */}
+        <div className="relative w-full" style={{ height: 'clamp(220px, 52vw, 420px)' }}>
+          <Image
+            src={dest.heroImage}
+            alt={`Things to do in ${dest.name}`}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          {/* gradient for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+
+          {/* Share button top-right */}
+          <button
+            type="button"
+            aria-label="Share"
+            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+          >
+            <Share2 className="w-4 h-4 text-gray-700" />
+          </button>
+
+          {/* Title bottom-left */}
+          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-4 sm:pb-6">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">
+              Things to do in {dest.name}
+            </h1>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-16">
+        {/* ── Description with See more + Tabs (client island) ── */}
+        <DestinationHeroClient
+          description={dest.description}
+          destName={dest.name}
+          slug={params.slug}
+        />
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-16">
 
           {/* ── Highlights ── */}
           <section>

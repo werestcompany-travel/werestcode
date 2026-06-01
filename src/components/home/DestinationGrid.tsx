@@ -19,12 +19,12 @@ export default function DestinationGrid() {
         </h2>
         <p className="text-gray-400 text-sm text-center mb-8">Handpicked cities — click to explore tours &amp; transfers</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
           {destinations.map((dest) => (
             <Link
               key={dest.city}
               href={`/tours?destination=${encodeURIComponent(dest.city)}`}
-              className="relative group rounded-2xl overflow-hidden h-52 block"
+              className="relative group rounded-2xl overflow-hidden h-52 block shrink-0 w-64 sm:w-72"
             >
               {/* Image */}
               <Image
@@ -32,7 +32,7 @@ export default function DestinationGrid() {
                 alt={dest.city}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="288px"
                 unoptimized
               />
               {/* Gradient overlay */}

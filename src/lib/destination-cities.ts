@@ -45,8 +45,9 @@ export interface CityConfig {
   name:        string
   province:    string
   tagline:     string
-  description: string
-  heroImage:   string
+  description:     string
+  descriptionFull?: string[]   // multi-paragraph, shown in the "See more" modal
+  heroImage:       string
   toursKey:    string   // key to pass to getToursForDestination()
   highlights:  { emoji: string; label: string }[]
   tips:        string[]
@@ -60,7 +61,12 @@ export const CITY_CONFIGS: Record<string, CityConfig> = {
 
   bangkok: {
     slug: 'bangkok', name: 'Bangkok', province: 'Bangkok', tagline: 'The City of Angels',
-    description: 'A dazzling metropolis of ornate temples, legendary street food, sky-high rooftop bars and one of Asia\'s greatest shopping scenes — Bangkok is a city that never stops surprising.',
+    description: 'Bangkok, officially known as Krung Thep Maha Nakhon, is the largest city in Thailand and one of the most populous cities in Southeast Asia. Along the Chao Phraya River, it\'s known for cultural landmarks like the Grand Palace, Wat Phra Kaew, and Wat Arun Temple on the west bank.',
+    descriptionFull: [
+      'Bangkok, officially known as Krung Thep Maha Nakhon, is the largest city in Thailand and one of the most populous cities in Southeast Asia. Along the Chao Phraya River, it\'s known for cultural landmarks like the Grand Palace, Wat Phra Kaew, and Wat Arun Temple on the west bank. You\'ll also find popular attractions such as Khao San Road, Chatuchak Weekend Market, and the lively Sukhumvit Bangkok area.',
+      'At the city\'s core, you\'ll find everything from ancient Thai architecture to modern skyscrapers, financial institutions, and major malls like Siam Paragon, MBK Center, and Siam Center. At night, enjoy Bangkok\'s Chinatown, Patpong Night Market, and rooftop bars overlooking the Bangkok metropolis, or relax at Lumpini Park before flying out from Bangkok International Airport.',
+      'Even if you\'re tasting local street food, cruising the Chao Phraya River, or enjoying the vibrant atmosphere of BKK, the Big Mango gives an exciting mix of culture and fun. Book your Thailand activities and tours on Werest Travel today!',
+    ],
     heroImage: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1600&q=80',
     toursKey: 'Bangkok',
     highlights: [

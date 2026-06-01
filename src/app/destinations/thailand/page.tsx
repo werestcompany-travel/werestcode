@@ -187,18 +187,18 @@ export default function ThailandPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
             {CITIES.map(city => (
               <Link
                 key={city.slug}
                 href={`/destinations/${city.slug}`}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] shadow-sm hover:shadow-xl transition-shadow duration-300"
+                className="group relative rounded-2xl overflow-hidden shrink-0 w-56 sm:w-64 h-44 shadow-sm hover:shadow-xl transition-shadow duration-300"
               >
                 <Image
                   src={city.image}
                   alt={city.name}
                   fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="256px"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   unoptimized
                 />
