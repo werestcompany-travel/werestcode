@@ -6,6 +6,7 @@ import { getToursForDestination, formatTHB } from '@/lib/tours'
 import type { CityConfig } from '@/lib/destination-cities'
 import { CITY_IMAGES } from '@/lib/destination-cities'
 import DestinationHeroClient from '@/components/destinations/DestinationHeroClient'
+import DestinationHeroOverlay from '@/components/destinations/DestinationHeroOverlay'
 import {
   ChevronRight, ArrowRight, Clock, Star,
   Shield, Phone, Smile, Zap, MapPin, ChevronDown, Share2
@@ -85,50 +86,46 @@ export default function DestinationCityPage({ city }: Props) {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-white pt-16">
 
-        {/* ════ BREADCRUMB ════ */}
-        <nav aria-label="Breadcrumb" className="px-4 sm:px-6 pt-3 pb-1">
-          <ol className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
-            <li><Link href="/" className="hover:text-gray-600 transition-colors">Home</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li><Link href="/destinations/thailand" className="hover:text-gray-600 transition-colors">Thailand</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li><Link href={`/destinations/${city.slug}`} className="hover:text-gray-600 transition-colors">{city.name}</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li className="text-gray-500 truncate max-w-[140px]">Things to do in {city.name}</li>
+        {/* ════ BREADCRUMB — Klook style ════ */}
+        <nav aria-label="Breadcrumb" className="px-4 sm:px-5 py-2.5 border-b border-gray-100">
+          <ol className="flex items-center gap-1 text-[13px] text-gray-500 flex-nowrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <li className="shrink-0"><Link href="/" className="hover:text-gray-800 transition-colors">Home</Link></li>
+            <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
+            <li className="shrink-0"><Link href="/destinations/thailand" className="hover:text-gray-800 transition-colors">Thailand</Link></li>
+            <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
+            <li className="shrink-0"><Link href={`/destinations/${city.slug}`} className="hover:text-gray-800 transition-colors">{city.name}</Link></li>
+            <li className="shrink-0"><ChevronRight className="w-3.5 h-3.5 text-gray-400" /></li>
+            <li className="text-gray-400 truncate min-w-0">Things to do in {city.name}</li>
           </ol>
         </nav>
 
-        {/* ════ HERO IMAGE ════ */}
-        <div className="relative w-full" style={{ height: 'clamp(220px, 52vw, 420px)' }}>
+        {/* ════ HERO IMAGE — title + description overlaid ════ */}
+        <div className="relative w-full" style={{ height: 'clamp(240px, 56vw, 440px)' }}>
           <Image src={city.heroImage} alt={`Things to do in ${city.name}`} fill className="object-cover" priority sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+          {/* Stronger gradient so text is always legible */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
 
-          {/* Share button */}
+          {/* Share button — top right */}
           <button
             type="button"
             aria-label="Share"
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors z-10"
           >
             <Share2 className="w-4 h-4 text-gray-700" />
           </button>
 
-          {/* Headline + subheadline — both pinned bottom-left */}
-          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-5 sm:pb-7 max-w-xl">
-            <p className="text-white/80 text-[11px] font-bold uppercase tracking-[0.15em] mb-2 [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]">
-              {city.tagline}
-            </p>
-            <h1 className="text-[22px] sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.7)]">
-              Things to do in {city.name}
-            </h1>
-          </div>
+          {/* Headline + description + see more — all overlaid bottom-left */}
+          <DestinationHeroOverlay
+            cityName={city.name}
+            description={city.description}
+            descriptionFull={city.descriptionFull}
+          />
         </div>
 
-        {/* ════ DESCRIPTION + TABS (client) ════ */}
+        {/* ════ STICKY TABS (client) ════ */}
         <DestinationHeroClient
-          description={city.description}
-          descriptionFull={city.descriptionFull}
           destName={city.name}
           slug={city.slug}
         />
