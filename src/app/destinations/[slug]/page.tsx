@@ -1,13 +1,8 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
 import type { Metadata } from 'next'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
 import { prisma } from '@/lib/db'
 import { getToursForDestination, formatTHB } from '@/lib/tours'
-import { MapPin, Star, ArrowRight, Clock, Users, Globe2, Ticket, Share2, ChevronRight } from 'lucide-react'
-import DestinationHeroClient from '@/components/destinations/DestinationHeroClient'
+import DestinationPageClient from '@/components/destinations/DestinationPageClient'
 
 // ─── Destination config ───────────────────────────────────────────────────────
 
@@ -25,7 +20,7 @@ const DESTINATIONS: Record<string, DestinationConfig> = {
   'bangkok': {
     name:        'Bangkok',
     tagline:     'The City of Angels',
-    description: 'Bangkok offers a captivating array of attractions and places to visit. Explore Thailand\'s rich heritage at Ancient City Bangkok and Erawan Museum. Experience the city\'s iconic waterways with a scenic Chao Phraya River cruise. Discover vibrant street life at Chatuchak Weekend Market and Asiatique The Riverfront. Marvel at the grandeur of the Grand Palace and Wat Pho. Indulge in world-class street food, sky-high rooftop bars, and legendary nightlife that make Bangkok one of Asia\'s most exciting cities.',
+    description: 'A dazzling metropolis of ornate temples, legendary street food, sky-high rooftop bars and one of Asia\'s greatest shopping scenes. Bangkok is a city that never stops surprising.',
     heroImage:   'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1600&q=80',
     searchTerms: ['Bangkok', 'BKK', 'Suvarnabhumi'],
     highlights: [
@@ -196,191 +191,22 @@ export default async function DestinationPage({ params }: { params: { slug: stri
     // DB unavailable
   }
 
+  // Shape attractions for client component
+  const shapedAttractions = attractions.map((a: { slug: string; name: string; location: string; price: number; rating: number; featureImage: string | null }) => ({
+    slug: a.slug,
+    name: a.name,
+    location: a.location,
+    rating: a.rating,
+    featureImage: a.featureImage ?? undefined,
+    packages: [{ adultPrice: a.price }],
+  }))
+
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen bg-white">
-
-        {/* ── Breadcrumb ── */}
-        <nav aria-label="Breadcrumb" className="px-4 sm:px-6 pt-3 pb-1">
-          <ol className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
-            <li><Link href="/" className="hover:text-gray-600 transition-colors">Home</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li><Link href="/destinations/thailand" className="hover:text-gray-600 transition-colors">Thailand</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li><Link href={`/destinations/${params.slug}`} className="hover:text-gray-600 transition-colors">{dest.name}</Link></li>
-            <li><ChevronRight className="w-3 h-3" /></li>
-            <li className="text-gray-500 truncate max-w-[140px]">Things to do in {dest.name}</li>
-          </ol>
-        </nav>
-
-        {/* ── Hero image with overlaid title ── */}
-        <div className="relative w-full" style={{ height: 'clamp(220px, 52vw, 420px)' }}>
-          <Image
-            src={dest.heroImage}
-            alt={`Things to do in ${dest.name}`}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-          {/* gradient for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
-
-          {/* Share button top-right */}
-          <button
-            type="button"
-            aria-label="Share"
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
-          >
-            <Share2 className="w-4 h-4 text-gray-700" />
-          </button>
-
-          {/* Title bottom-left */}
-          <div className="absolute bottom-0 left-0 px-4 sm:px-6 pb-4 sm:pb-6">
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">
-              Things to do in {dest.name}
-            </h1>
-          </div>
-        </div>
-
-        {/* ── Description with See more + Tabs (client island) ── */}
-        <DestinationHeroClient
-          description={dest.description}
-          destName={dest.name}
-          slug={params.slug}
-        />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-16">
-
-          {/* ── Highlights ── */}
-          <section>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Why visit {dest.name}?</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {dest.highlights.map(h => (
-                <div key={h.label} className="bg-white rounded-2xl border border-gray-200 p-4 text-center hover:border-brand-300 hover:shadow-sm transition-all">
-                  <span className="text-3xl block mb-2">{h.emoji}</span>
-                  <span className="text-xs font-semibold text-gray-700 leading-tight">{h.label}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── Tours ── */}
-          {tours.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-extrabold text-gray-900">Tours in {dest.name}</h2>
-                <Link href={`/tours?destination=${dest.name}`}
-                  className="text-sm font-semibold text-brand-600 hover:underline flex items-center gap-1">
-                  View all <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {tours.map(tour => (
-                  <Link key={tour.slug} href={`/tours/${tour.slug}`}
-                    className="bg-white rounded-2xl border border-gray-200 hover:border-brand-300 hover:shadow-md transition-all overflow-hidden group">
-                    <div className="relative h-44">
-                      {tour.images[0] && (
-                        <Image src={tour.images[0]} alt={tour.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="500px" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      {tour.badge && (
-                        <span className="absolute top-3 left-3 bg-brand-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{tour.badge}</span>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2">{tour.title}</h3>
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                        <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{tour.duration}</span>
-                        <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />Max {tour.maxGroupSize}</span>
-                        <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{tour.rating}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">From</span>
-                        <span className="text-base font-extrabold text-brand-600">
-                          {formatTHB(Math.min(...tour.options.map(o => o.pricePerPerson)))}
-                          <span className="text-xs font-normal text-gray-400">/person</span>
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ── Attractions ── */}
-          {attractions.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-extrabold text-gray-900">Attractions in {dest.name}</h2>
-                <Link href={`/attractions?location=${dest.name}`}
-                  className="text-sm font-semibold text-brand-600 hover:underline flex items-center gap-1">
-                  View all <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {attractions.map(a => (
-                  <Link key={a.slug} href={`/attractions/${a.slug}`}
-                    className="bg-white rounded-2xl border border-gray-200 hover:border-brand-300 hover:shadow-md transition-all overflow-hidden group">
-                    <div className="relative h-44 bg-gray-100">
-                      {a.featureImage
-                        ? <Image src={a.featureImage} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="500px" />
-                        : <div className="w-full h-full flex items-center justify-center text-5xl">{a.emoji}</div>
-                      }
-                      {a.badge && (
-                        <span className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{a.badge}</span>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{a.location}</p>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2">{a.name}</h3>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /><span className="text-xs font-semibold text-gray-700">{a.rating}</span></div>
-                        <span className="text-sm font-extrabold text-brand-600">{formatTHB(a.price)}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ── Travel tips ── */}
-          <section>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Travel Tips for {dest.name}</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {dest.tips.map((tip, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center shrink-0 text-sm font-bold text-brand-600">
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{tip}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── CTA ── */}
-          <section className="bg-brand-600 rounded-3xl p-8 sm:p-12 text-center text-white">
-            <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Ready to explore {dest.name}?</h2>
-            <p className="text-white/80 mb-8 text-sm sm:text-base">Book your tours and transfers with Werest Travel — free cancellation, instant confirmation.</p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href={`/tours?destination=${dest.name}`}
-                className="bg-white text-brand-600 font-bold px-8 py-3.5 rounded-xl hover:bg-gray-50 transition-colors text-sm flex items-center gap-2">
-                <Globe2 className="w-4 h-4" /> Browse Tours <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link href="/"
-                className="bg-white/15 backdrop-blur-sm border border-white/30 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-white/25 transition-colors text-sm">
-                Book a Transfer
-              </Link>
-            </div>
-          </section>
-
-        </div>
-      </main>
-      <Footer />
-    </>
+    <DestinationPageClient
+      dest={dest}
+      tours={tours}
+      attractions={shapedAttractions}
+      formatTHB={formatTHB}
+    />
   )
 }

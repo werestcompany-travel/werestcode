@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import { Inter, Noto_Sans_Thai } from 'next/font/google';
+import { Plus_Jakarta_Sans, Noto_Sans_Thai } from 'next/font/google';
 import './globals.css';
 
-// Inter — GetYourGuide-style clean geometric sans-serif
-const inter = Inter({
+// Plus Jakarta Sans — Uber Move-style geometric grotesque
+const inter = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-inter',
   display: 'swap',
 });

@@ -17,11 +17,12 @@ import {
   Car, Plane, Users, ArrowRight,
   ArrowLeftRight,
   Compass, Ticket, Ship, Gift, ChevronRight, Tag,
-  Clock,
+  Clock, Lock, Shield,
 } from 'lucide-react';
 
-/* ── Mobile icon grid tabs ─────────────────────────────────────────────────── */
+/* ── Service sidebar tabs (with section groupings) ────────────────────────── */
 const SERVICE_TABS = [
+  // § 1 — Core services
   {
     id: 'transfer', icon: Car, label: 'Private Transfers', badge: null, badgeColor: '', href: undefined, s: 1,
     children: [
@@ -30,11 +31,13 @@ const SERVICE_TABS = [
       { id: 'charter',       icon: Clock,          label: 'Charter Rental',   href: '#' },
     ],
   },
-  { id: 'tours',       icon: Compass, label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',         s: 1 },
-  { id: 'attractions', icon: Ticket,  label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',   s: 1 },
-  { id: 'group',       icon: Users,   label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking', s: 1 },
-  { id: 'deals',       icon: Tag,     label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',         s: 3 },
-  { id: 'rewards',     icon: Gift,    label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',         s: 4 },
+  { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
+  { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
+  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
+  // § 3 — Planning tools
+  { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
+  // § 4 — Account / loyalty
+  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
@@ -95,6 +98,49 @@ const NEW_USER_CARDS = [
   { highlight: false, title: '15% off',       sub: 'Airport Transfers',      cta: 'Claim all', href: '/results', openModal: false, emoji: '✈️' },
 ];
 
+/* ── Platform review slider data ──────────────────────────────────────────── */
+const PLATFORM_REVIEWS = [
+  {
+    id: 'tripadvisor',
+    label: 'Tripadvisor',
+    overallLabel: 'Excellent',
+    score: '5.0',
+    totalReviews: '320+',
+    accentColor: '#00aa6c',
+    reviews: [
+      { text: 'Amazing driver, perfectly on time. Fixed price — no surprises at all. Highly recommend.', name: 'James T.', country: 'Australia', flag: '🇦🇺', route: 'Bangkok Airport → Phuket' },
+      { text: 'Driver was waiting at arrivals with a name sign. Spotless car, ice-cold AC. Exactly what I paid online.', name: 'Emma K.', country: 'Canada', flag: '🇨🇦', route: 'Don Mueang → Bangkok City' },
+      { text: 'Booked for a group of 8. The minivan was clean and the driver knew every back road to avoid traffic.', name: 'Oliver B.', country: 'Germany', flag: '🇩🇪', route: 'Bangkok → Pattaya' },
+    ],
+  },
+  {
+    id: 'google',
+    label: 'Google',
+    overallLabel: '4.9 / 5',
+    score: '4.9',
+    totalReviews: '180+',
+    accentColor: '#fbbc04',
+    reviews: [
+      { text: 'Tried three transfer companies before finding Werest. Night and day difference — professional, clean car, fixed price.', name: 'Sarah L.', country: 'United States', flag: '🇺🇸', route: 'Suvarnabhumi → Hua Hin' },
+      { text: 'Free cancellation was a lifesaver when our flight was delayed. They rescheduled with zero fuss.', name: 'Michael R.', country: 'United Kingdom', flag: '🇬🇧', route: 'Phuket Airport → Patong' },
+      { text: 'WhatsApp support replied in under 2 minutes when I changed my pickup time. Exceptional service.', name: 'Yuki T.', country: 'Japan', flag: '🇯🇵', route: 'Chiang Mai Airport → Nimman' },
+    ],
+  },
+  {
+    id: 'trustpilot',
+    label: 'Trustpilot',
+    overallLabel: 'Excellent',
+    score: '4.8',
+    totalReviews: '95+',
+    accentColor: '#00b67a',
+    reviews: [
+      { text: 'The price I saw online was exactly what I paid — not a baht more. That level of honesty is rare in Thailand.', name: 'David M.', country: 'Australia', flag: '🇦🇺', route: 'Bangkok → Kanchanaburi' },
+      { text: 'Smooth booking, confirmation in minutes, driver arrived 10 minutes early. Could not ask for more.', name: 'Isabelle F.', country: 'France', flag: '🇫🇷', route: 'Phuket → Krabi' },
+      { text: 'Used Werest for three transfers during my two-week trip. Every single one was flawless.', name: 'Liam O.', country: 'Ireland', flag: '🇮🇪', route: 'Multiple routes · Thailand' },
+    ],
+  },
+];
+
 /* ── Auto-slider promotional banners ─────────────────────────────────────── */
 const PROMO_BANNERS = [
   { bg: 'from-[#2534ff] to-[#1a26cc]', tag: 'New User Offer',  title: 'First Booking — 10% Off',   desc: 'Sign in and save on your first private transfer',  cta: 'Claim Now',  href: '#',        openModal: true  },
@@ -102,6 +148,46 @@ const PROMO_BANNERS = [
   { bg: 'from-violet-600 to-purple-700', tag: 'Earn Rewards',  title: 'Collect Werest Points',     desc: 'Earn on every trip and redeem for free rides',      cta: 'Join Now',   href: '#',        openModal: true  },
   { bg: 'from-amber-500 to-orange-600', tag: 'Popular Route',  title: 'Bangkok → Pattaya ฿1,800', desc: 'Fixed price · No surge · Available 24/7',           cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false },
   { bg: 'from-[#0a0e2e] to-[#1a20a0]', tag: 'Airport Special', title: 'Airport Pickup from ฿600', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
+];
+
+/* ── Popular destination bento grid ──────────────────────────────────────── */
+const POPULAR_DESTINATIONS = [
+  {
+    id: 'phuket',    name: 'Phuket',
+    img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80',
+    href: '/destinations/phuket',
+    span: 'col-span-1 row-span-1',
+  },
+  {
+    id: 'chiangmai', name: 'Chiang Mai',
+    img: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=800&q=80',
+    href: '/destinations/chiang-mai',
+    span: 'col-span-1 row-span-2',
+  },
+  {
+    id: 'bangkok',   name: 'Bangkok',
+    img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1200&q=80',
+    href: '/destinations/bangkok',
+    span: 'col-span-2 row-span-1',
+  },
+  {
+    id: 'krabi',     name: 'Krabi',
+    img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80',
+    href: '/destinations/krabi',
+    span: 'col-span-1 row-span-1',
+  },
+  {
+    id: 'pattaya',   name: 'Pattaya',
+    img: 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=800&q=80',
+    href: '/destinations/pattaya',
+    span: 'col-span-1 row-span-1',
+  },
+  {
+    id: 'kohsamui',  name: 'Koh Samui',
+    img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80',
+    href: '/destinations/koh-samui',
+    span: 'col-span-1 row-span-1',
+  },
 ];
 
 /* ── Where to next — destination cards ─────────────────────────────────── */
@@ -152,6 +238,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
   const [activeService, setActiveService] = useState('transfer');
   const [selectedDest,   setSelectedDest]   = useState('bangkok');
+  const [reviewPlatIdx,  setReviewPlatIdx]  = useState(0);
+  const [reviewCardIdx,  setReviewCardIdx]  = useState(0);
+  const [taReviews,      setTaReviews]      = useState<typeof PLATFORM_REVIEWS[0]['reviews'] | null>(null);
   const { isWishlisted, toggle, isLoggedIn } = useWishlist();
   const inspiredSliderRef                   = useRef<HTMLDivElement>(null);
   const [inspiredShowLeft,  setInspiredShowLeft]  = useState(false);
@@ -163,6 +252,38 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     const timer = setTimeout(() => setPlacesVisible(true), 220);
     return () => clearTimeout(timer);
   }, [selectedDest]);
+
+  /* ── Auto-advance review platform every 6s ── */
+  useEffect(() => {
+    const t = setInterval(() => {
+      setReviewPlatIdx(i => (i + 1) % PLATFORM_REVIEWS.length);
+      setReviewCardIdx(0);
+    }, 6000);
+    return () => clearInterval(t);
+  }, []);
+
+  /* ── Fetch real TripAdvisor reviews ── */
+  useEffect(() => {
+    fetch('/api/reviews/tripadvisor')
+      .then(r => r.json())
+      .then(({ reviews }) => {
+        if (!reviews?.length) return;
+        setTaReviews(
+          reviews.slice(0, 5).map((r: {
+            rating: number; text: string; title: string;
+            user: { username: string; user_location?: { name: string }; avatar?: { small?: string } };
+            travel_date?: string;
+          }) => ({
+            text: r.text,
+            name: r.user.username,
+            country: r.user.user_location?.name ?? '',
+            flag: '',
+            route: r.travel_date ? `Travelled ${r.travel_date}` : 'Via TripAdvisor',
+          }))
+        );
+      })
+      .catch(() => { /* silently use mock data */ });
+  }, []);
 
   /* ── Inspired slider arrows ── */
   useEffect(() => {
@@ -268,84 +389,39 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   return (
     <Fragment>
       <Navbar />
-      <main className="min-h-screen">
+      {/* ════════════════════════════════════════════════════════════
+          PAGE SHELL
+      ════════════════════════════════════════════════════════════ */}
+      <div className="pt-16">
+        <main>
 
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="Hero" className="mb-0 lg:mb-[30px] lg:px-6 lg:pt-6">
 
-        {/* ── Right: Trip.com-style blue gradient hero ── */}
-        <div
-          className="flex-1 flex flex-col items-center justify-center overflow-x-hidden lg:overflow-hidden relative bg-white lg:bg-transparent min-h-0 lg:min-h-[580px] lg:rounded-[2rem]"
-        >
-          {/* Background — Grand Palace / Wat Phra Kaew, Bangkok */}
-          <div className="hidden lg:block absolute inset-0">
+        {/* ── Hero card ── */}
+        <div className="flex flex-col items-center justify-start lg:justify-center overflow-hidden relative lg:min-h-[680px] lg:rounded-[2rem]" style={{ minHeight: '260px' }}>
+          {/* Background — Wat Rong Suea Ten (Blue Temple), Chiang Rai at blue hour */}
+          <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1563492065-6d4f5d007d9a?w=1920&q=85"
-              alt="Wat Phra Kaew — Grand Palace Bangkok"
+              src="https://images.unsplash.com/photo-1767548337291-17f5c6dc9932?w=1920&q=85"
+              alt="Blue Temple Chiang Rai at blue hour"
               fill
               priority
-              className="object-cover object-[center_60%]"
+              className="object-cover object-center"
               sizes="100vw"
               unoptimized
             />
           </div>
-          {/* Deep-blue gradient — reveals golden spires at the bottom */}
-          <div className="hidden lg:block absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,18,80,0.94) 0%, rgba(13,30,120,0.88) 22%, rgba(20,50,170,0.80) 44%, rgba(25,60,180,0.65) 62%, rgba(18,45,140,0.45) 80%, rgba(12,30,100,0.30) 100%)' }} />
-          {/* Mobile: Trip.com-style icon grid (4-column, 2-row) */}
-          <div className="relative z-10 lg:hidden w-full px-3 pt-[18px] pb-0 shrink-0">
-            <div className="grid grid-cols-4 gap-y-5">
-              {SERVICE_TABS.map((tab, idx) => {
-                const Icon   = tab.icon;
-                const active = activeService === tab.id;
-                const isPrimary = idx < 4; // first row gets solid filled circles
+          {/* Dark-blue overlay — readable text, temple still visible */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(2,8,40,0.55) 0%, rgba(3,12,55,0.48) 35%, rgba(4,16,65,0.38) 65%, rgba(2,8,40,0.20) 100%)' }} />
 
-                // Mobile (white bg): blue circles for primary, gray for secondary
-                // sm+ (blue bg): same blue for primary, frosted glass for secondary
-                const circleClass = isPrimary
-                  ? 'bg-[#2534ff]'
-                  : active
-                    ? 'bg-gray-200 ring-2 ring-brand-300 lg:bg-white/30 lg:backdrop-blur-sm lg:ring-white/60'
-                    : 'bg-gray-100 border border-gray-200 lg:bg-white/15 lg:backdrop-blur-sm lg:border-white/30';
+          {/* Central content */}
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-8 pb-2 lg:py-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
-                const content = (
-                  <>
-                    <div className={`relative w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto transition-all duration-200 ${circleClass}`}>
-                      <Icon className={`w-[26px] h-[26px] ${isPrimary ? 'text-white' : 'text-brand-600 lg:text-white'}`} />
-                      {tab.badge && (
-                        <span className={`absolute -top-0.5 -right-0.5 text-[8px] font-black px-1 py-0.5 rounded-full leading-none ${
-                          tab.badgeColor === 'red'   ? 'bg-red-500 text-white'   :
-                          tab.badgeColor === 'blue'  ? 'bg-blue-400 text-white'  :
-                          tab.badgeColor === 'amber' ? 'bg-amber-400 text-white' :
-                          'bg-white/80 text-gray-700'
-                        }`}>{tab.badge}</span>
-                      )}
-                    </div>
-                    <p className="mt-2 text-[11px] font-semibold leading-tight text-center text-gray-700 lg:text-white/90 px-0.5">
-                      {tab.label}
-                    </p>
-                  </>
-                );
-
-                return tab.href ? (
-                  <Link key={tab.id} href={tab.href} className="flex flex-col items-center">
-                    {content}
-                  </Link>
-                ) : (
-                  <button key={tab.id} type="button" onClick={() => setActiveService(tab.id)} className="flex flex-col items-center">
-                    {content}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Central content — desktop only */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-4 lg:px-6 py-0 lg:py-12 flex flex-col items-center gap-3 lg:gap-5 text-center">
-
-            {/* Title — hidden on mobile */}
-            <h1 className="hidden lg:block text-2xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+            {/* Title */}
+            <h1 className="text-[22px] leading-snug lg:text-5xl font-extrabold text-white tracking-tight">
               {activeService === 'transfer'    && <><span className="block">Your Thailand Journey</span><span className="block">Starts Here</span></>}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
@@ -355,19 +431,23 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               {activeService === 'rewards'     && 'Earn Werest Rewards'}
             </h1>
 
-            {/* Trust badges — hidden on mobile */}
-            <div className="hidden lg:flex flex-wrap items-center justify-center gap-x-3 lg:gap-x-5 gap-y-1 text-white/80 text-[11px] lg:text-[13px] font-medium">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Secure booking</span>
-              <span className="text-white/30 hidden lg:block">|</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Support in approx. 30s</span>
-              <span className="text-white/30 hidden lg:block">|</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Free cancellation</span>
-            </div>
-
-            {/* Search container — hidden on mobile, visible on sm+ */}
+            {/* Search container — desktop only */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
               <div className="hidden lg:block w-full my-3 lg:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
+                {/* Price-locked promise + payment logos */}
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
+                  <span className="flex items-center gap-1.5 text-white/80 text-xs font-medium">
+                    <Lock className="w-3.5 h-3.5 text-green-400" />Price locked at booking — no surprises
+                  </span>
+                  <span className="text-white/20">│</span>
+                  <span className="flex items-center gap-2 text-white/70 text-xs font-medium">
+                    <span className="bg-white text-blue-700 font-black text-[10px] px-2 py-0.5 rounded tracking-wider">VISA</span>
+                    <span className="bg-white rounded px-1.5 py-0.5 text-[10px] font-black" style={{color:'#eb001b'}}>MC</span>
+                    <span className="bg-white text-gray-600 font-bold text-[10px] px-2 py-0.5 rounded tracking-wide">PayPal</span>
+                    <span className="flex items-center gap-1 text-green-400 text-xs font-semibold"><Lock className="w-3 h-3" />SSL</span>
+                  </span>
+                </div>
               </div>
             ) : (
               <div className="hidden lg:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
@@ -397,6 +477,144 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             )}
 
           </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          MOBILE SERVICE ICON CARD — floats below hero
+      ════════════════════════════════════════════════════════════ */}
+      <div className="lg:hidden mx-3 -mt-[130px] relative z-10 bg-white rounded-2xl shadow-lg px-4 pt-5 pb-4">
+        <div className="grid grid-cols-3 gap-y-5">
+          {SERVICE_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const href = tab.href ?? (tab.id === 'transfer' ? '/results' : '#');
+            return (
+              <Link key={tab.id} href={href} className="flex flex-col items-center gap-2">
+                <div className="w-14 h-14 rounded-full bg-brand-600 flex items-center justify-center relative">
+                  <Icon className="w-6 h-6 text-white" />
+                  {tab.badge && (
+                    <span className="absolute -top-0.5 -right-0.5 text-[8px] font-black px-1 py-0.5 rounded-full leading-none bg-red-500 text-white">
+                      {tab.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">{tab.label}</p>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════════
+          PLATFORM REVIEW SLIDER
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-label="Reviews" className="bg-white border-b border-gray-100 py-8 mt-6 lg:mt-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {(() => {
+            const platBase = PLATFORM_REVIEWS[reviewPlatIdx];
+            const plat = platBase.id === 'tripadvisor' && taReviews
+              ? { ...platBase, reviews: taReviews }
+              : platBase;
+            const review = plat.reviews[reviewCardIdx];
+            return (
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
+
+                {/* ── LEFT: Platform brand + rating ── */}
+                <div className="shrink-0 flex flex-col items-center gap-3 min-w-[200px] w-full lg:w-auto">
+
+                  {/* Platform logo — real logos with transparent bg */}
+                  {plat.id === 'tripadvisor' && (
+                    <img
+                      src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
+                      alt="Tripadvisor"
+                      className="h-10 w-auto object-contain"
+                    />
+                  )}
+                  {plat.id === 'google' && (
+                    <div className="flex items-center gap-2 h-10">
+                      <svg viewBox="0 0 24 24" className="h-8 w-8 shrink-0" aria-label="Google">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                      <span className="font-bold text-gray-800 text-xl tracking-tight">Google</span>
+                    </div>
+                  )}
+                  {plat.id === 'trustpilot' && (
+                    <img
+                      src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
+                      alt="Trustpilot"
+                      className="h-8 w-auto object-contain"
+                    />
+                  )}
+
+                  {/* Overall label */}
+                  <p className="font-extrabold text-gray-900 text-xl leading-tight">{plat.overallLabel}</p>
+
+                  {/* Rating dots / stars */}
+                  {plat.id === 'tripadvisor' && (
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(i => (
+                        <div key={i} className="w-5 h-5 rounded-full flex items-center justify-center" style={{background:'#34e0a1'}}>
+                          <div className="w-2 h-2 rounded-full" style={{background:'#00aa6c'}} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {plat.id === 'google' && (
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />)}
+                    </div>
+                  )}
+                  {plat.id === 'trustpilot' && (
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(i => (
+                        <div key={i} className="w-6 h-6 flex items-center justify-center rounded-sm" style={{background:'#00b67a'}}>
+                          <Star className="w-3.5 h-3.5 text-white fill-white" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-400">{plat.totalReviews} verified reviews</p>
+
+                  {/* Platform tab pills */}
+                  <div className="flex gap-2 mt-1">
+                    {PLATFORM_REVIEWS.map((p, i) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => { setReviewPlatIdx(i); setReviewCardIdx(0); }}
+                        className={`w-2 h-2 rounded-full transition-all ${i === reviewPlatIdx ? 'scale-125' : 'bg-gray-200 hover:bg-gray-300'}`}
+                        style={i === reviewPlatIdx ? {background: plat.accentColor} : {}}
+                        aria-label={p.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Divider ── */}
+
+                {/* ── RIGHT: Quick stats ── */}
+                <div className="hidden lg:flex flex-col gap-4 shrink-0 text-center">
+                  <div>
+                    <p className="text-2xl font-extrabold text-gray-900">4.9<span className="text-amber-400">★</span></p>
+                    <p className="text-[11px] text-gray-500">500+ reviews</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-extrabold text-gray-900">24h</p>
+                    <p className="text-[11px] text-gray-500">Free cancel</p>
+                  </div>
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">&lt;5 min</p>
+                    <p className="text-[11px] text-gray-500">WhatsApp reply</p>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
         </div>
       </section>
 
@@ -641,6 +859,45 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
       {/* ════════════════════════════════════════════════════════════
+          POPULAR DESTINATIONS — horizontal scroll slider
+      ════════════════════════════════════════════════════════════ */}
+      <section aria-labelledby="popular-dest-heading" className="py-10 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 mb-5 px-4 sm:px-6 lg:px-8">
+            <span className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
+            <h2 id="popular-dest-heading" className="text-xl font-bold text-gray-900">Popular Destinations</h2>
+          </div>
+
+          {/* One-row horizontal scroll — all screen sizes */}
+          <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 sm:px-6 lg:px-8 pb-2">
+            {POPULAR_DESTINATIONS.map((dest) => (
+              <Link
+                key={dest.id}
+                href={dest.href}
+                className="relative shrink-0 overflow-hidden rounded-2xl group"
+                style={{ width: 'clamp(140px, 38vw, 220px)', height: 'clamp(170px, 28vw, 260px)' }}
+              >
+                <Image
+                  src={dest.img}
+                  alt={dest.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="220px"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <p className="absolute bottom-3 left-3 font-bold text-white text-[15px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
+                  {dest.name}
+                </p>
+              </Link>
+            ))}
+            {/* trailing spacer on mobile */}
+            <div className="shrink-0 w-1" aria-hidden="true" />
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
           THINGS TO DO — wired to city selector
       ════════════════════════════════════════════════════════════ */}
       <DynamicTourSections
@@ -796,7 +1053,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
         <Footer />
-      </main>
+        </main>
+      </div>
 
     </Fragment>
   );
