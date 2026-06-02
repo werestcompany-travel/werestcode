@@ -506,87 +506,56 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </div>
 
       {/* ════════════════════════════════════════════════════════════
-          PLATFORM REVIEW SLIDER
+          FULL-WIDTH TRUST BAR (desktop only)
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Reviews" className="bg-white border-b border-gray-100 py-8 mt-6 lg:mt-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {(() => {
-            const platBase = PLATFORM_REVIEWS[reviewPlatIdx];
-            const plat = platBase.id === 'tripadvisor' && taReviews
-              ? { ...platBase, reviews: taReviews }
-              : platBase;
-            const review = plat.reviews[reviewCardIdx];
-            return (
-              <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
+      <div className="hidden lg:block w-full bg-gray-50 border-y border-gray-200">
+        <div className="flex items-center justify-center divide-x divide-gray-200">
 
-                {/* ── LEFT: 2-row full-width container bar ── */}
-                <div className="shrink-0 w-full lg:w-[320px]">
-                  <div className="flex flex-col border border-gray-200 rounded-xl overflow-hidden w-full">
+          {/* ── Trust badge: free cancellation ── */}
+          <div className="flex items-center gap-2.5 px-8 py-3.5">
+            <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span className="text-sm text-gray-600 font-medium whitespace-nowrap">Cancel for free 24 hours before departure</span>
+          </div>
 
-                    {/* ── Row 1: TripAdvisor — full width ── */}
-                    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white border-b border-gray-200 w-full">
-                      {/* Logo left-aligned */}
-                      <img
-                        src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
-                        alt="Tripadvisor"
-                        className="h-[22px] w-auto object-contain object-left"
-                      />
-                      {/* 5 green bubble dots right side */}
-                      <div className="flex gap-1">
-                        {[1,2,3,4,5].map(i => (
-                          <div key={i} className="w-[18px] h-[18px] rounded-full" style={{background:'#34e0a1'}} />
-                        ))}
-                      </div>
-                    </div>
+          {/* ── TripAdvisor ── */}
+          <div className="flex items-center gap-2.5 px-8 py-3.5">
+            <img
+              src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
+              alt="Tripadvisor"
+              className="h-5 w-auto object-contain"
+            />
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="w-[17px] h-[17px] rounded-full" style={{background:'#34e0a1'}} />
+              ))}
+            </div>
+            <span className="text-xs text-gray-400 whitespace-nowrap">(320+ reviews)</span>
+          </div>
 
-                    {/* ── Row 2: Trustpilot — full width ── */}
-                    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white w-full">
-                      {/* Logo left-aligned — same height as TripAdvisor */}
-                      <img
-                        src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
-                        alt="Trustpilot"
-                        className="h-[22px] w-auto object-contain object-left"
-                      />
-                      {/* Excellent + 5 star boxes right side */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-0.5">
-                          {[1,2,3,4,5].map(i => (
-                            <div key={i} className="w-[18px] h-[18px] flex items-center justify-center" style={{background:'#00b67a'}}>
-                              <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="white" aria-hidden="true">
-                                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.1l-6.2 4.2 2.4-7.4L2 9.4h7.6z"/>
-                              </svg>
-                            </div>
-                          ))}
-                        </div>
-                        <span className="text-[12px] font-semibold text-gray-600">Excellent</span>
-                      </div>
-                    </div>
-                  </div>
+          {/* ── Trustpilot ── */}
+          <div className="flex items-center gap-2.5 px-8 py-3.5">
+            <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Excellent</span>
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="w-[17px] h-[17px] flex items-center justify-center" style={{background:'#00b67a'}}>
+                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="white" aria-hidden="true">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.1l-6.2 4.2 2.4-7.4L2 9.4h7.6z"/>
+                  </svg>
                 </div>
+              ))}
+            </div>
+            <img
+              src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
+              alt="Trustpilot"
+              className="h-5 w-auto object-contain"
+            />
+            <span className="text-xs text-gray-400 whitespace-nowrap">(95+ reviews)</span>
+          </div>
 
-                {/* ── Divider ── */}
-
-                {/* ── RIGHT: Quick stats ── */}
-                <div className="hidden lg:flex flex-col gap-4 shrink-0 text-center">
-                  <div>
-                    <p className="text-2xl font-extrabold text-gray-900">4.9<span className="text-amber-400">★</span></p>
-                    <p className="text-[11px] text-gray-500">500+ reviews</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-extrabold text-gray-900">24h</p>
-                    <p className="text-[11px] text-gray-500">Free cancel</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-extrabold text-gray-900">&lt;5 min</p>
-                    <p className="text-[11px] text-gray-500">WhatsApp reply</p>
-                  </div>
-                </div>
-
-              </div>
-            );
-          })()}
         </div>
-      </section>
+      </div>
 
       {/* ════════════════════════════════════════════════════════════
           2. NEW USER EXCLUSIVE
