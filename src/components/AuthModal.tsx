@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { X, Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
 
@@ -304,5 +305,3 @@ export default function AuthModal({ open, onClose, onSuccess, initialStep = 'ema
   );
 }
 
-// ── Need Link import ──────────────────────────────────────────────────────────
-import Link from 'next/link';
