@@ -851,6 +851,15 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
       {/* ════════════════════════════════════════════════════════════
+          THINGS TO DO — directly under "Where to next?", auto-updates
+          when a city card is selected
+      ════════════════════════════════════════════════════════════ */}
+      <DynamicTourSections
+        selectedDest={selectedDest}
+        cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
+      />
+
+      {/* ════════════════════════════════════════════════════════════
           POPULAR DESTINATIONS — horizontal scroll slider
       ════════════════════════════════════════════════════════════ */}
       <section aria-labelledby="popular-dest-heading" className="py-10 bg-white">
@@ -888,14 +897,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
         </div>
       </section>
-
-      {/* ════════════════════════════════════════════════════════════
-          THINGS TO DO — wired to city selector
-      ════════════════════════════════════════════════════════════ */}
-      <DynamicTourSections
-        selectedDest={selectedDest}
-        cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
-      />
 
       {/* ════════════════════════════════════════════════════════════
           GOOGLE REVIEWS — live widget (only shows when GOOGLE_PLACE_ID configured)
