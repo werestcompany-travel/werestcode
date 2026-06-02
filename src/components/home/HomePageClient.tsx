@@ -41,54 +41,73 @@ const SERVICE_TABS = [
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
-const SEO_ROUTES = [
-  [
-    'Bangkok Airport to Bangkok', 'Bangkok to Pattaya', 'Phuket Airport to Bang Tao',
-    'Don Mueang Airport to Bangkok', 'Karon to Khao Lak', 'Phuket to Krabi',
-    'Chiang Mai to Golden Triangle', 'Ao Nang to Phuket', 'Bangkok Airport to Don Mueang',
-    'Sukhothai to Bangkok', 'Bangkok to Chiang Mai', 'Chiang Mai to White Temple',
-    'Chiang Mai to Lampang', 'Bangkok to Chumphon', 'Hat Yai to Penang',
-    'Bangkok to Lopburi', 'Bangkok to Surat Thani', 'Karon to Krabi',
-    'Laem Chabang Port to Don Mueang', 'Pattaya to Kanchanaburi',
-    'Krabi to Trang', 'Bangkok to Buriram', 'Bangkok to Krabi',
-    'Bangkok to Phitsanulok', 'Hua Hin to Surat Thani',
-  ],
-  [
-    'Chiang Mai to Chiang Rai', 'Chiang Mai to Pai', 'Phuket Airport to Kamala Beach',
-    'Chiang Mai to Sukhothai', 'Bangkok to Ayutthaya', 'Khao Lak to Krabi',
-    'Bangkok Airport to Hua Hin', 'Phuket Airport to Nai Thon',
-    'Kanchanaburi to Ayutthaya', 'Phuket Airport to Panwa', 'Chiang Rai to Sukhothai',
-    'Khao Sok to Krabi', 'Phitsanulok to Chiang Mai', 'Bangkok Airport to Ban Phe Pier',
-    'Nakhon Ratchasima to Bangkok', 'Bangkok to Chanthaburi', 'Phuket to Railay',
-    'Amphawa to Bangkok', 'Bangkok to Ratchaburi', 'Bangkok to Sai Yok',
-    'Phuket to Surat Thani', 'Bangkok Airport to Lopburi',
-    'Chiang Mai to Hua Hin', 'Chiang Rai to Pai', 'Bangkok to Nakhon Pathom',
-  ],
-  [
-    'Bangkok Airport to Pattaya', 'Phuket Airport to Patong', 'Bangkok to Hua Hin',
-    'Phuket Airport to Kata Beach', 'Phuket Airport to Khao Lak',
-    'Phuket Airport to Phuket Town', 'Phuket Airport to Karon', 'Phuket to Khao Lak',
-    'Bangkok to Khao Yai', 'Khao Sok to Phuket', 'Phuket Airport to Rawai',
-    'Krabi to Surat Thani', 'Pattaya to Hua Hin', 'Don Mueang Airport to Ayutthaya',
-    'Phuket Airport to Chalong', 'Nakhon Ratchasima to Bangkok Airport',
-    'Don Mueang Airport to Khao Yai', 'Pattaya to Ayutthaya',
-    'Laem Chabang to Bangkok Airport', 'Bangkok Airport to Rayong',
-    'Pattaya to Lopburi', 'Phuket to Hua Hin', 'Bangkok Airport to Chanthaburi',
-    'Laem Chabang to Bangkok', 'Don Mueang Airport to Pattaya',
-  ],
-  [
-    'Laem Chabang Port to Bangkok', 'Chiang Mai Airport to Chiang Rai',
-    'Karon to Railay', 'Bangkok to Kanchanaburi', 'Phuket Airport to Mai Khao',
-    'Chiang Rai Airport to Chiang Saen', 'Laem Chabang Port to Bangkok Airport',
-    'Bangkok Airport to Kanchanaburi', 'Ayutthaya to Sukhothai',
-    'Don Mueang Airport to Kanchanaburi', 'Bangkok Airport to Ayutthaya',
-    'Phuket to Don Sak', 'Bangkok to Laem Sok', 'Bangkok Airport to Khao Yai',
-    'Bangkok to Nakhon Sawan', 'Bangkok Airport to Nakhon Sawan',
-    'Bangkok Airport to Laem Sok', 'Bangkok to Don Sak', 'Bangkok to Rayong',
-    'Bangkok to Damnoen Saduak', 'Bangkok Airport to Surin', 'Krabi to Hua Hin',
-    'Bangkok to Surin', 'Bangkok to Koh Chang', 'Bangkok Airport to Nakhon Ratchasima',
-  ],
+/* ── SEO routes grouped by category tab ─────────────────────────────────── */
+const SEO_ROUTE_TABS = [
+  {
+    label: 'Popular transfers',
+    routes: [
+      'Bangkok Airport to Bangkok', 'Bangkok to Pattaya', 'Phuket Airport to Patong',
+      'Don Mueang Airport to Bangkok', 'Bangkok to Hua Hin', 'Phuket to Krabi',
+      'Chiang Mai to Chiang Rai', 'Bangkok Airport to Pattaya', 'Phuket Airport to Khao Lak',
+      'Bangkok to Chiang Mai', 'Phuket Airport to Phuket Town', 'Bangkok to Koh Chang',
+      'Phuket Airport to Karon', 'Bangkok to Khao Yai', 'Krabi to Surat Thani',
+    ],
+  },
+  {
+    label: 'Airport transfers',
+    routes: [
+      'Bangkok Airport to Bangkok', 'Don Mueang Airport to Bangkok', 'Phuket Airport to Patong',
+      'Phuket Airport to Kata Beach', 'Phuket Airport to Khao Lak', 'Phuket Airport to Karon',
+      'Phuket Airport to Phuket Town', 'Phuket Airport to Rawai', 'Phuket Airport to Chalong',
+      'Phuket Airport to Mai Khao', 'Phuket Airport to Nai Thon', 'Phuket Airport to Kamala Beach',
+      'Phuket Airport to Bang Tao', 'Phuket Airport to Panwa', 'Bangkok Airport to Hua Hin',
+      'Bangkok Airport to Pattaya', 'Bangkok Airport to Kanchanaburi', 'Bangkok Airport to Rayong',
+      'Bangkok Airport to Don Mueang', 'Bangkok Airport to Ayutthaya', 'Bangkok Airport to Surin',
+      'Chiang Mai Airport to Chiang Rai', 'Chiang Rai Airport to Chiang Saen',
+      'Laem Chabang Port to Bangkok Airport', 'Don Mueang Airport to Ayutthaya',
+    ],
+  },
+  {
+    label: 'City to city',
+    routes: [
+      'Bangkok to Pattaya', 'Bangkok to Hua Hin', 'Bangkok to Chiang Mai',
+      'Bangkok to Koh Chang', 'Bangkok to Khao Yai', 'Bangkok to Surat Thani',
+      'Bangkok to Ayutthaya', 'Bangkok to Kanchanaburi', 'Bangkok to Lopburi',
+      'Phuket to Krabi', 'Phuket to Khao Lak', 'Phuket to Surat Thani',
+      'Chiang Mai to Chiang Rai', 'Chiang Mai to Pai', 'Chiang Mai to Sukhothai',
+      'Krabi to Surat Thani', 'Pattaya to Hua Hin', 'Karon to Khao Lak',
+      'Hat Yai to Penang', 'Ao Nang to Phuket', 'Khao Sok to Phuket',
+      'Laem Chabang Port to Bangkok', 'Laem Chabang to Bangkok',
+      'Bangkok to Damnoen Saduak', 'Sukhothai to Bangkok',
+    ],
+  },
+  {
+    label: 'Beach destinations',
+    routes: [
+      'Bangkok to Pattaya', 'Bangkok to Hua Hin', 'Bangkok to Koh Chang',
+      'Phuket Airport to Patong', 'Phuket Airport to Kata Beach', 'Phuket Airport to Karon',
+      'Phuket Airport to Rawai', 'Phuket Airport to Bang Tao', 'Phuket to Krabi',
+      'Krabi to Surat Thani', 'Ao Nang to Phuket', 'Karon to Khao Lak',
+      'Karon to Railay', 'Bangkok to Rayong', 'Bangkok to Laem Sok',
+      'Phuket to Don Sak', 'Bangkok to Don Sak', 'Bangkok to Surin',
+      'Laem Chabang to Bangkok', 'Pattaya to Hua Hin',
+    ],
+  },
+  {
+    label: 'Northern Thailand',
+    routes: [
+      'Chiang Mai to Chiang Rai', 'Chiang Mai to Pai', 'Chiang Mai to Sukhothai',
+      'Chiang Mai to Golden Triangle', 'Chiang Mai to Lampang', 'Chiang Mai to White Temple',
+      'Chiang Rai to Sukhothai', 'Chiang Rai to Pai', 'Chiang Mai to Hua Hin',
+      'Phitsanulok to Chiang Mai', 'Bangkok to Phitsanulok', 'Bangkok to Nakhon Sawan',
+      'Chiang Mai Airport to Chiang Rai', 'Chiang Rai Airport to Chiang Saen',
+      'Bangkok Airport to Ban Phe Pier',
+    ],
+  },
 ];
+
+/* Keep flat SEO_ROUTES for any legacy usage */
+const SEO_ROUTES = SEO_ROUTE_TABS.map(t => t.routes);
 
 /* ── New-user exclusive cards ─────────────────────────────────────────────── */
 const NEW_USER_CARDS = [
@@ -226,7 +245,8 @@ const CAR_CLASSES = [
 export default function HomePageClient({ latestPosts = [] }: { latestPosts?: BlogPostSummary[] }) {
   const { t } = useLocale();
   const { openModal } = useAuthModal();
-  const [blogTab, setBlogTab] = useState(0);
+  const [blogTab,   setBlogTab]   = useState(0);
+  const [seoTabIdx, setSeoTabIdx] = useState(0);
   const [prefillRoute, setPrefillRoute] = useState<{ from: string; to: string } | null>(null);
   const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
   const [activeService, setActiveService] = useState('transfer');
@@ -792,36 +812,50 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          12. SEO ROUTE KEYWORD GRID
+          12. SEO ROUTE KEYWORD GRID — Trip.com style
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">{t('seo.h2')}</h2>
-          <nav aria-label="Transfer route directory">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-0">
-              {SEO_ROUTES.map((col, ci) => (
-                <ul key={ci} className="space-y-0">
-                  {col.map((route) => {
-                    const toIdx = route.toLowerCase().lastIndexOf(' to ');
-                    const from  = toIdx !== -1 ? route.slice(0, toIdx).trim() : route;
-                    const to    = toIdx !== -1 ? route.slice(toIdx + 4).trim() : '';
-                    return (
-                      <li key={route}>
-                        <a
-                          href={`/results?pickup_address=${encodeURIComponent(from)}&dropoff_address=${encodeURIComponent(to)}`}
-                          onClick={(e) => handleSeoRouteClick(route, e)}
-                          className="group/r block text-sm text-brand-700 hover:text-brand-900 py-1.5 leading-snug flex items-center gap-1"
-                        >
-                          <span className="group-hover/r:underline">{route}</span>
-                          <ArrowLeftRight className="w-3 h-3 shrink-0 opacity-0 group-hover/r:opacity-60 transition-opacity" aria-hidden="true" />
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ))}
+          <h2 className="text-2xl font-bold text-gray-900 mb-5">Top private transfers in Thailand</h2>
+
+          {/* ── Category tabs ── */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {SEO_ROUTE_TABS.map((tab, i) => (
+              <button
+                key={tab.label}
+                type="button"
+                onClick={() => setSeoTabIdx(i)}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors border ${
+                  i === seoTabIdx
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Bordered link grid ── */}
+          <div className="border border-gray-200 rounded-xl p-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-1">
+              {SEO_ROUTE_TABS[seoTabIdx].routes.map((route) => {
+                const toIdx = route.toLowerCase().lastIndexOf(' to ');
+                const from  = toIdx !== -1 ? route.slice(0, toIdx).trim() : route;
+                const to    = toIdx !== -1 ? route.slice(toIdx + 4).trim() : '';
+                return (
+                  <a
+                    key={route}
+                    href={`/results?pickup_address=${encodeURIComponent(from)}&dropoff_address=${encodeURIComponent(to)}`}
+                    onClick={(e) => handleSeoRouteClick(route, e)}
+                    className="text-sm text-brand-600 hover:text-brand-800 hover:underline py-1.5 leading-snug truncate"
+                  >
+                    {route}
+                  </a>
+                );
+              })}
             </div>
-          </nav>
+          </div>
         </div>
       </section>
 
