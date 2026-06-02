@@ -20,13 +20,21 @@ import QuickInfoBar from '@/components/tours/QuickInfoBar'
 import ItineraryItem from '@/components/tours/ItineraryItem'
 import JsonLd from '@/components/seo/JsonLd'
 import { tourProductSchema } from '@/lib/seo/schema'
-import { getTourBySlug, getToursForDestination, tours as TOURS, formatTHB, type Tour } from '@/lib/tours'
+import { formatTHB, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 
-// ─── Static params ─────────────────────────────────────────────────────────────
+// ─── Static params from DB ─────────────────────────────────────────────────────
 
 export async function generateStaticParams() {
-  return TOURS.map(t => ({ slug: t.slug }))
+  try {
+    const tours = await prisma.tour.findMany({
+      where: { isActive: true },
+      select: { slug: true },
+    })
+    return tours.map(t => ({ slug: t.slug }))
+  } catch {
+    return []
+  }
 }
 
 // ─── DB + fallback loader ──────────────────────────────────────────────────────
@@ -68,9 +76,9 @@ async function getTour(slug: string): Promise<TourExtended | null> {
       }
     }
   } catch (err) {
-    console.warn('[tours/slug] DB fetch failed, falling back to static data:', err)
+    console.error('[tours/slug] DB error:', err)
   }
-  return getTourBySlug(slug) ?? null
+  return null
 }
 
 // ─── Metadata ──────────────────────────────────────────────────────────────────

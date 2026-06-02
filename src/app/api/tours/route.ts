@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { tours as staticTours, Tour } from '@/lib/tours'
+import { type Tour } from '@/lib/tours'
 
 export const dynamic = 'force-dynamic'
 
@@ -169,25 +169,17 @@ export async function GET(request: NextRequest) {
   const limit     = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '12', 10)))
 
   let allTours: Tour[] = []
-  let useDb = false
 
-  // 1. Try Prisma DB
+  // DB only — no static fallback
   try {
     const dbTours = await prisma.tour.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
     })
-    if (dbTours.length > 0) {
-      allTours = dbTours.map(mapDbTour)
-      useDb = true
-    }
-  } catch {
-    // DB unavailable
-  }
-
-  // 2. Fall back to static data
-  if (!useDb) {
-    allTours = [...staticTours]
+    allTours = dbTours.map(mapDbTour)
+  } catch (err) {
+    console.error('[GET /api/tours] DB error:', err)
+    return NextResponse.json({ error: 'Database unavailable' }, { status: 503 })
   }
 
   // ── Build facets on unfiltered set ──────────────────────────────────────────

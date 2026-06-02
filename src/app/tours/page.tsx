@@ -8,7 +8,7 @@ import Footer from '@/components/Footer'
 import TourGrid from '@/components/tours/TourGrid'
 import TripHeroSearch from '@/components/tours/TripHeroSearch'
 import KlookCategorySection from '@/components/tours/KlookCategorySection'
-import { tours as TOURS, type Tour } from '@/lib/tours'
+import { type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 
 export const revalidate = 300; // ISR: revalidate every 5 minutes
@@ -59,36 +59,34 @@ async function getAllTours(): Promise<Tour[]> {
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
     })
-    if (dbTours.length > 0) {
-      return dbTours.map(t => ({
-        slug:          t.slug,
-        title:         t.title,
-        subtitle:      t.subtitle ?? '',
-        location:      t.location,
-        cities:        t.cities,
-        duration:      t.duration,
-        maxGroupSize:  t.maxGroupSize,
-        languages:     t.languages,
-        rating:        t.rating,
-        reviewCount:   t.reviewCount,
-        category:      t.category as Tour['category'],
-        badge:         t.badge as Tour['badge'] ?? undefined,
-        images:        t.images,
-        highlights:    t.highlights,
-        description:   t.description,
-        includes:      t.includes,
-        excludes:      t.excludes,
-        itinerary:     (t.itinerary as unknown as Tour['itinerary']) ?? [],
-        options:       (t.options as unknown as Tour['options']) ?? [],
-        meetingPoint:  t.meetingPoint ?? '',
-        importantInfo: t.importantInfo,
-        reviews:       (t.reviews as unknown as Tour['reviews']) ?? [],
-      }))
-    }
+    return dbTours.map(t => ({
+      slug:          t.slug,
+      title:         t.title,
+      subtitle:      t.subtitle ?? '',
+      location:      t.location,
+      cities:        t.cities,
+      duration:      t.duration,
+      maxGroupSize:  t.maxGroupSize,
+      languages:     t.languages,
+      rating:        t.rating,
+      reviewCount:   t.reviewCount,
+      category:      t.category as Tour['category'],
+      badge:         t.badge as Tour['badge'] ?? undefined,
+      images:        t.images,
+      highlights:    t.highlights,
+      description:   t.description,
+      includes:      t.includes,
+      excludes:      t.excludes,
+      itinerary:     (t.itinerary as unknown as Tour['itinerary']) ?? [],
+      options:       (t.options as unknown as Tour['options']) ?? [],
+      meetingPoint:  t.meetingPoint ?? '',
+      importantInfo: t.importantInfo,
+      reviews:       (t.reviews as unknown as Tour['reviews']) ?? [],
+    }))
   } catch (err) {
-    console.warn('[tours/page] DB fetch failed, falling back to static data:', err)
+    console.error('[tours/page] DB error:', err)
+    return []
   }
-  return TOURS
 }
 
 // ─── Duration parser ──────────────────────────────────────────────────────────

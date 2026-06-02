@@ -450,16 +450,9 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 ml-1">
-                <button type="button" onClick={() => openModal('register')}
-                  className={`text-sm font-semibold px-4 py-1.5 rounded-full border transition-colors whitespace-nowrap ${isDark ? 'border-white/40 text-white hover:bg-white/10' : 'border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}>
-                  Sign up
-                </button>
-                <button type="button" onClick={() => openModal()}
-                  className="text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm">
-                  Log in
-                </button>
-              </div>
+              <button type="button" onClick={() => openModal()} className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-5 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm">
+                Log in / Sign up
+              </button>
             )}
           </div>
 
