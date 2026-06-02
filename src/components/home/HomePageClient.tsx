@@ -519,68 +519,60 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             return (
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
 
-                {/* ── LEFT: Platform brand + rating ── */}
-                <div className="shrink-0 flex flex-col items-center gap-3 min-w-[200px] w-full lg:w-auto">
+                {/* ── LEFT: Platform brand + rating bar ── */}
+                <div className="shrink-0 flex flex-col gap-2.5 min-w-[220px] w-full lg:w-auto">
 
-                  {/* Platform logo — real logos with transparent bg */}
-                  {plat.id === 'tripadvisor' && (
-                    <img
-                      src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
-                      alt="Tripadvisor"
-                      className="h-10 w-auto object-contain"
-                    />
-                  )}
-                  {plat.id === 'google' && (
-                    <div className="flex items-center gap-2 h-10">
-                      <svg viewBox="0 0 24 24" className="h-8 w-8 shrink-0" aria-label="Google">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  {/* ── Row 1: TripAdvisor ── */}
+                  <div className="flex items-center gap-3">
+                    {/* TripAdvisor owl + wordmark */}
+                    <div className="flex items-center gap-1.5">
+                      {/* Owl icon */}
+                      <svg width="28" height="28" viewBox="0 0 60 60" aria-hidden="true">
+                        <circle cx="30" cy="30" r="30" fill="#34e0a1"/>
+                        <ellipse cx="21" cy="28" rx="8" ry="8" fill="white"/>
+                        <ellipse cx="39" cy="28" rx="8" ry="8" fill="white"/>
+                        <circle cx="21" cy="28" r="5" fill="#1a1a1a"/>
+                        <circle cx="39" cy="28" r="5" fill="#1a1a1a"/>
+                        <circle cx="22.5" cy="26.5" r="2" fill="white"/>
+                        <circle cx="40.5" cy="26.5" r="2" fill="white"/>
+                        <path d="M22 38 Q30 44 38 38" stroke="#1a1a1a" strokeWidth="2" fill="none" strokeLinecap="round"/>
                       </svg>
-                      <span className="font-bold text-gray-800 text-xl tracking-tight">Google</span>
+                      <span className="font-bold text-gray-800 text-[15px] tracking-tight">Tripadvisor</span>
                     </div>
-                  )}
-                  {plat.id === 'trustpilot' && (
-                    <img
-                      src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
-                      alt="Trustpilot"
-                      className="h-8 w-auto object-contain"
-                    />
-                  )}
-
-                  {/* Overall label */}
-                  <p className="font-extrabold text-gray-900 text-xl leading-tight">{plat.overallLabel}</p>
-
-                  {/* Rating dots / stars */}
-                  {plat.id === 'tripadvisor' && (
-                    <div className="flex gap-1">
+                    {/* 5 green bubble dots */}
+                    <div className="flex gap-1 ml-1">
                       {[1,2,3,4,5].map(i => (
-                        <div key={i} className="w-5 h-5 rounded-full flex items-center justify-center" style={{background:'#34e0a1'}}>
-                          <div className="w-2 h-2 rounded-full" style={{background:'#00aa6c'}} />
-                        </div>
+                        <div key={i} className="w-5 h-5 rounded-full" style={{background:'#34e0a1'}} />
                       ))}
                     </div>
-                  )}
-                  {plat.id === 'google' && (
+                  </div>
+
+                  {/* ── Row 2: Excellent + Trustpilot ── */}
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-gray-900 text-[15px]">Excellent</span>
+                    {/* 5 green Trustpilot star boxes */}
                     <div className="flex gap-0.5">
-                      {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />)}
-                    </div>
-                  )}
-                  {plat.id === 'trustpilot' && (
-                    <div className="flex gap-1">
                       {[1,2,3,4,5].map(i => (
-                        <div key={i} className="w-6 h-6 flex items-center justify-center rounded-sm" style={{background:'#00b67a'}}>
-                          <Star className="w-3.5 h-3.5 text-white fill-white" />
+                        <div key={i} className="w-[22px] h-[22px] flex items-center justify-center" style={{background:'#00b67a'}}>
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="white" aria-hidden="true">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
                         </div>
                       ))}
                     </div>
-                  )}
+                    {/* Trustpilot star + wordmark */}
+                    <div className="flex items-center gap-1">
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#00b67a" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <span className="font-bold text-gray-800 text-[14px]">Trustpilot</span>
+                    </div>
+                  </div>
 
                   <p className="text-xs text-gray-400">{plat.totalReviews} verified reviews</p>
 
                   {/* Platform tab pills */}
-                  <div className="flex gap-2 mt-1">
+                  <div className="flex gap-2">
                     {PLATFORM_REVIEWS.map((p, i) => (
                       <button
                         key={p.id}
