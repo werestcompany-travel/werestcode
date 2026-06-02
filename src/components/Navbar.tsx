@@ -87,7 +87,6 @@ const NAV_LINKS = [
   { label: 'Transfers',        href: '/results'       },
   { label: 'Tours',            href: '/tours'         },
   { label: 'Attractions',      href: '/attractions'   },
-  { label: 'Explore Werest',   href: '/deals'         },
 ];
 
 export default function Navbar({
