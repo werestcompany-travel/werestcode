@@ -142,13 +142,6 @@ const PLATFORM_REVIEWS = [
 ];
 
 /* ── Auto-slider promotional banners ─────────────────────────────────────── */
-const PROMO_BANNERS = [
-  { bg: 'from-[#2534ff] to-[#1a26cc]', tag: 'New User Offer',  title: 'First Booking — 10% Off',   desc: 'Sign in and save on your first private transfer',  cta: 'Claim Now',  href: '#',        openModal: true  },
-  { bg: 'from-emerald-500 to-teal-600', tag: 'Free Cancel',    title: 'Book with Confidence',      desc: 'Cancel for free up to 24 hours before pickup',     cta: 'Learn More', href: '/booking', openModal: false },
-  { bg: 'from-violet-600 to-purple-700', tag: 'Earn Rewards',  title: 'Collect Werest Points',     desc: 'Earn on every trip and redeem for free rides',      cta: 'Join Now',   href: '#',        openModal: true  },
-  { bg: 'from-amber-500 to-orange-600', tag: 'Popular Route',  title: 'Bangkok → Pattaya ฿1,800', desc: 'Fixed price · No surge · Available 24/7',           cta: 'Book Now',   href: '/results?pickup_address=Bangkok&dropoff_address=Pattaya', openModal: false },
-  { bg: 'from-[#0a0e2e] to-[#1a20a0]', tag: 'Airport Special', title: 'Airport Pickup from ฿600', desc: 'Professional driver waiting at arrivals',            cta: 'See Routes', href: '/results', openModal: false },
-];
 
 /* ── Popular destination bento grid ──────────────────────────────────────── */
 const POPULAR_DESTINATIONS = [
@@ -307,72 +300,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
-  /* ── Promo slider ── */
-  const sliderRef    = useRef<HTMLDivElement>(null);
-  const trackRef     = useRef<HTMLDivElement>(null);
-  const touchStartX  = useRef(0);
-  const touchStartY  = useRef(0);
-  const touchOffset  = useRef(0);
-  const isDragging   = useRef(false);
-  const [sliderIdx,  setSliderIdx]  = useState(0);
-  const [sliderStep, setSliderStep] = useState(0); // px per item + gap
-
-  useEffect(() => {
-    function measure() {
-      if (!sliderRef.current) return;
-      const w   = sliderRef.current.offsetWidth;
-      const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-      setSliderStep((w + 12) / ipv); // 12 = gap-3
-    }
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
-
-  useEffect(() => {
-    const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-    const max = PROMO_BANNERS.length - ipv;
-    const t = setInterval(() => setSliderIdx(i => i >= max ? 0 : i + 1), 3000);
-    return () => clearInterval(t);
-  }, [sliderStep]);
-
-  /* ── Promo slider touch drag handlers ── */
-  const handlePromoTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchOffset.current = 0;
-    isDragging.current  = false;
-    if (trackRef.current) trackRef.current.style.transition = 'none';
-  };
-
-  const handlePromoTouchMove = (e: React.TouchEvent) => {
-    const dx = e.touches[0].clientX - touchStartX.current;
-    const dy = e.touches[0].clientY - touchStartY.current;
-    // Ignore if vertical scroll is dominant and drag hasn't started yet
-    if (!isDragging.current && Math.abs(dx) < Math.abs(dy)) return;
-    isDragging.current  = true;
-    touchOffset.current = dx;
-    if (trackRef.current && sliderStep) {
-      trackRef.current.style.transform = `translateX(${-(sliderIdx * sliderStep) + dx}px)`;
-    }
-  };
-
-  const handlePromoTouchEnd = () => {
-    if (trackRef.current) trackRef.current.style.transition = 'transform 500ms ease-in-out';
-    if (!isDragging.current) return;
-    const delta = touchOffset.current;
-    const ipv   = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-    const max   = PROMO_BANNERS.length - ipv;
-    let newIdx  = sliderIdx;
-    if (delta < -50 && sliderIdx < max) newIdx = sliderIdx + 1;
-    else if (delta > 50 && sliderIdx > 0) newIdx = sliderIdx - 1;
-    if (trackRef.current) {
-      trackRef.current.style.transform = `translateX(-${newIdx * sliderStep}px)`;
-    }
-    setSliderIdx(newIdx);
-    touchOffset.current = 0;
-    isDragging.current  = false;
-  };
 
   /** Parse "City A to City B" → prefill hero form + scroll up */
   const handleSeoRouteClick = useCallback((route: string, e: React.MouseEvent) => {
@@ -611,100 +538,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════
-          3. PROMOTIONAL BANNER SLIDER
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Promotions" className="bg-white py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Slider container */}
-          <div className="relative overflow-hidden sm:overflow-visible">
-            {/* Left arrow */}
-            <button
-              type="button"
-              aria-label="Previous"
-              onClick={() => {
-                const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-                const max = PROMO_BANNERS.length - ipv;
-                setSliderIdx(i => i <= 0 ? max : i - 1);
-              }}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-brand-600 hover:border-brand-300 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4 rotate-180" />
-            </button>
-
-            {/* Right arrow */}
-            <button
-              type="button"
-              aria-label="Next"
-              onClick={() => {
-                const ipv = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-                const max = PROMO_BANNERS.length - ipv;
-                setSliderIdx(i => i >= max ? 0 : i + 1);
-              }}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-brand-600 hover:border-brand-300 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            {/* Track */}
-            <div ref={sliderRef} className="overflow-hidden">
-              <div
-                ref={trackRef}
-                className="flex gap-3"
-                style={{ transform: `translateX(-${sliderIdx * sliderStep}px)`, transition: 'transform 500ms ease-in-out' }}
-                onTouchStart={handlePromoTouchStart}
-                onTouchMove={handlePromoTouchMove}
-                onTouchEnd={handlePromoTouchEnd}
-              >
-                {PROMO_BANNERS.map((b) => {
-                  const inner = (
-                    <div className={`relative h-[145px] sm:h-[165px] overflow-hidden bg-gradient-to-br ${b.bg} flex flex-col justify-between p-4`}>
-                      <span className="text-[10px] font-bold uppercase tracking-wide bg-white/20 text-white px-2 py-0.5 rounded-full w-fit">{b.tag}</span>
-                      <div>
-                        <p className="text-white font-extrabold text-base sm:text-lg leading-tight">{b.title}</p>
-                        <p className="text-white/75 text-xs mt-1 leading-snug hidden sm:block">{b.desc}</p>
-                        <p className="text-white/90 text-[11px] font-semibold mt-2">{b.cta} →</p>
-                      </div>
-                    </div>
-                  );
-                  return b.openModal ? (
-                    <button
-                      key={b.title}
-                      type="button"
-                      onClick={() => openModal('register')}
-                      className="shrink-0 block rounded-2xl overflow-hidden text-left"
-                      style={{ width: sliderStep ? sliderStep - 12 : 'auto' }}
-                    >
-                      {inner}
-                    </button>
-                  ) : (
-                    <Link
-                      key={b.title}
-                      href={b.href}
-                      className="shrink-0 block rounded-2xl overflow-hidden"
-                      style={{ width: sliderStep ? sliderStep - 12 : 'auto' }}
-                    >
-                      {inner}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Dots */}
-            <div className="flex justify-center gap-1.5 mt-3">
-              {Array.from({ length: PROMO_BANNERS.length }).map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSliderIdx(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === sliderIdx ? 'bg-brand-600 w-4' : 'bg-gray-300'}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
 
       {/* ════════════════════════════════════════════════════════════
