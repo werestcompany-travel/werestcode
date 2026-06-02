@@ -391,17 +391,6 @@ export default function Navbar({
               <span>{currency}</span>
             </button>
 
-            {/* App */}
-            <button type="button"
-              className={`flex items-center gap-1.5 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}>
-              <Smartphone className="w-4 h-4 shrink-0" />App
-            </button>
-
-            {/* Help */}
-            <Link href="/help-center"
-              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
-              Help
-            </Link>
 
             {/* Recently viewed / Bookings */}
             <Link href="/tracking"
