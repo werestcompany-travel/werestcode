@@ -519,70 +519,71 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             return (
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
 
-                {/* ── LEFT: Platform brand + rating bar ── */}
-                <div className="shrink-0 flex flex-col gap-2.5 min-w-[220px] w-full lg:w-auto">
+                {/* ── LEFT: 2-row container bar ── */}
+                <div className="shrink-0 w-full lg:w-auto">
+                  <div className="inline-flex flex-col gap-0 border border-gray-200 rounded-xl overflow-hidden">
 
-                  {/* ── Row 1: TripAdvisor ── */}
-                  <div className="flex items-center gap-3">
-                    {/* TripAdvisor owl + wordmark */}
-                    <div className="flex items-center gap-1.5">
-                      {/* Owl icon */}
-                      <svg width="28" height="28" viewBox="0 0 60 60" aria-hidden="true">
-                        <circle cx="30" cy="30" r="30" fill="#34e0a1"/>
-                        <ellipse cx="21" cy="28" rx="8" ry="8" fill="white"/>
-                        <ellipse cx="39" cy="28" rx="8" ry="8" fill="white"/>
-                        <circle cx="21" cy="28" r="5" fill="#1a1a1a"/>
-                        <circle cx="39" cy="28" r="5" fill="#1a1a1a"/>
-                        <circle cx="22.5" cy="26.5" r="2" fill="white"/>
-                        <circle cx="40.5" cy="26.5" r="2" fill="white"/>
-                        <path d="M22 38 Q30 44 38 38" stroke="#1a1a1a" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                      </svg>
-                      <span className="font-bold text-gray-800 text-[15px] tracking-tight">Tripadvisor</span>
-                    </div>
-                    {/* 5 green bubble dots */}
-                    <div className="flex gap-1 ml-1">
-                      {[1,2,3,4,5].map(i => (
-                        <div key={i} className="w-5 h-5 rounded-full" style={{background:'#34e0a1'}} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── Row 2: Excellent + Trustpilot ── */}
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-gray-900 text-[15px]">Excellent</span>
-                    {/* 5 green Trustpilot star boxes */}
-                    <div className="flex gap-0.5">
-                      {[1,2,3,4,5].map(i => (
-                        <div key={i} className="w-[22px] h-[22px] flex items-center justify-center" style={{background:'#00b67a'}}>
-                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="white" aria-hidden="true">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          </svg>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Trustpilot star + wordmark */}
-                    <div className="flex items-center gap-1">
-                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#00b67a" aria-hidden="true">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                      <span className="font-bold text-gray-800 text-[14px]">Trustpilot</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-400">{plat.totalReviews} verified reviews</p>
-
-                  {/* Platform tab pills */}
-                  <div className="flex gap-2">
-                    {PLATFORM_REVIEWS.map((p, i) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => { setReviewPlatIdx(i); setReviewCardIdx(0); }}
-                        className={`w-2 h-2 rounded-full transition-all ${i === reviewPlatIdx ? 'scale-125' : 'bg-gray-200 hover:bg-gray-300'}`}
-                        style={i === reviewPlatIdx ? {background: plat.accentColor} : {}}
-                        aria-label={p.label}
+                    {/* ── Row 1: TripAdvisor ── */}
+                    <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200">
+                      {/* Real TripAdvisor owl icon */}
+                      <img
+                        src="https://static.tacdn.com/img2/travelers_choice/2023/TC_LL_globe-ondark.svg"
+                        alt=""
+                        className="w-7 h-7 object-contain"
+                        aria-hidden="true"
+                        onError={e => { (e.target as HTMLImageElement).style.display='none'; }}
                       />
-                    ))}
+                      {/* Real TripAdvisor wordmark */}
+                      <img
+                        src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
+                        alt="Tripadvisor"
+                        className="h-5 w-auto object-contain"
+                      />
+                      {/* 5 TripAdvisor green bubble dots */}
+                      <div className="flex gap-1 ml-1">
+                        {[1,2,3,4,5].map(i => (
+                          <div key={i} className="w-[18px] h-[18px] rounded-full border-2 border-white shadow-sm" style={{background:'#34e0a1'}} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ── Row 2: Trustpilot ── */}
+                    <div className="flex items-center gap-2.5 px-4 py-3 bg-white">
+                      <span className="font-bold text-gray-900 text-[14px] shrink-0">Excellent</span>
+                      {/* 5 Trustpilot green star boxes */}
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(i => (
+                          <div key={i} className="w-[22px] h-[22px] flex items-center justify-center" style={{background:'#00b67a'}}>
+                            <svg viewBox="0 0 24 24" className="w-3 h-3" fill="white" aria-hidden="true">
+                              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.1l-6.2 4.2 2.4-7.4L2 9.4h7.6z"/>
+                            </svg>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Real Trustpilot logo */}
+                      <img
+                        src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
+                        alt="Trustpilot"
+                        className="h-[18px] w-auto object-contain ml-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* verified count + platform pills below the box */}
+                  <div className="flex items-center justify-between mt-2 px-0.5">
+                    <p className="text-xs text-gray-400">{plat.totalReviews} verified reviews</p>
+                    <div className="flex gap-1.5">
+                      {PLATFORM_REVIEWS.map((p, i) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => { setReviewPlatIdx(i); setReviewCardIdx(0); }}
+                          className={`w-2 h-2 rounded-full transition-all ${i === reviewPlatIdx ? 'scale-125' : 'bg-gray-200 hover:bg-gray-300'}`}
+                          style={i === reviewPlatIdx ? {background: plat.accentColor} : {}}
+                          aria-label={p.label}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
 
