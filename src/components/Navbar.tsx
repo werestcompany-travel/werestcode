@@ -84,9 +84,8 @@ const MOBILE_TRAVEL_OPTIONS = [
 ];
 
 const NAV_LINKS = [
-  { label: 'Transfers',        href: '/results'       },
-  { label: 'Tours',            href: '/tours'         },
-  { label: 'Attractions',      href: '/attractions'   },
+  { label: 'Transfers',    href: '/results'     },
+  { label: 'Things to do', href: '/attractions' },
 ];
 
 export default function Navbar({
