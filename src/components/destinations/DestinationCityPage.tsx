@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
@@ -90,11 +90,42 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   )
 }
 
+/* ── Drag-scroll hook ────────────────────────────────────────────────────── */
+function useDragScroll() {
+  const ref = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+  const startX   = useRef(0)
+  const scrollLeft = useRef(0)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    dragging.current  = true
+    startX.current    = e.pageX - (ref.current?.offsetLeft ?? 0)
+    scrollLeft.current = ref.current?.scrollLeft ?? 0
+    if (ref.current) ref.current.style.cursor = 'grabbing'
+  }, [])
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragging.current || !ref.current) return
+    e.preventDefault()
+    const x    = e.pageX - ref.current.offsetLeft
+    const walk = (x - startX.current) * 1.2
+    ref.current.scrollLeft = scrollLeft.current - walk
+  }, [])
+
+  const stopDrag = useCallback(() => {
+    dragging.current = false
+    if (ref.current) ref.current.style.cursor = 'grab'
+  }, [])
+
+  return { ref, onMouseDown, onMouseMove, onMouseLeave: stopDrag, onMouseUp: stopDrag }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════ */
 
 interface Props { city: CityConfig }
 
 export default function DestinationCityPage({ city }: Props) {
+  const tourScroll = useDragScroll()
   const [tours,       setTours]       = useState<DBTour[]>([])
   const [attractions, setAttractions] = useState<DBAttraction[]>([])
   const [loading,     setLoading]     = useState(true)
@@ -112,7 +143,7 @@ export default function DestinationCityPage({ city }: Props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white pt-16">
 
         {/* ════ BREADCRUMB — real path from city data ════ */}
@@ -251,9 +282,9 @@ export default function DestinationCityPage({ city }: Props) {
             </div>
 
             {loading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="flex gap-4 overflow-hidden">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                  <div key={i} className="shrink-0 w-[72vw] sm:w-[340px] lg:w-[360px] bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
                     <div className="h-44 bg-gray-200" />
                     <div className="p-4 space-y-2">
                       <div className="h-3 bg-gray-200 rounded w-3/4" />
@@ -263,16 +294,25 @@ export default function DestinationCityPage({ city }: Props) {
                 ))}
               </div>
             ) : tours.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div
+                ref={tourScroll.ref}
+                onMouseDown={tourScroll.onMouseDown}
+                onMouseMove={tourScroll.onMouseMove}
+                onMouseLeave={tourScroll.onMouseLeave}
+                onMouseUp={tourScroll.onMouseUp}
+                className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-2 cursor-grab select-none"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 {tours.map(tour => {
                   const minPrice = tour.options?.length ? Math.min(...tour.options.map(o => o.pricePerPerson)) : 0
                   return (
                     <Link key={tour.slug} href={`/tours/${tour.slug}`}
-                      className="group bg-white rounded-2xl border border-gray-100 hover:border-[#2534ff]/30 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-                      <div className="relative h-44 overflow-hidden bg-gray-100">
+                      draggable={false}
+                      className="group shrink-0 w-[72vw] sm:w-[300px] lg:w-[320px] bg-white rounded-2xl border border-gray-100 hover:border-[#2534ff]/30 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+                      <div className="relative h-44 overflow-hidden bg-gray-100 shrink-0">
                         {tour.images?.[0] && (
-                          <Image src={tour.images[0]} alt={tour.title} fill sizes="400px"
-                            className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                          <Image src={tour.images[0]} alt={tour.title} fill sizes="320px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized draggable={false} />
                         )}
                         {tour.badge && (
                           <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">
@@ -299,6 +339,7 @@ export default function DestinationCityPage({ city }: Props) {
                     </Link>
                   )
                 })}
+                <div className="shrink-0 w-1" aria-hidden />
               </div>
             ) : (
               <p className="text-gray-400 text-sm py-8 text-center">No tours listed yet — check back soon.</p>

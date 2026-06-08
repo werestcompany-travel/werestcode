@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Fragment, useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Menu, X, User, Heart, LogOut, ChevronDown, ChevronRight,
-  BookOpen, Search, Headphones, Trash2, Clock, TrendingUp,
+  BookOpen, Search, Headphones, Trash2, TrendingUp,
   Car, Compass, Ticket, Ship, Users, Tag, Gift, Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -75,8 +75,7 @@ const TRENDING_DESTINATIONS = [
 ];
 
 const MOBILE_TRAVEL_OPTIONS = [
-  { label: 'Private Transfers',   Icon: Car,     href: '/results'      },
-  { label: 'Charter / Hourly',    Icon: Clock,   href: '/charter'      },
+  { label: 'Private Transfers',   Icon: Car,     href: '/transfers'    },
   { label: 'Tours & Experiences', Icon: Compass, href: '/tours'        },
   { label: 'Attraction Tickets',  Icon: Ticket,  href: '/attractions'  },
   { label: 'Group Tours',         Icon: Users,   href: '/group-booking'},
@@ -84,7 +83,7 @@ const MOBILE_TRAVEL_OPTIONS = [
 ];
 
 const NAV_LINKS = [
-  { label: 'Transfers',    href: '/results'     },
+  { label: 'Transfers',    href: '/transfers'   },
   { label: 'Things to do', href: '/attractions' },
 ];
 
@@ -94,7 +93,8 @@ export default function Navbar({
   transparent?: boolean;
 }) {
   const { lang, currency, setLang, setCurrency, t } = useLocale();
-  const router = useRouter();
+  const router   = useRouter()
+  const pathname = usePathname();
   const { openModal, user, setUser } = useAuthModal();
 
   /* ── Desktop state ── */
@@ -102,6 +102,7 @@ export default function Navbar({
   const [scrolled,            setScrolled]            = useState(false);
   const [navHidden,           setNavHidden]           = useState(false);
   const [searchQ,             setSearchQ]             = useState('');
+  const [searchFocused,       setSearchFocused]       = useState(false);
   const [phIdx,               setPhIdx]               = useState(0);
   const [phFading,            setPhFading]            = useState(false);
   const [searchHistory,       setSearchHistory]       = useState<string[]>([]);
@@ -212,6 +213,9 @@ export default function Navbar({
     try { localStorage.removeItem('werest_search_history'); } catch {}
   };
 
+  // Text/icon colour: white only when transparent AND not yet scrolled (dark hero behind nav)
+  // Once scrolled (white bg) or on non-transparent pages → dark text
+  const useWhite = transparent && !scrolled;
   const isDark = transparent && !scrolled;
   const activeLang = LANGUAGES.find(l => l.code === lang) ?? LANGUAGES[0];
 
@@ -233,7 +237,7 @@ export default function Navbar({
               {searchHistory.map(h => (
                 <button key={h} type="button" onMouseDown={e => e.preventDefault()} onClick={() => handleSearchChipClick(h)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors bg-white">
-                  <Clock className="w-3 h-3 text-gray-400 shrink-0" />{h}
+                  <TrendingUp className="w-3 h-3 text-gray-400 shrink-0" />{h}
                 </button>
               ))}
             </div>
@@ -313,9 +317,10 @@ export default function Navbar({
       ════════════════════════════════════════════════════════════ */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
 
+        {/* White background — shown when scrolled OR on non-transparent pages */}
         <div className={cn(
           'absolute inset-0 bg-white border-b border-gray-200 shadow-sm transition-opacity duration-300 pointer-events-none',
-          isDark ? 'opacity-0' : 'opacity-100',
+          (!transparent || scrolled) ? 'opacity-100' : 'opacity-0',
         )} />
 
         <nav className="relative z-10 h-16 flex items-center pl-3 pr-3">
@@ -325,22 +330,24 @@ export default function Navbar({
 
             {/* LEFT: hamburger + logo side by side */}
             <button type="button" onClick={openMobileMenu} aria-label="Menu"
-              className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
+              className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
               <Menu className="w-[22px] h-[22px]" strokeWidth={1.8} />
             </button>
             <Link href="/" aria-label="Werest home" className="ml-1 shrink-0">
               <Image src="/images/logo.png" alt="Werest Travel" height={28} width={94} priority
-                className={`object-contain transition-all duration-300 ${isDark ? 'brightness-0 invert' : ''}`} />
+                className={`object-contain transition-all duration-300 ${useWhite ? 'brightness-0 invert' : ''}`} />
             </Link>
 
             {/* SPACER */}
             <div className="flex-1" />
 
-            {/* RIGHT: search + user (no cart) */}
-            <button type="button" onClick={() => router.push('/results')} aria-label="Search"
-              className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
-              <Search className="w-[22px] h-[22px]" strokeWidth={1.8} />
-            </button>
+            {/* RIGHT: search (homepage only) + user */}
+            {pathname === '/' && (
+              <button type="button" onClick={() => router.push('/results')} aria-label="Search"
+                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
+                <Search className="w-[22px] h-[22px]" strokeWidth={1.8} />
+              </button>
+            )}
             {user ? (
               <Link href="/account" className="p-2 rounded-lg shrink-0" aria-label="Account">
                 <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
@@ -349,7 +356,7 @@ export default function Navbar({
               </Link>
             ) : (
               <button type="button" onClick={() => openModal()} aria-label="Sign in"
-                className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
+                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
                 <User className="w-[22px] h-[22px]" strokeWidth={1.6} />
               </button>
             )}
@@ -360,14 +367,14 @@ export default function Navbar({
 
           <Link href="/" className="hidden lg:flex items-center shrink-0 mr-4">
             <Image src="/images/logo.png" alt="Werest Travel" height={36} width={120} priority
-              className={`object-contain transition-all duration-300 ${isDark ? 'brightness-0 invert' : ''}`} />
+              className={`object-contain transition-all duration-300 ${useWhite ? 'brightness-0 invert' : ''}`} />
           </Link>
 
           {/* Primary nav links */}
           <nav className="hidden lg:flex items-center gap-0.5">
             {NAV_LINKS.map(link => (
               <Link key={link.href} href={link.href}
-                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
                 {link.label}
               </Link>
             ))}
@@ -381,25 +388,25 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-              className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
+              className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               <span>{lang}</span>
-              <span className={`${isDark ? 'text-white/30' : 'text-gray-300'}`}>|</span>
+              <span className={`${useWhite ? 'text-white/30' : 'text-gray-300'}`}>|</span>
               <span>{currency}</span>
             </button>
 
 
             {/* Recently viewed / Bookings */}
             <Link href="/tracking"
-              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${isDark ? 'text-white/85 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
+              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
               Bookings
             </Link>
 
             {user ? (
               <div className="relative ml-1" ref={userMenuRef}>
                 <button type="button" onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors">
+                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${useWhite ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
                   <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                     {user.name[0].toUpperCase()}
                   </div>
@@ -450,7 +457,12 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <button type="button" onClick={() => openModal()} className="ml-1 text-sm font-bold bg-brand-600 hover:bg-brand-700 text-white px-5 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm">
+              <button type="button" onClick={() => openModal()}
+                className={`ml-1 text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm ${
+                  useWhite
+                    ? 'bg-white/15 hover:bg-white/25 text-white border border-white/40 backdrop-blur-sm'
+                    : 'bg-brand-600 hover:bg-brand-700 text-white'
+                }`}>
                 Log in / Sign up
               </button>
             )}

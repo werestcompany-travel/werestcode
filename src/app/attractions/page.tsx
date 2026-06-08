@@ -1,25 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthModal } from '@/context/AuthModalContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import RecentlyViewed from '@/components/RecentlyViewed';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { Search, Star, ChevronRight, Zap, Smartphone, Heart } from 'lucide-react';
-import ComboDealsSection from '@/components/attractions/ComboDealsSection';
-import VisitDatePicker from '@/components/attractions/VisitDatePicker';
-import AttractionsMap from '@/components/attractions/AttractionsMap';
-import GoodForTags, { GoodForFilter, ALL_GOOD_FOR_OPTIONS, GOOD_FOR_TAGS } from '@/components/attractions/GoodForTags';
-import OpeningHoursCard, { OPENING_HOURS } from '@/components/attractions/OpeningHours';
-import DressCodeBadge from '@/components/attractions/DressCodeBadge';
+import { Search, Star, ChevronRight, ChevronLeft, Heart, MapPin, Tag } from 'lucide-react';
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
-type Badge = 'Sale' | 'Hot deal' | 'Likely to sell out' | 'Exclusive' | 'New' | 'Limited';
-
 interface Attraction {
   id: string;
   slug: string;
@@ -38,159 +28,128 @@ interface Attraction {
 }
 
 /* ─── Static data ────────────────────────────────────────────────────────── */
-const CATEGORIES = [
-  { label: 'Theme Parks',       emoji: '🎢', color: 'bg-orange-50  text-orange-600'  },
-  { label: 'Water Parks',       emoji: '💦', color: 'bg-blue-50    text-blue-600'    },
-  { label: 'Museums',           emoji: '🏛️', color: 'bg-purple-50  text-purple-600'  },
-  { label: 'Parks & Gardens',   emoji: '🌿', color: 'bg-green-50   text-green-600'   },
-  { label: 'Zoos & Aquariums',  emoji: '🦁', color: 'bg-yellow-50  text-yellow-700'  },
-  { label: 'Cable Cars',        emoji: '🚡', color: 'bg-sky-50     text-sky-600'     },
-  { label: 'Observation Decks', emoji: '🏙️', color: 'bg-indigo-50  text-indigo-600'  },
-  { label: 'Historical Sites',  emoji: '🏯', color: 'bg-amber-50   text-amber-700'   },
-  { label: 'Playgrounds',       emoji: '🎠', color: 'bg-pink-50    text-pink-600'    },
-  { label: 'Indoor Games',      emoji: '🎮', color: 'bg-violet-50  text-violet-600'  },
-  { label: 'Attraction Passes', emoji: '🎫', color: 'bg-teal-50    text-teal-600'    },
-  { label: 'Events & Shows',    emoji: '🎭', color: 'bg-rose-50    text-rose-600'    },
+const DESTINATION_CHIPS = [
+  { name: 'Bangkok',     img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=120&q=70', count: '320+' },
+  { name: 'Phuket',      img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=120&q=70', count: '180+' },
+  { name: 'Chiang Mai',  img: 'https://images.unsplash.com/photo-1512553402468-0f82eb1ff5f5?w=120&q=70', count: '95+'  },
+  { name: 'Pattaya',     img: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=120&q=70', count: '110+' },
+  { name: 'Krabi',       img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=120&q=70', count: '60+'  },
+  { name: 'Koh Samui',   img: 'https://images.unsplash.com/photo-1537956965359-7573183d1f57?w=120&q=70', count: '75+'  },
+  { name: 'Ayutthaya',   img: 'https://images.unsplash.com/photo-1599640842225-85d111c60e6b?w=120&q=70', count: '40+'  },
+  { name: 'Hua Hin',     img: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?w=120&q=70', count: '50+'  },
 ];
 
-const POPULAR_DESTINATIONS = [
-  { name: 'Bangkok',     emoji: '🏙️', count: '320+ activities', gradient: 'from-orange-500 to-rose-500'   },
-  { name: 'Phuket',      emoji: '🏝️', count: '180+ activities', gradient: 'from-cyan-500 to-blue-600'     },
-  { name: 'Chiang Mai',  emoji: '🌿', count: '95+ activities',  gradient: 'from-green-500 to-teal-600'    },
-  { name: 'Pattaya',     emoji: '🎡', count: '110+ activities', gradient: 'from-purple-500 to-indigo-600' },
-  { name: 'Krabi',       emoji: '🌊', count: '60+ activities',  gradient: 'from-teal-500 to-cyan-600'     },
-  { name: 'Koh Samui',   emoji: '🌴', count: '75+ activities',  gradient: 'from-amber-500 to-orange-600'  },
+const SECTION_GROUPS = [
+  { key: 'unmissable',  label: 'Unmissable experiences', badge: '🔥', categories: ['Theme Parks', 'Water Parks', 'Cable Cars', 'Observation Decks'] },
+  { key: 'cultural',    label: 'Culture & history',      badge: '🏯', categories: ['Museums', 'Historical Sites', 'Parks & Gardens'] },
+  { key: 'fun',         label: 'Fun & entertainment',    badge: '🎉', categories: ['Playgrounds', 'Indoor Games', 'Zoos & Aquariums'] },
+  { key: 'shows',       label: 'Events & shows',         badge: '🎭', categories: ['Events & Shows', 'Attraction Passes'] },
 ];
 
-const BADGE_STYLES: Record<string, string> = {
-  'Sale':               'bg-red-500 text-white',
-  'Hot deal':           'bg-orange-500 text-white',
-  'Likely to sell out': 'bg-amber-500 text-white',
-  'Exclusive':          'bg-brand-600 text-white',
-  'New':                'bg-green-500 text-white',
-  'Limited':            'bg-purple-500 text-white',
-};
+const PROMO_CODES = [
+  { code: 'SAVE20', pct: '20% off', desc: 'No min. spend', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+  { code: 'FIRST15', pct: '15% off', desc: 'First booking', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { code: 'SUMMER10', pct: '10% off', desc: 'Summer deal', color: 'bg-green-50 border-green-200 text-green-700' },
+  { code: 'VIP25', pct: '25% off', desc: 'Members only', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+];
 
-// Categories where dress code applies
-const DRESS_CODE_CATEGORIES = new Set(['temple', 'historical sites', 'historical', 'cultural', 'museums']);
-
-function hasDressCode(category: string): boolean {
-  return DRESS_CODE_CATEGORIES.has(category.toLowerCase());
+/* ─── HorizontalScroll wrapper ───────────────────────────────────────────── */
+function HScroll({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 'l' | 'r') => {
+    ref.current?.scrollBy({ left: dir === 'r' ? 540 : -540, behavior: 'smooth' });
+  };
+  return (
+    <div className="relative group/scroll">
+      {/* Left arrow */}
+      <button
+        type="button"
+        onClick={() => scroll('l')}
+        className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 items-center justify-center text-gray-600 hover:text-[#2534ff] hover:border-[#2534ff] transition-all opacity-0 group-hover/scroll:opacity-100"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+      {/* Right arrow */}
+      <button
+        type="button"
+        onClick={() => scroll('r')}
+        className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 items-center justify-center text-gray-600 hover:text-[#2534ff] hover:border-[#2534ff] transition-all opacity-0 group-hover/scroll:opacity-100"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+      <div
+        ref={ref}
+        className={`flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
-/* ─── Helpers ────────────────────────────────────────────────────────────── */
-function getGoodForTags(category: string): string[] {
-  const key = category.toLowerCase();
-  if (GOOD_FOR_TAGS[key]) return GOOD_FOR_TAGS[key];
-  const matched = Object.entries(GOOD_FOR_TAGS).find(([k]) => key.includes(k) || k.includes(key));
-  return matched ? matched[1] : ['📸 Photography', '👨‍👩‍👧 Families'];
-}
-
-/* ─── AttractionCard ─────────────────────────────────────────────────────── */
-function AttractionCard({
-  a,
-  wishlisted,
-  onToggleWishlist,
-  onView,
+/* ─── ActivityCard ───────────────────────────────────────────────────────── */
+function ActivityCard({
+  a, wishlisted, onToggleWishlist, onView,
 }: {
-  a: Attraction;
-  wishlisted: boolean;
+  a: Attraction; wishlisted: boolean;
   onToggleWishlist: (a: Attraction) => void;
   onView: (a: Attraction) => void;
 }) {
+  const [imgErr, setImgErr] = useState(false);
+  const showImg = a.featureImage && !imgErr;
   const discount = a.originalPrice ? Math.round((1 - a.price / a.originalPrice) * 100) : 0;
-  const [imgError, setImgError] = useState(false);
-  const showImage = a.featureImage && !imgError;
-  const hours     = OPENING_HOURS[a.slug] ?? OPENING_HOURS['_default'];
 
   return (
-    <Link href={a.href} onClick={() => a.href !== '#' && onView(a)}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer flex flex-col">
-
-      {/* Image area */}
-      <div className="relative overflow-hidden" style={{ height: 180 }}>
-        {showImage ? (
-          <Image
-            src={a.featureImage!}
-            alt={a.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={() => setImgError(true)}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
+    <Link
+      href={a.href}
+      onClick={() => a.href !== '#' && onView(a)}
+      className="group relative shrink-0 w-[200px] sm:w-[220px] lg:w-[256px] flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-[0_8px_30px_rgba(0,0,0,0.13)] transition-all duration-200"
+    >
+      {/* Image */}
+      <div className="relative h-[148px] lg:h-[168px] overflow-hidden bg-gray-100 shrink-0">
+        {showImg ? (
+          <Image src={a.featureImage!} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" onError={() => setImgErr(true)} sizes="256px" />
         ) : (
           <>
             <div className={`absolute inset-0 bg-gradient-to-br ${a.gradient}`} />
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-            <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-40 select-none group-hover:opacity-55 transition-opacity">
-              {a.emoji}
-            </div>
+            <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-40 select-none">{a.emoji}</div>
           </>
         )}
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-        <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-          {a.location}
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        {/* Badge */}
         {a.badge && (
-          <div className={`absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded-full ${BADGE_STYLES[a.badge] ?? 'bg-gray-700 text-white'}`}>
-            {a.badge}
-          </div>
+          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500 text-white">{a.badge}</span>
         )}
         {discount > 0 && (
-          <div className="absolute top-3 right-10 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-            -{discount}%
-          </div>
+          <span className="absolute top-2 right-8 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-red-500 text-white">-{discount}%</span>
         )}
-        {/* Wishlist heart */}
+        {/* Wishlist */}
         <button
-          onClick={(e) => { e.preventDefault(); onToggleWishlist(a); }}
-          className={`absolute top-2.5 right-2.5 w-7 h-7 backdrop-blur-sm rounded-full flex items-center justify-center transition-all ${
-            wishlisted ? 'bg-red-500/90 hover:bg-red-600' : 'bg-white/20 hover:bg-white/40'
-          }`}
+          type="button"
+          onClick={e => { e.preventDefault(); onToggleWishlist(a); }}
+          className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm transition-all ${wishlisted ? 'bg-red-500/90' : 'bg-black/20 hover:bg-black/40'}`}
         >
-          <Heart className={`w-3.5 h-3.5 transition-colors ${wishlisted ? 'fill-white text-white' : 'text-white'}`} />
+          <Heart className={`w-3 h-3 ${wishlisted ? 'fill-white text-white' : 'text-white'}`} />
         </button>
+        {/* Location */}
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+          <MapPin className="w-2.5 h-2.5" />{a.location}
+        </div>
       </div>
 
-      {/* Card body */}
-      <div className="p-4 flex flex-col flex-1 gap-2">
-        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{a.category}</span>
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors min-h-[2.5rem]">
-          {a.name}
-        </h3>
-        <div className="flex items-center gap-1.5">
-          <div className="flex gap-0.5">
-            {[1,2,3,4,5].map(i => (
-              <Star key={i} className={`w-3 h-3 ${i <= Math.round(a.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200'}`} />
-            ))}
-          </div>
-          <span className="text-xs font-semibold text-gray-700">{a.rating}</span>
-          <span className="text-xs text-gray-400">({a.reviewCount})</span>
-        </div>
-
-        {/* Opening hours row */}
-        <OpeningHoursCard slug={a.slug} compact />
-
-        {/* Good For tags */}
-        <GoodForTags category={a.category} max={3} size="sm" />
-
-        {/* Dress code badge (temples / cultural) */}
-        {hasDressCode(a.category) && <DressCodeBadge compact />}
-
-        <div className="flex flex-wrap gap-1">
-          {['Instant confirmation', 'Mobile voucher'].map(t => (
-            <span key={t} className="flex items-center gap-0.5 text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
-              {t === 'Instant confirmation' ? <Zap className="w-2.5 h-2.5 text-brand-500" /> : <Smartphone className="w-2.5 h-2.5 text-brand-500" />}
-              {t}
-            </span>
-          ))}
+      {/* Body */}
+      <div className="p-3 flex flex-col flex-1 gap-1.5">
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{a.category}</p>
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#2534ff] transition-colors min-h-[2.6rem]">{a.name}</h3>
+        <div className="flex items-center gap-1">
+          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+          <span className="text-xs font-bold text-gray-800">{a.rating}</span>
+          <span className="text-[10px] text-gray-400">({a.reviewCount})</span>
         </div>
         <div className="mt-auto pt-2 border-t border-gray-50">
-          <p className="text-[10px] text-gray-400">from</p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-lg font-extrabold text-gray-900">฿{a.price.toLocaleString()}</p>
+          <p className="text-[9px] text-gray-400 uppercase tracking-wide">from</p>
+          <div className="flex items-baseline gap-1.5">
+            <p className="text-base font-extrabold text-gray-900">฿{a.price.toLocaleString()}</p>
             {a.originalPrice && <p className="text-xs text-gray-400 line-through">฿{a.originalPrice.toLocaleString()}</p>}
           </div>
         </div>
@@ -199,79 +158,99 @@ function AttractionCard({
   );
 }
 
+/* ─── Section row ────────────────────────────────────────────────────────── */
+function ActivitySection({
+  label, badge, attractions, wishlisted, onToggleWishlist, onView,
+}: {
+  label: string; badge: string; attractions: Attraction[];
+  wishlisted: Set<string>;
+  onToggleWishlist: (a: Attraction) => void;
+  onView: (a: Attraction) => void;
+}) {
+  if (attractions.length === 0) return null;
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-3 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{badge}</span>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">{label}</h2>
+        </div>
+        <Link href="#" className="flex items-center gap-1 text-sm font-semibold text-[#2534ff] hover:underline whitespace-nowrap">
+          See all <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+      <HScroll className="px-4 sm:px-6 lg:px-8 pb-2">
+        {attractions.map(a => (
+          <ActivityCard key={a.id} a={a} wishlisted={wishlisted.has(a.slug)} onToggleWishlist={onToggleWishlist} onView={onView} />
+        ))}
+        <div className="shrink-0 w-1" aria-hidden />
+      </HScroll>
+    </section>
+  );
+}
+
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function AttractionsPage() {
-  const router = useRouter();
   const { openModal } = useAuthModal();
   const { addItem: addRecentlyViewed } = useRecentlyViewed();
-  const [search,          setSearch]          = useState('');
-  const [activeCategory,  setActiveCategory]  = useState<string | null>(null);
-  const [wishlistSlugs,   setWishlistSlugs]   = useState<Set<string>>(new Set());
-  const [userId,          setUserId]          = useState<string | null>(null);
-  const [attractions,     setAttractions]     = useState<Attraction[]>([]);
-  const [loadingList,     setLoadingList]     = useState(true);
-  const [goodForSelected, setGoodForSelected] = useState<string[]>([]);
-
-  function handleView(a: Attraction) {
-    addRecentlyViewed({
-      id:       a.slug,
-      name:     a.name,
-      location: a.location,
-      price:    a.price,
-      rating:   a.rating,
-      gradient: a.gradient,
-      emoji:    a.emoji,
-      href:     a.href,
-    });
-  }
+  const [search,        setSearch]        = useState('');
+  const [wishlistSlugs, setWishlistSlugs] = useState<Set<string>>(new Set());
+  const [userId,        setUserId]        = useState<string | null>(null);
+  const [attractions,   setAttractions]   = useState<Attraction[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [showAll,       setShowAll]       = useState(false);
+  const [activeChip,    setActiveChip]    = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/attractions')
       .then(r => r.json())
       .then(d => setAttractions(d.attractions ?? []))
-      .finally(() => setLoadingList(false));
-
+      .finally(() => setLoading(false));
     Promise.all([
       fetch('/api/user/me').then(r => r.json()),
       fetch('/api/user/wishlist').then(r => r.json()),
     ]).then(([meData, wlData]) => {
       setUserId(meData.user?.id ?? null);
-      const slugs = new Set<string>((wlData.items ?? []).map((i: { attractionId: string }) => i.attractionId));
-      setWishlistSlugs(slugs);
+      setWishlistSlugs(new Set((wlData.items ?? []).map((i: { attractionId: string }) => i.attractionId)));
     });
   }, []);
 
+  function handleView(a: Attraction) {
+    addRecentlyViewed({ id: a.slug, name: a.name, location: a.location, price: a.price, rating: a.rating, gradient: a.gradient, emoji: a.emoji, href: a.href });
+  }
+
   async function handleToggleWishlist(a: Attraction) {
     if (!userId) { openModal('email'); return; }
-    const wasWishlisted = wishlistSlugs.has(a.slug);
-    setWishlistSlugs(prev => {
-      const next = new Set(prev);
-      wasWishlisted ? next.delete(a.slug) : next.add(a.slug);
-      return next;
-    });
-    if (wasWishlisted) {
+    const was = wishlistSlugs.has(a.slug);
+    setWishlistSlugs(prev => { const n = new Set(prev); was ? n.delete(a.slug) : n.add(a.slug); return n; });
+    if (was) {
       await fetch(`/api/user/wishlist?attractionId=${a.slug}`, { method: 'DELETE' });
     } else {
-      await fetch('/api/user/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attractionId: a.slug, attractionName: a.name, attractionUrl: a.href }),
-      });
+      await fetch('/api/user/wishlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ attractionId: a.slug, attractionName: a.name, attractionUrl: a.href }) });
     }
   }
 
+  /* Filter by search + active chip */
   const filtered = attractions.filter(a => {
-    const matchSearch   = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
-    const matchCat      = !activeCategory || a.category === activeCategory;
-    const matchGoodFor  = goodForSelected.length === 0 || goodForSelected.some(tag => getGoodForTags(a.category).includes(tag));
-    return matchSearch && matchCat && matchGoodFor;
+    const matchSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
+    const matchChip   = !activeChip || a.location.toLowerCase().includes(activeChip.toLowerCase());
+    return matchSearch && matchChip;
   });
+
+  /* Group by section */
+  const sectionData = SECTION_GROUPS.map(sg => ({
+    ...sg,
+    items: filtered.filter(a => sg.categories.includes(a.category)).slice(0, 10),
+  }));
+
+  /* All-mode grid (when "Explore all" clicked or search active) */
+  const showGrid = showAll || search.length > 0;
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
-      {/* ── HERO ── */}
+      {/* ── HERO (unchanged) ──────────────────────────────────────────────── */}
       <section className="bg-white border-b border-gray-100 pt-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-2xl">
@@ -288,94 +267,203 @@ export default function AttractionsPage() {
             <div className="relative max-w-xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type="text" value={search} onChange={e => setSearch(e.target.value)}
+                type="text" value={search} onChange={e => { setSearch(e.target.value); setShowAll(true); }}
                 placeholder="Search attractions, destinations…"
-                className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-sm bg-white shadow-sm transition-colors"
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#2534ff] focus:outline-none text-sm bg-white shadow-sm transition-colors"
               />
               {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+                <button onClick={() => { setSearch(''); setShowAll(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
               )}
             </div>
           </div>
         </div>
       </section>
 
-      <main className="bg-gray-50 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+      <main className="bg-white min-h-screen">
 
-          {/* ── VISIT DATE PICKER (A4) ── */}
-          <Suspense fallback={null}>
-            <VisitDatePicker />
-          </Suspense>
-
-          {/* ── COMBO DEALS (A3) ── */}
-          <ComboDealsSection />
-
-          {/* ── ATTRACTIONS MAP (A7) ── */}
-          <AttractionsMap />
-
-          {/* ── CATEGORY FILTER ── */}
-          <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-5">Browse by category</h2>
-            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-3">
-              {CATEGORIES.map((c) => (
-                <button key={c.label} onClick={() => setActiveCategory(activeCategory === c.label ? null : c.label)}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all duration-150 cursor-pointer col-span-1 ${
-                    activeCategory === c.label ? 'border-brand-500 bg-brand-50 shadow-sm' : 'border-transparent bg-white hover:border-gray-200 hover:shadow-sm'
-                  }`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${c.color}`}>{c.emoji}</div>
-                  <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight">{c.label}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ── GOOD FOR FILTER (A8) ── */}
-          <section>
-            <h2 className="text-base font-bold text-gray-900 mb-3">Good for</h2>
-            <GoodForFilter selected={goodForSelected} onChange={setGoodForSelected} />
-          </section>
-
-          {/* ── ATTRACTIONS LIST ── */}
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🇹🇭</span>
-                <div>
-                  <h2 className="text-xl font-extrabold text-gray-900">Thailand</h2>
-                  <p className="text-xs text-gray-500">{filtered.length} attractions</p>
+        {/* ── DESTINATION CHIPS ─────────────────────────────────────────── */}
+        <div className="border-b border-gray-100 py-5">
+          <HScroll className="px-4 sm:px-6 lg:px-8">
+            {DESTINATION_CHIPS.map(d => (
+              <button
+                key={d.name}
+                type="button"
+                onClick={() => setActiveChip(activeChip === d.name ? null : d.name)}
+                className={`shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeChip === d.name ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
+              >
+                <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden ring-2 transition-all ${activeChip === d.name ? 'ring-[#2534ff] ring-offset-2' : 'ring-transparent'}`}>
+                  <Image src={d.img} alt={d.name} fill className="object-cover" sizes="64px" unoptimized />
                 </div>
-              </div>
-              <button onClick={() => { setActiveCategory(null); setGoodForSelected([]); }}
-                className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-800 transition-colors">
-                Explore all <ChevronRight className="w-4 h-4" />
+                <p className="text-xs font-semibold text-gray-800 whitespace-nowrap">{d.name}</p>
+                <p className="text-[10px] text-gray-400">{d.count}</p>
               </button>
+            ))}
+            <div className="shrink-0 w-1" aria-hidden />
+          </HScroll>
+        </div>
+
+        {!showGrid ? (
+          <div className="py-6 space-y-8">
+
+            {/* ── CAROUSEL SECTIONS ─────────────────────────────────────── */}
+            {loading ? (
+              /* Skeleton */
+              [1, 2, 3].map(s => (
+                <div key={s} className="px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between mb-3">
+                    <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-14 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                  <div className="flex gap-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="shrink-0 w-[200px] lg:w-[256px] rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
+                        <div className="h-[148px] bg-gray-200" />
+                        <div className="p-3 space-y-2">
+                          <div className="h-3 bg-gray-200 rounded w-1/3" />
+                          <div className="h-4 bg-gray-200 rounded w-4/5" />
+                          <div className="h-3 bg-gray-200 rounded w-1/2" />
+                          <div className="h-5 bg-gray-200 rounded w-1/4 mt-3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              sectionData.map(s => (
+                <ActivitySection
+                  key={s.key}
+                  label={s.label}
+                  badge={s.badge}
+                  attractions={s.items}
+                  wishlisted={wishlistSlugs}
+                  onToggleWishlist={handleToggleWishlist}
+                  onView={handleView}
+                />
+              ))
+            )}
+
+            {/* ── EXPLORE ALL CTA ───────────────────────────────────────── */}
+            {!loading && (
+              <div className="flex justify-center px-4 pt-2 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAll(true)}
+                  className="flex items-center gap-2 border-2 border-gray-800 text-gray-800 font-bold text-sm px-8 py-3 rounded-full hover:bg-gray-900 hover:text-white transition-colors"
+                >
+                  🌍 Explore all experiences
+                </button>
+              </div>
+            )}
+
+            {/* ── PROMO CODES ───────────────────────────────────────────── */}
+            <div className="px-4 sm:px-6 lg:px-8 pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#2534ff]" />
+                  <h2 className="text-base font-bold text-gray-900">Promo codes</h2>
+                </div>
+                <button className="text-sm font-semibold text-[#2534ff] hover:underline">View all</button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
+                {PROMO_CODES.map(p => (
+                  <div key={p.code} className={`shrink-0 border rounded-2xl px-4 py-3 min-w-[130px] ${p.color}`}>
+                    <p className="text-lg font-extrabold leading-none">{p.pct}</p>
+                    <p className="text-xs mt-1 opacity-70">{p.desc}</p>
+                    <p className="text-[10px] font-mono font-bold mt-2 bg-white/50 rounded px-1.5 py-0.5 inline-block tracking-wider">{p.code}</p>
+                  </div>
+                ))}
+                <div className="shrink-0 w-1" aria-hidden />
+              </div>
             </div>
 
-            {loadingList ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {[1,2,3,4].map(i => (
+            {/* ── POPULAR DESTINATIONS ──────────────────────────────────── */}
+            <section className="px-4 sm:px-6 lg:px-8 pb-4">
+              <h2 className="text-base font-bold text-gray-900 mb-3">Popular destinations in Thailand</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {DESTINATION_CHIPS.map(d => (
+                  <button
+                    key={d.name}
+                    type="button"
+                    onClick={() => { setActiveChip(d.name); setShowAll(true); }}
+                    className="group relative rounded-2xl overflow-hidden aspect-[4/3]"
+                  >
+                    <Image src={d.img} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="220px" unoptimized />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                      <p className="text-white font-bold text-sm leading-tight">{d.name}</p>
+                      <p className="text-white/70 text-[10px]">{d.count} activities</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* ── WHY BOOK WITH US ──────────────────────────────────────── */}
+            <section className="mx-4 sm:mx-6 lg:mx-8 bg-gray-50 rounded-3xl p-6 sm:p-8 mb-4">
+              <h2 className="text-lg font-extrabold text-gray-900 mb-5 text-center">Why book with Werest Travel?</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                {[
+                  { emoji: '⚡', title: 'Instant confirmation', desc: 'Get your voucher immediately after booking.' },
+                  { emoji: '📱', title: 'Mobile vouchers',      desc: 'Show your phone at the entrance — no printing.' },
+                  { emoji: '🔒', title: 'Secure & trusted',     desc: 'SSL-encrypted payments. Trusted by 10,000+ travellers.' },
+                ].map(item => (
+                  <div key={item.title} className="flex flex-col items-center text-center gap-2">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-2xl">{item.emoji}</div>
+                    <h3 className="font-bold text-gray-900 text-sm">{item.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </div>
+        ) : (
+
+          /* ── ALL-GRID VIEW ────────────────────────────────────────────── */
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {activeChip ? `${activeChip} experiences` : search ? `Results for "${search}"` : 'All experiences'}
+                </h2>
+                <p className="text-sm text-gray-400 mt-0.5">{filtered.length} activities</p>
+              </div>
+              {(showAll && !search) && (
+                <button
+                  type="button"
+                  onClick={() => { setShowAll(false); setActiveChip(null); }}
+                  className="text-sm font-semibold text-[#2534ff] hover:underline flex items-center gap-1"
+                >
+                  ← Back
+                </button>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[1,2,3,4,5,6,7,8].map(i => (
                   <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
-                    <div className="h-44 bg-gray-200" />
-                    <div className="p-4 space-y-3">
+                    <div className="h-40 bg-gray-200" />
+                    <div className="p-3 space-y-2">
                       <div className="h-3 bg-gray-200 rounded w-1/3" />
                       <div className="h-4 bg-gray-200 rounded w-4/5" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
-                      <div className="h-5 bg-gray-200 rounded w-1/4 mt-4" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                <p className="text-4xl mb-3">🔍</p>
-                <p className="font-semibold">No attractions found</p>
-                <p className="text-sm mt-1">Try a different search or category</p>
+              <div className="text-center py-20 text-gray-400">
+                <p className="text-5xl mb-3">🔍</p>
+                <p className="font-semibold text-gray-600">No activities found</p>
+                <p className="text-sm mt-1">Try a different search or destination</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filtered.map(a => (
-                  <AttractionCard key={a.id} a={a}
+                  <ActivityCard
+                    key={a.id} a={a}
                     wishlisted={wishlistSlugs.has(a.slug)}
                     onToggleWishlist={handleToggleWishlist}
                     onView={handleView}
@@ -383,48 +471,8 @@ export default function AttractionsPage() {
                 ))}
               </div>
             )}
-          </section>
-
-          {/* ── RECENTLY VIEWED ── */}
-          <RecentlyViewed className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100" />
-
-          {/* ── POPULAR DESTINATIONS ── */}
-          <section>
-            <h2 className="text-xl font-extrabold text-gray-900 mb-5">Popular destinations in Thailand</h2>
-            <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
-              {POPULAR_DESTINATIONS.map(d => (
-                <button key={d.name} className="group relative rounded-2xl overflow-hidden cursor-pointer text-left shrink-0 w-40 sm:w-48" style={{ minHeight: 120 }}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${d.gradient} opacity-90 group-hover:opacity-100 transition-opacity`} />
-                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-                  <div className="absolute top-3 right-3 text-3xl opacity-30 group-hover:opacity-50 transition-opacity select-none">{d.emoji}</div>
-                  <div className="relative z-10 p-4 flex flex-col justify-end h-full" style={{ minHeight: 120 }}>
-                    <p className="text-white font-extrabold text-base leading-tight">{d.name}</p>
-                    <p className="text-white/70 text-xs mt-0.5">{d.count}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ── WHY BOOK WITH US ── */}
-          <section className="bg-white rounded-3xl p-8 border border-gray-100">
-            <h2 className="text-xl font-extrabold text-gray-900 mb-6 text-center">Why book with Werest Travel?</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                { emoji: '⚡', title: 'Instant confirmation', desc: 'Get your voucher immediately after booking — no waiting.'  },
-                { emoji: '📱', title: 'Mobile vouchers',      desc: 'Show your phone at the entrance — no printing needed.'    },
-                { emoji: '🔒', title: 'Secure & trusted',     desc: 'SSL-encrypted payments. Trusted by 10,000+ travellers.'  },
-              ].map(item => (
-                <div key={item.title} className="flex flex-col items-center text-center gap-3">
-                  <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-3xl">{item.emoji}</div>
-                  <h3 className="font-bold text-gray-900">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-        </div>
+          </div>
+        )}
       </main>
 
       <Footer />

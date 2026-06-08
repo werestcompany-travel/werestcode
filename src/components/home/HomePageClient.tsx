@@ -335,7 +335,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
   return (
     <Fragment>
-      <Navbar />
+      <Navbar transparent />
       {/* ════════════════════════════════════════════════════════════
           PAGE SHELL
       ════════════════════════════════════════════════════════════ */}
@@ -345,10 +345,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="Hero" className="mb-0 lg:mb-[30px] lg:px-6 lg:pt-6">
+      {/* -mt-16 pulls the hero card behind the transparent navbar */}
+      <section aria-label="Hero" className="-mt-16 mb-0 lg:mb-[30px]">
 
         {/* ── Hero card ── */}
-        <div className="flex flex-col items-center justify-start lg:justify-center overflow-hidden relative lg:min-h-[680px] lg:rounded-[2rem]" style={{ minHeight: '260px' }}>
+        <div className="flex flex-col items-center justify-start lg:justify-center overflow-hidden relative lg:min-h-[680px]" style={{ minHeight: '260px' }}>
           {/* Background — Wat Rong Suea Ten (Blue Temple), Chiang Rai at blue hour */}
           <div className="absolute inset-0">
             <Image
@@ -363,9 +364,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
           {/* Dark-blue overlay — readable text, temple still visible */}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(2,8,40,0.55) 0%, rgba(3,12,55,0.48) 35%, rgba(4,16,65,0.38) 65%, rgba(2,8,40,0.20) 100%)' }} />
+          {/* Extra top gradient to keep transparent nav text legible */}
+          <div className="absolute inset-x-0 top-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.30) 0%, transparent 100%)' }} />
 
           {/* Central content */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-8 pb-2 lg:py-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
+          {/* pt-16 accounts for the fixed navbar height; lg:pt-20 gives extra breathing room on desktop */}
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-20 pb-2 lg:pt-24 lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
             {/* Title */}
             <h1 className="text-[22px] leading-snug lg:text-5xl font-extrabold text-white tracking-tight">
@@ -434,7 +438,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         <div className="grid grid-cols-3 gap-y-5">
           {SERVICE_TABS.map((tab) => {
             const Icon = tab.icon;
-            const href = tab.href ?? (tab.id === 'transfer' ? '/results' : '#');
+            const href = tab.href ?? (tab.id === 'transfer' ? '/transfers' : '#');
             return (
               <Link key={tab.id} href={href} className="flex flex-col items-center gap-2">
                 <div className="w-14 h-14 rounded-full bg-brand-600 flex items-center justify-center relative">
@@ -659,44 +663,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
       />
 
-      {/* ════════════════════════════════════════════════════════════
-          POPULAR DESTINATIONS — horizontal scroll slider
-      ════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="popular-dest-heading" className="py-10 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 mb-5 px-4 sm:px-6 lg:px-8">
-            <span className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
-            <h2 id="popular-dest-heading" className="text-xl font-bold text-gray-900">Popular Destinations</h2>
-          </div>
-
-          {/* One-row horizontal scroll — all screen sizes */}
-          <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 sm:px-6 lg:px-8 pb-2">
-            {POPULAR_DESTINATIONS.map((dest) => (
-              <Link
-                key={dest.id}
-                href={dest.href}
-                className="relative shrink-0 overflow-hidden rounded-2xl group"
-                style={{ width: 'clamp(140px, 38vw, 220px)', height: 'clamp(170px, 28vw, 260px)' }}
-              >
-                <Image
-                  src={dest.img}
-                  alt={dest.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="220px"
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                <p className="absolute bottom-3 left-3 font-bold text-white text-[15px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
-                  {dest.name}
-                </p>
-              </Link>
-            ))}
-            {/* trailing spacer on mobile */}
-            <div className="shrink-0 w-1" aria-hidden="true" />
-          </div>
-        </div>
-      </section>
 
       {/* ════════════════════════════════════════════════════════════
           GOOGLE REVIEWS — live widget (only shows when GOOGLE_PLACE_ID configured)
@@ -819,16 +785,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <h2 className="text-2xl font-bold text-gray-900 mb-5">Top private transfers in Thailand</h2>
 
           {/* ── Category tabs ── */}
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex gap-2 mb-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
             {SEO_ROUTE_TABS.map((tab, i) => (
               <button
                 key={tab.label}
                 type="button"
                 onClick={() => setSeoTabIdx(i)}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors border ${
+                className={`shrink-0 px-4 py-1.5 rounded-md text-sm font-medium transition-colors border ${
                   i === seoTabIdx
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500 hover:text-gray-800'
+                    ? 'bg-[#2534ff] text-white border-[#2534ff]'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#2534ff] hover:text-[#2534ff]'
                 }`}
               >
                 {tab.label}

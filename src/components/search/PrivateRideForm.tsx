@@ -2,7 +2,8 @@
 
 import { Fragment, useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftRight, Calendar, ChevronDown, Users, Luggage, MapPin, Search } from 'lucide-react';
+import { ArrowLeftRight, Calendar, ChevronDown, Users, Luggage, MapPin, Search, Plus } from 'lucide-react';
+import PassengerSheet, { type PassengerState } from './PassengerSheet';
 import { cn } from '@/lib/utils';
 import { PlaceResult } from '@/types';
 import CalendarPicker from './CalendarPicker';
@@ -83,14 +84,12 @@ const PLACE_COORDS: Record<string, PlaceCoord> = {
   'white temple':                  { lat: 19.8247, lng: 99.7641,  label: 'Wat Rong Khun (White Temple), Chiang Rai, Thailand' },
 };
 
-/** Resolve a free-text place name to coordinates. Longer keys are tried first. */
 function lookupPlace(name: string): { address: string; lat: number; lng: number } | null {
   const n = name.toLowerCase().trim();
   if (PLACE_COORDS[n]) {
     const p = PLACE_COORDS[n];
     return { address: p.label, lat: p.lat, lng: p.lng };
   }
-  // Sort keys longest→shortest so "phuket airport" wins over "phuket"
   const keys = Object.keys(PLACE_COORDS).sort((a, b) => b.length - a.length);
   for (const key of keys) {
     if (n.includes(key)) {
@@ -100,24 +99,6 @@ function lookupPlace(name: string): { address: string; lat: number; lng: number 
   }
   return null;
 }
-
-const QUICK_ROUTES = [
-  {
-    label: 'BKK → Bangkok',
-    pickup:  { address: 'Suvarnabhumi Airport (BKK), Bang Phli District, Samut Prakan, Thailand', lat: 13.6900, lng: 100.7501 },
-    dropoff: { address: 'Sukhumvit Road, Bangkok, Thailand', lat: 13.7383, lng: 100.5601 },
-  },
-  {
-    label: 'DMK → Bangkok',
-    pickup:  { address: 'Don Mueang International Airport (DMK), Don Mueang, Bangkok, Thailand', lat: 13.9126, lng: 100.6068 },
-    dropoff: { address: 'Sukhumvit Road, Bangkok, Thailand', lat: 13.7383, lng: 100.5601 },
-  },
-  {
-    label: 'BKK → Pattaya',
-    pickup:  { address: 'Suvarnabhumi Airport (BKK), Bang Phli District, Samut Prakan, Thailand', lat: 13.6900, lng: 100.7501 },
-    dropoff: { address: 'Pattaya City, Chonburi, Thailand', lat: 12.9236, lng: 100.8825 },
-  },
-];
 
 /** Format 24h time → "9:00 am" */
 function fmtTime(t: string) {
@@ -142,45 +123,80 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   const [hasReturn,    setHasReturn]    = useState(false);
   const [returnDate,   setReturnDate]   = useState('');
   const [returnTime,   setReturnTime]   = useState('09:00');
-  const [passengers,   setPassengers]   = useState(2);
-  const [luggage,      setLuggage]      = useState(2);
+  const [pax, setPax] = useState<PassengerState>({ adults: 2, children: 0, extraBags: 0 });
   const [showPax,      setShowPax]      = useState(false);
-  const [showDepart,   setShowDepart]   = useState(false);
-  const [showReturn,   setShowReturn]   = useState(false);
+  const [showDepartMob,  setShowDepartMob]  = useState(false);
+  const [showReturnMob,  setShowReturnMob]  = useState(false);
+  const [showDepartDesk, setShowDepartDesk] = useState(false);
+  const [showReturnDesk, setShowReturnDesk] = useState(false);
   const [error,        setError]        = useState('');
 
-  const pickupRef      = useRef<HTMLInputElement>(null);
-  const dropoffRef     = useRef<HTMLInputElement>(null);
-  const paxRef         = useRef<HTMLDivElement>(null);
-  const departTrigger  = useRef<HTMLDivElement>(null);
-  const returnTrigger  = useRef<HTMLDivElement>(null);
-  const pickupAC       = useRef<google.maps.places.Autocomplete | null>(null);
-  const dropoffAC      = useRef<google.maps.places.Autocomplete | null>(null);
+  /* ── Refs: mobile gets the Google Maps AC; desktop inputs are controlled ── */
+  const pickupRefMobile  = useRef<HTMLInputElement>(null);
+  const dropoffRefMobile = useRef<HTMLInputElement>(null);
+  const pickupRefDesktop  = useRef<HTMLInputElement>(null);
+  const dropoffRefDesktop = useRef<HTMLInputElement>(null);
+  const paxRef           = useRef<HTMLDivElement>(null);
+  const departTrigger    = useRef<HTMLDivElement>(null);
+  const departTriggerMob = useRef<HTMLDivElement>(null);
+  const returnTrigger    = useRef<HTMLDivElement>(null);
+  const returnTriggerMob = useRef<HTMLDivElement>(null);
+  const pickupACMobile   = useRef<google.maps.places.Autocomplete | null>(null);
+  const dropoffACMobile  = useRef<google.maps.places.Autocomplete | null>(null);
+  const pickupACDesktop  = useRef<google.maps.places.Autocomplete | null>(null);
+  const dropoffACDesktop = useRef<google.maps.places.Autocomplete | null>(null);
 
   const initAC = useCallback(() => {
-    if (!window.google || !pickupRef.current || !dropoffRef.current) return;
+    if (!window.google) return;
     const opts: google.maps.places.AutocompleteOptions = {
       fields: ['formatted_address', 'geometry'],
       componentRestrictions: { country: 'TH' },
     };
-    pickupAC.current = new google.maps.places.Autocomplete(pickupRef.current, opts);
-    pickupAC.current.addListener('place_changed', () => {
-      const p = pickupAC.current!.getPlace();
-      if (p.geometry?.location) {
-        const addr = p.formatted_address ?? pickupRef.current!.value;
-        setPickup({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
-        setPickupInput(addr);
-      }
-    });
-    dropoffAC.current = new google.maps.places.Autocomplete(dropoffRef.current, opts);
-    dropoffAC.current.addListener('place_changed', () => {
-      const p = dropoffAC.current!.getPlace();
-      if (p.geometry?.location) {
-        const addr = p.formatted_address ?? dropoffRef.current!.value;
-        setDropoff({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
-        setDropoffInput(addr);
-      }
-    });
+
+    if (pickupRefMobile.current && !pickupACMobile.current) {
+      pickupACMobile.current = new google.maps.places.Autocomplete(pickupRefMobile.current, opts);
+      pickupACMobile.current.addListener('place_changed', () => {
+        const p = pickupACMobile.current!.getPlace();
+        if (p.geometry?.location) {
+          const addr = p.formatted_address ?? pickupRefMobile.current!.value;
+          setPickup({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
+          setPickupInput(addr);
+        }
+      });
+    }
+    if (dropoffRefMobile.current && !dropoffACMobile.current) {
+      dropoffACMobile.current = new google.maps.places.Autocomplete(dropoffRefMobile.current, opts);
+      dropoffACMobile.current.addListener('place_changed', () => {
+        const p = dropoffACMobile.current!.getPlace();
+        if (p.geometry?.location) {
+          const addr = p.formatted_address ?? dropoffRefMobile.current!.value;
+          setDropoff({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
+          setDropoffInput(addr);
+        }
+      });
+    }
+    if (pickupRefDesktop.current && !pickupACDesktop.current) {
+      pickupACDesktop.current = new google.maps.places.Autocomplete(pickupRefDesktop.current, opts);
+      pickupACDesktop.current.addListener('place_changed', () => {
+        const p = pickupACDesktop.current!.getPlace();
+        if (p.geometry?.location) {
+          const addr = p.formatted_address ?? pickupRefDesktop.current!.value;
+          setPickup({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
+          setPickupInput(addr);
+        }
+      });
+    }
+    if (dropoffRefDesktop.current && !dropoffACDesktop.current) {
+      dropoffACDesktop.current = new google.maps.places.Autocomplete(dropoffRefDesktop.current, opts);
+      dropoffACDesktop.current.addListener('place_changed', () => {
+        const p = dropoffACDesktop.current!.getPlace();
+        if (p.geometry?.location) {
+          const addr = p.formatted_address ?? dropoffRefDesktop.current!.value;
+          setDropoff({ address: addr, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() });
+          setDropoffInput(addr);
+        }
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -189,49 +205,37 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
     return () => clearInterval(iv);
   }, [initAC]);
 
+  /* Close pax dropdown on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (paxRef.current && !paxRef.current.contains(e.target as Node)) setShowPax(false);
+      if (paxRef.current && !paxRef.current.contains(e.target as Node)) {
+        setShowPax(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  /* ── Apply prefill from SEO route grid ── */
+  /* Apply prefill from SEO route grid */
   useEffect(() => {
     if (!prefillRoute) return;
     const fromPlace = lookupPlace(prefillRoute.from);
     const toPlace   = lookupPlace(prefillRoute.to);
-    if (fromPlace) {
-      setPickup(fromPlace);
-      setPickupInput(fromPlace.address);
-    } else {
-      setPickup(null);
-      setPickupInput(prefillRoute.from);
-    }
-    if (toPlace) {
-      setDropoff(toPlace);
-      setDropoffInput(toPlace.address);
-    } else {
-      setDropoff(null);
-      setDropoffInput(prefillRoute.to);
-    }
+    if (fromPlace) { setPickup(fromPlace); setPickupInput(fromPlace.address); }
+    else           { setPickup(null); setPickupInput(prefillRoute.from); }
+    if (toPlace)   { setDropoff(toPlace); setDropoffInput(toPlace.address); }
+    else           { setDropoff(null); setDropoffInput(prefillRoute.to); }
     setError('');
-    // Open the departure date picker so user can pick date & time
-    setShowDepart(true);
-    setShowReturn(false);
+    setShowDepartMob(false);
+    setShowDepartDesk(true);
+    setShowReturnMob(false);
+    setShowReturnDesk(false);
     setShowPax(false);
   }, [prefillRoute]);
 
   const swap = () => {
     setPickup(dropoff); setDropoff(pickup);
     setPickupInput(dropoffInput); setDropoffInput(pickupInput);
-  };
-
-  const applyQuick = (r: typeof QUICK_ROUTES[0]) => {
-    setPickup(r.pickup); setPickupInput(r.pickup.address);
-    setDropoff(r.dropoff); setDropoffInput(r.dropoff.address);
-    setError('');
   };
 
   const handleSearch = () => {
@@ -241,7 +245,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
     router.push(`/results?${new URLSearchParams({
       pickup_address:  pickup.address,  pickup_lat:  String(pickup.lat),  pickup_lng:  String(pickup.lng),
       dropoff_address: dropoff.address, dropoff_lat: String(dropoff.lat), dropoff_lng: String(dropoff.lng),
-      date, time, passengers: String(passengers), luggage: String(luggage),
+      date, time, passengers: String(pax.adults + pax.children), luggage: String(pax.extraBags),
       is_round_trip: hasReturn && returnDate ? 'true' : 'false',
       ...(hasReturn && returnDate ? { return_date: returnDate, return_time: returnTime } : {}),
     })}`);
@@ -250,196 +254,369 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   const fmtDate = (d: string) =>
     d ? new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
 
-  /* thin vertical divider */
+  /* thin vertical divider (desktop) */
   const Divider = () => <div className="w-px self-stretch bg-gray-200 shrink-0 my-3" />;
+
+  /* ─────────────────────────────────────────────────────────────────────── */
+  /*  MOBILE / TABLET vertical layout  (< lg)                               */
+  /* ─────────────────────────────────────────────────────────────────────── */
+  const MobileForm = (
+    <div className="lg:hidden">
+
+      {/* Passengers & luggage row */}
+      <div className="relative border-b border-gray-100">
+        <button
+          type="button"
+          onClick={() => { setShowPax(true); setShowDepartMob(false); setShowReturnMob(false); }}
+          className="flex items-center justify-between w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-800">{pax.adults + pax.children}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Luggage className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-800">{pax.extraBags}</span>
+            </div>
+          </div>
+          <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', showPax && 'rotate-180')} />
+        </button>
+      </div>
+
+      {/* Mobile bottom sheet */}
+      {showPax && (
+        <PassengerSheet
+          value={pax}
+          onChange={setPax}
+          onClose={() => setShowPax(false)}
+          mode="sheet"
+        />
+      )}
+
+      {/* FROM field */}
+      <div className="border-b border-gray-100 flex items-center gap-3 px-4 py-3.5">
+        <div className="w-3 h-3 rounded-full border-2 border-gray-400 shrink-0" />
+        <input
+          ref={pickupRefMobile}
+          type="text"
+          value={pickupInput}
+          onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null); }}
+          placeholder="From city, hotel, airport"
+          className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent outline-none"
+        />
+        {pickupInput && (
+          <button type="button" onClick={() => { setPickupInput(''); setPickup(null); }}
+            className="text-gray-300 hover:text-gray-500 text-lg leading-none shrink-0">×</button>
+        )}
+      </div>
+
+      {/* TO field */}
+      <div className="border-b border-gray-100 flex items-center gap-3 px-4 py-3.5">
+        <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+        <input
+          ref={dropoffRefMobile}
+          type="text"
+          value={dropoffInput}
+          onChange={e => { setDropoffInput(e.target.value); if (!e.target.value) setDropoff(null); }}
+          placeholder="To city, hotel, airport"
+          className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent outline-none"
+        />
+        {dropoffInput && (
+          <button type="button" onClick={() => { setDropoffInput(''); setDropoff(null); }}
+            className="text-gray-300 hover:text-gray-500 text-lg leading-none shrink-0">×</button>
+        )}
+      </div>
+
+      {/* Date row */}
+      <div className="border-b border-gray-100 flex">
+
+        {/* Departure */}
+        <div ref={departTriggerMob} className="relative flex-1 border-r border-gray-100">
+          <button
+            type="button"
+            onClick={() => { setShowDepartMob(s => !s); setShowReturnMob(false); setShowPax(false); }}
+            className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
+          >
+            <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+            <span className={cn('text-sm', date ? 'text-gray-800 font-medium' : 'text-gray-400')}>
+              {fmtDate(date) || 'Departure'}
+            </span>
+          </button>
+          {showDepartMob && (
+            <CalendarPicker
+              label={t('cal.departureDate')}
+              date={date}
+              time={time}
+              minDate={today}
+              triggerRef={departTriggerMob}
+              onChange={(d, tm) => { setDate(d); setTime(tm); }}
+              onClose={() => setShowDepartMob(false)}
+              align="left"
+            />
+          )}
+        </div>
+
+        {/* Add return / Return date */}
+        <div ref={returnTriggerMob} className="relative flex-1">
+          {hasReturn ? (
+            <button
+              type="button"
+              onClick={() => { setShowReturnMob(s => !s); setShowDepartMob(false); setShowPax(false); }}
+              className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
+            >
+              <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
+              <span className={cn('text-sm', returnDate ? 'text-gray-800 font-medium' : 'text-gray-400')}>
+                {fmtDate(returnDate) || 'Return date'}
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setHasReturn(true)}
+              className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
+            >
+              <Plus className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-sm text-gray-400">Add return</span>
+            </button>
+          )}
+          {showReturnMob && hasReturn && (
+            <CalendarPicker
+              label={t('cal.returnDate')}
+              date={returnDate || date}
+              time={returnTime}
+              minDate={date || today}
+              triggerRef={returnTriggerMob}
+              onChange={(d, tm) => { setReturnDate(d); setReturnTime(tm); }}
+              onClose={() => setShowReturnMob(false)}
+              align="right"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Multi-city pill */}
+      <div className="px-4 py-3 border-b border-gray-100">
+        <button type="button"
+          className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1.5 rounded-full transition-colors">
+          Multi-city
+        </button>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="px-4 pb-1 pt-2">
+          <p className="text-red-500 text-sm flex items-center gap-1.5 font-medium">
+            <span>⚠</span> {error}
+          </p>
+        </div>
+      )}
+
+      {/* Search button */}
+      <div className="px-4 py-4">
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="w-full bg-[#2534ff] hover:bg-[#1420cc] active:bg-[#0f18a8] text-white font-bold text-base py-3.5 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2"
+        >
+          Search
+        </button>
+      </div>
+
+    </div>
+  );
+
+  /* ─────────────────────────────────────────────────────────────────────── */
+  /*  DESKTOP horizontal layout  (lg+)                                      */
+  /* ─────────────────────────────────────────────────────────────────────── */
+  const DesktopForm = (
+    <Fragment>
+      {/* ── Single row ── */}
+      <div className="hidden lg:flex items-stretch h-[72px] px-2 min-w-[600px]">
+
+        {/* FROM */}
+        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
+          <MapPin className="w-4 h-4 text-[#2534ff] shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.pickup')}</p>
+            <input
+              ref={pickupRefDesktop}
+              type="text"
+              value={pickupInput}
+              onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null); }}
+              placeholder={t('form.whereFrom')}
+              className="text-sm font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none w-full truncate"
+            />
+          </div>
+        </div>
+
+        {/* SWAP */}
+        <div className="flex items-center shrink-0 -mx-1 z-10">
+          <button type="button" onClick={swap}
+            className="w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:border-[#2534ff] hover:text-[#2534ff] transition-colors text-gray-400 shadow-sm">
+            <ArrowLeftRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* TO */}
+        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
+          <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.dropoff')}</p>
+            <input
+              ref={dropoffRefDesktop}
+              type="text"
+              value={dropoffInput}
+              onChange={e => { setDropoffInput(e.target.value); if (!e.target.value) setDropoff(null); }}
+              placeholder={t('form.whereTo')}
+              className="text-sm font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none w-full truncate"
+            />
+          </div>
+        </div>
+
+        <Divider />
+
+        {/* DEPARTURE DATE */}
+        <div ref={departTrigger} className="relative flex items-center shrink-0">
+          <button
+            type="button"
+            onClick={() => { setShowDepartDesk(s => !s); setShowReturnDesk(false); setShowPax(false); }}
+            className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
+          >
+            <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
+            <div className="text-left">
+              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.departure')}</p>
+              <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                {fmtDate(date) || <span className="font-normal text-gray-300">{t('form.selectDate')}</span>}
+              </p>
+              <p className="text-[10px] text-gray-500 leading-none mt-0.5">{fmtTime(time)}</p>
+            </div>
+          </button>
+          {showDepartDesk && (
+            <CalendarPicker
+              label={t('cal.departureDate')}
+              date={date}
+              time={time}
+              minDate={today}
+              triggerRef={departTrigger}
+              onChange={(d, tm) => { setDate(d); setTime(tm); }}
+              onClose={() => setShowDepartDesk(false)}
+              align="left"
+            />
+          )}
+        </div>
+
+        {/* RETURN DATE */}
+        {hasReturn && (
+          <>
+            <Divider />
+            <div ref={returnTrigger} className="relative flex items-center shrink-0">
+              <button
+                type="button"
+                onClick={() => { setShowReturnDesk(s => !s); setShowDepartDesk(false); setShowPax(false); }}
+                className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                <div className="text-left">
+                  <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.return')}</p>
+                  <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                    {returnDate ? fmtDate(returnDate) : <span className="font-normal text-gray-300">{t('form.selectDate')}</span>}
+                  </p>
+                  <p className="text-[10px] text-gray-500 leading-none mt-0.5">
+                    {returnDate ? fmtTime(returnTime) : '—'}
+                  </p>
+                </div>
+              </button>
+              {showReturnDesk && (
+                <CalendarPicker
+                  label={t('cal.returnDate')}
+                  date={returnDate || date}
+                  time={returnTime}
+                  minDate={date || today}
+                  triggerRef={returnTrigger}
+                  onChange={(d, tm) => { setReturnDate(d); setReturnTime(tm); }}
+                  onClose={() => setShowReturnDesk(false)}
+                  align="right"
+                />
+              )}
+            </div>
+          </>
+        )}
+
+        <Divider />
+
+        {/* PASSENGERS + LUGGAGE */}
+        <div className="relative flex items-center shrink-0" ref={paxRef}>
+          <button type="button"
+            onClick={() => { setShowPax(!showPax); setShowDepartDesk(false); setShowReturnDesk(false); }}
+            className="flex items-center gap-2 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors whitespace-nowrap">
+            <Users className="w-4 h-4 text-[#2534ff]" />
+            <div className="text-left">
+              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.paxLuggage')}</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {pax.adults + pax.children} pax · {pax.extraBags} extra bags
+              </p>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showPax ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showPax && (
+            <PassengerSheet
+              value={pax}
+              onChange={setPax}
+              onClose={() => setShowPax(false)}
+              mode="dropdown"
+            />
+          )}
+        </div>
+
+        {/* SEARCH BUTTON */}
+        <div className="flex items-center pl-2 pr-3 shrink-0">
+          <button type="button" onClick={handleSearch}
+            className="flex items-center gap-2 bg-[#2534ff] hover:bg-[#1420cc] active:bg-[#0f18a8] text-white font-bold text-sm px-6 h-11 rounded-xl transition-colors shadow-md hover:shadow-lg whitespace-nowrap">
+            <Search className="w-4 h-4" />
+            {t('form.search')}
+          </button>
+        </div>
+      </div>
+
+      {/* Round trip checkbox (desktop only) */}
+      <div className="hidden lg:flex items-center gap-2 px-6 pb-3 -mt-1">
+        <input
+          id="round-trip-check"
+          type="checkbox"
+          checked={hasReturn}
+          onChange={e => {
+            setHasReturn(e.target.checked);
+            if (!e.target.checked) { setReturnDate(''); setShowReturnDesk(false); }
+          }}
+          className="w-4 h-4 rounded accent-[#2534ff] cursor-pointer"
+        />
+        <label htmlFor="round-trip-check" className="text-sm text-gray-600 cursor-pointer font-medium select-none">
+          Round trip
+        </label>
+        {hasReturn && returnDate && (
+          <span className="text-xs text-gray-400 ml-1">
+            · Return {fmtDate(returnDate)} {fmtTime(returnTime)}
+          </span>
+        )}
+      </div>
+
+      {/* Error (desktop) */}
+      {error && (
+        <div className="hidden lg:block px-6 pb-3 -mt-1">
+          <p className="text-red-500 text-sm flex items-center gap-1.5 font-medium">
+            <span>⚠</span> {error}
+          </p>
+        </div>
+      )}
+    </Fragment>
+  );
 
   return (
     <Fragment>
-
-        {/* ── Single row ── */}
-        <div className="flex items-stretch h-[72px] px-2 min-w-[600px]">
-
-          {/* FROM */}
-          <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
-            <MapPin className="w-4 h-4 text-[#2534ff] shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.pickup')}</p>
-              <input
-                ref={pickupRef}
-                type="text"
-                value={pickupInput}
-                onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null); }}
-                placeholder={t('form.whereFrom')}
-                className="text-sm font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none w-full truncate"
-              />
-            </div>
-          </div>
-
-          {/* SWAP */}
-          <div className="flex items-center shrink-0 -mx-1 z-10">
-            <button type="button" onClick={swap}
-              className="w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:border-[#2534ff] hover:text-[#2534ff] transition-colors text-gray-400 shadow-sm">
-              <ArrowLeftRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* TO */}
-          <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
-            <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.dropoff')}</p>
-              <input
-                ref={dropoffRef}
-                type="text"
-                value={dropoffInput}
-                onChange={e => { setDropoffInput(e.target.value); if (!e.target.value) setDropoff(null); }}
-                placeholder={t('form.whereTo')}
-                className="text-sm font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none w-full truncate"
-              />
-            </div>
-          </div>
-
-          <Divider />
-
-          {/* DEPARTURE DATE — opens CalendarPicker */}
-          <div ref={departTrigger} className="relative flex items-center shrink-0">
-            <button
-              type="button"
-              onClick={() => { setShowDepart(s => !s); setShowReturn(false); setShowPax(false); }}
-              className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
-            >
-              <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
-              <div className="text-left">
-                <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.departure')}</p>
-                <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
-                  {fmtDate(date) || <span className="font-normal text-gray-300">{t('form.selectDate')}</span>}
-                </p>
-                <p className="text-[10px] text-gray-500 leading-none mt-0.5">{fmtTime(time)}</p>
-              </div>
-            </button>
-
-            {showDepart && (
-              <CalendarPicker
-                label={t('cal.departureDate')}
-                date={date}
-                time={time}
-                minDate={today}
-                triggerRef={departTrigger}
-                onChange={(d, t) => { setDate(d); setTime(t); }}
-                onClose={() => setShowDepart(false)}
-                align="left"
-              />
-            )}
-          </div>
-
-          {/* RETURN DATE — only in round trip */}
-          {hasReturn && (
-            <>
-              <Divider />
-              <div ref={returnTrigger} className="relative flex items-center shrink-0">
-                <button
-                  type="button"
-                  onClick={() => { setShowReturn(s => !s); setShowDepart(false); setShowPax(false); }}
-                  className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
-                >
-                  <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-                  <div className="text-left">
-                    <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.return')}</p>
-                    <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
-                      {returnDate ? fmtDate(returnDate) : <span className="font-normal text-gray-300">{t('form.selectDate')}</span>}
-                    </p>
-                    <p className="text-[10px] text-gray-500 leading-none mt-0.5">
-                      {returnDate ? fmtTime(returnTime) : '—'}
-                    </p>
-                  </div>
-                </button>
-
-                {showReturn && (
-                  <CalendarPicker
-                    label={t('cal.returnDate')}
-                    date={returnDate || date}
-                    time={returnTime}
-                    minDate={date || today}
-                    triggerRef={returnTrigger}
-                    onChange={(d, t) => { setReturnDate(d); setReturnTime(t); }}
-                    onClose={() => setShowReturn(false)}
-                    align="right"
-                  />
-                )}
-              </div>
-            </>
-          )}
-
-          <Divider />
-
-          {/* PASSENGERS + LUGGAGE */}
-          <div className="relative flex items-center shrink-0" ref={paxRef}>
-            <button type="button"
-              onClick={() => { setShowPax(!showPax); setShowDepart(false); setShowReturn(false); }}
-              className="flex items-center gap-2 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors whitespace-nowrap">
-              <Users className="w-4 h-4 text-[#2534ff]" />
-              <div className="text-left">
-                <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.paxLuggage')}</p>
-                <p className="text-sm font-semibold text-gray-900">{passengers} pax · {luggage} bags</p>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showPax ? 'rotate-180' : ''}`} />
-            </button>
-
-            {showPax && (
-              <div className="absolute bottom-full right-0 mb-3 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 p-4 space-y-4">
-                <CounterRow label={t('form.passengers')} icon={<Users className="w-4 h-4 text-gray-400" />}
-                  value={passengers} min={1} max={10} onChange={setPassengers} />
-                <CounterRow label={t('form.luggage')} icon={<Luggage className="w-4 h-4 text-gray-400" />}
-                  value={luggage} min={0} max={15} onChange={setLuggage} />
-                <button type="button" onClick={() => setShowPax(false)}
-                  className="w-full text-xs font-bold text-[#2534ff] bg-blue-50 rounded-xl py-2 hover:bg-blue-100 transition-colors">
-                  {t('form.done')}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* SEARCH BUTTON */}
-          <div className="flex items-center pl-2 pr-3 shrink-0">
-            <button type="button" onClick={handleSearch}
-              className="flex items-center gap-2 bg-[#2534ff] hover:bg-[#1420cc] active:bg-[#0f18a8] text-white font-bold text-sm px-6 h-11 rounded-xl transition-colors shadow-md hover:shadow-lg whitespace-nowrap">
-              <Search className="w-4 h-4" />
-              {t('form.search')}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Round trip checkbox — below location fields ── */}
-        <div className="flex items-center gap-2 px-6 pb-3 -mt-1">
-          <input
-            id="round-trip-check"
-            type="checkbox"
-            checked={hasReturn}
-            onChange={e => {
-              setHasReturn(e.target.checked);
-              if (!e.target.checked) { setReturnDate(''); setShowReturn(false); }
-            }}
-            className="w-4 h-4 rounded accent-[#2534ff] cursor-pointer"
-          />
-          <label htmlFor="round-trip-check" className="text-sm text-gray-600 cursor-pointer font-medium select-none">
-            Round trip
-          </label>
-          {hasReturn && returnDate && (
-            <span className="text-xs text-gray-400 ml-1">
-              · Return {fmtDate(returnDate)} {fmtTime(returnTime)}
-            </span>
-          )}
-        </div>
-
-        {/* ── Error ── */}
-        {error && (
-          <div className="px-6 pb-3 -mt-1">
-            <p className="text-red-500 text-sm flex items-center gap-1.5 font-medium">
-              <span>⚠</span> {error}
-            </p>
-          </div>
-        )}
-
+      {MobileForm}
+      {DesktopForm}
     </Fragment>
   );
 }
