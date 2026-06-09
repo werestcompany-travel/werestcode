@@ -435,7 +435,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           MOBILE SERVICE ICON CARD — floats below hero
       ════════════════════════════════════════════════════════════ */}
-      <div className="lg:hidden mx-3 -mt-[130px] relative z-10 bg-white rounded-2xl shadow-lg px-4 pt-5 pb-4">
+      <div className="lg:hidden max-w-7xl mx-auto px-4 -mt-[130px] relative z-10">
+      <div className="bg-white rounded-2xl shadow-lg px-4 pt-5 pb-4">
         <div className="grid grid-cols-3 gap-y-5">
           {SERVICE_TABS.map((tab) => {
             const Icon = tab.icon;
@@ -456,11 +457,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           })}
         </div>
       </div>
+      </div>
 
       {/* ════════════════════════════════════════════════════════════
           FULL-WIDTH TRUST BAR (desktop only)
       ════════════════════════════════════════════════════════════ */}
       <div className="hidden lg:block w-full bg-gray-50 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-center divide-x divide-gray-200">
 
           {/* ── Trust badge: free cancellation ── */}
@@ -506,6 +509,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <span className="text-xs text-gray-400 whitespace-nowrap">({t('trust.bar.tp.reviews')})</span>
           </div>
 
+        </div>
         </div>
       </div>
 
@@ -673,7 +677,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       ════════════════════════════════════════════════════════════ */}
       {latestPosts.length > 0 && (
         <section aria-labelledby="blog-heading" className="pt-8 pb-20 sm:py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6">
             <div className="flex items-end justify-between mb-8">
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -715,7 +719,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }}
           aria-hidden="true"
         />
-        <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-6 text-center">
           <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-3">{t('cta.tagline')}</p>
           <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-4">{t('cta.heading')}</h2>
           <p className="text-white/65 mb-8 max-w-xl mx-auto">{t('cta.para')}</p>
@@ -733,7 +737,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           12. SEO ROUTE KEYWORD GRID — Trip.com style
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-5">{t('seo.h2')}</h2>
 
           {/* ── Category tabs ── */}
