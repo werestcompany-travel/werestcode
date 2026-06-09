@@ -305,9 +305,27 @@ export default function Navbar({
   return (
     <Fragment>
       {/* ════════════════════════════════════════════════════════════
-          MAIN NAVBAR
+          TOP UTILITY BAR — desktop only, overlays hero
       ════════════════════════════════════════════════════════════ */}
-      <header className={`fixed top-0 left-0 right-0 z-50 h-16 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+      <div className={`hidden lg:flex fixed top-0 left-0 right-0 z-[51] h-8 items-center justify-end px-6 transition-opacity duration-300 ${(!transparent || scrolled) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className="flex items-center gap-5 text-white/80 text-xs font-medium">
+          <Link href="/deals" className="flex items-center gap-1.5 hover:text-white transition-colors">
+            <Gift className="w-3.5 h-3.5" />
+            Deals &amp; Promo
+          </Link>
+          <span className="w-px h-3 bg-white/30" />
+          <Link href="/contact" className="hover:text-white transition-colors">Partner with Werest</Link>
+          <span className="w-px h-3 bg-white/30" />
+          <Link href="/account/points" className="hover:text-white transition-colors">Werest Points</Link>
+          <span className="w-px h-3 bg-white/30" />
+          <Link href="/account?tab=all-bookings" className="hover:text-white transition-colors">My Bookings</Link>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════════
+          MAIN NAVBAR — pushed down by 32px when top bar visible
+      ════════════════════════════════════════════════════════════ */}
+      <header className={`fixed left-0 right-0 z-50 h-16 transition-all duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'} ${transparent && !scrolled ? 'top-8' : 'top-0'}`}>
 
         {/* White background — shown when scrolled OR on non-transparent pages */}
         <div className={cn(

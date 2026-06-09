@@ -358,14 +358,14 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           PAGE SHELL
       ════════════════════════════════════════════════════════════ */}
-      <div className="pt-16">
+      <div className="pt-16 lg:pt-24">
         <main>
 
       {/* ════════════════════════════════════════════════════════════
           1. HERO — full-width gradient
       ════════════════════════════════════════════════════════════ */}
-      {/* -mt-16 pulls the hero card behind the transparent navbar */}
-      <section aria-label="Hero" className="-mt-16 mb-0 lg:mb-[30px]">
+      {/* -mt-16 on mobile / -mt-24 on desktop pulls hero behind navbar+topbar */}
+      <section aria-label="Hero" className="-mt-16 lg:-mt-24 mb-0 lg:mb-[30px]">
 
         {/* ── Hero card ── */}
         <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '320px' }}>
