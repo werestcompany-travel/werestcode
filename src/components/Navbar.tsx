@@ -314,7 +314,7 @@ export default function Navbar({
       {/* ════════════════════════════════════════════════════════════
           MAIN NAVBAR
       ════════════════════════════════════════════════════════════ */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 h-16 transition-transform duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
 
         {/* White background — shown when scrolled OR on non-transparent pages */}
         <div className={cn(
@@ -322,7 +322,7 @@ export default function Navbar({
           (!transparent || scrolled) ? 'opacity-100' : 'opacity-0',
         )} />
 
-        <nav className="relative z-10 h-16">
+        <nav className="relative z-10 h-full">
         <div className="max-w-7xl mx-auto h-full flex items-center px-3 lg:px-6">
 
           {/* ─── MOBILE (< lg) — Klook-style: [≡ + logo] [spacer] [search + user] ─── */}
