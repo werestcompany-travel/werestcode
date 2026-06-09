@@ -220,6 +220,7 @@ const CAR_CLASSES = [
     name: 'Sedan',
     maxPax: 2,
     maxBags: 2,
+    models: 'Toyota Corolla Altis, Honda Civic, Mazda 3',
     image: 'https://www.toyota.co.th/media/product/series/grades/v/altis/19/8055e76f92e3f8e92b2f16771cebb42db2bcb9eda12ca1565ed5ce5a98ad4d56.webp',
   },
   {
@@ -227,6 +228,7 @@ const CAR_CLASSES = [
     name: 'SUV',
     maxPax: 4,
     maxBags: 4,
+    models: 'Toyota Fortuner, Honda CR-V, Mitsubishi Pajero',
     image: 'https://www.toyota.co.th/media/product/series/grades/v/fortuner_leader/47/02eff79ee7167df9807c067a0025b87e55458f0203b2b91f70e6b537fc6abf84.webp',
   },
   {
@@ -234,6 +236,7 @@ const CAR_CLASSES = [
     name: 'Minivan',
     maxPax: 10,
     maxBags: 10,
+    models: 'Toyota HiAce, Hyundai H-1, Ford Transit',
     image: 'https://www.toyota.co.th/media/product/series/grades/v/hiace/214/7c64131428daae1b2ac92c35d5cb6432a75c65eb3df845fa0da308e55cd5f116.webp',
   },
   {
@@ -241,6 +244,7 @@ const CAR_CLASSES = [
     name: 'Luxury MPV',
     maxPax: 6,
     maxBags: 6,
+    models: 'Toyota Alphard, Toyota Vellfire, Mercedes V-Class',
     image: 'https://www.toyota.co.th/media/product/series/grades/v/alphard/27/9bd8c8811a6213ea1429d91b5bcba32246b73d1255cbb3ae6be04309d1231b08.webp',
   },
 ];
@@ -650,43 +654,49 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <h2 id="fleet-heading" className="text-xl font-bold text-gray-900">{t('home.vehicleOpts')}</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-0 py-0">
-          <div className="flex gap-[2px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 sm:px-6 lg:px-8">
+          <div className="px-0 py-0">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 sm:px-6 lg:px-8">
             {CAR_CLASSES.map((cls) => {
-              const open = activeVehicle === cls.id;
               return (
-                <button
+                <div
                   key={cls.id}
-                  type="button"
-                  onClick={() => setActiveVehicle(open ? null : cls.id)}
-                  onMouseEnter={() => setActiveVehicle(cls.id)}
-                  onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[73vw] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-3 px-4 rounded-2xl focus:outline-none"
-                  aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
+                  className="shrink-0 w-[73vw] snap-start lg:w-auto lg:max-w-none flex flex-col rounded-2xl bg-white border border-gray-100 shadow-md overflow-hidden"
                 >
-                  <div className="relative w-full mb-3" style={{ height: 'clamp(182px, 29vw, 305px)' }}>
+                  {/* Image area — light grey bg */}
+                  <div className="relative w-full bg-gray-50" style={{ height: 'clamp(160px, 26vw, 240px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
                       fill
-                      className="object-contain object-center drop-shadow-lg"
-                      sizes="(max-width: 640px) 78vw, 25vw"
+                      className="object-contain object-center drop-shadow-md"
+                      sizes="(max-width: 640px) 73vw, 25vw"
                       quality={100}
                       unoptimized
                     />
                   </div>
-                  <p className="text-lg sm:text-xl font-semibold text-gray-800">{cls.name}</p>
-                  <div className="mt-1.5 flex items-center gap-3 text-sm font-semibold text-[#2534ff]">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
-                      {cls.maxPax}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Luggage className="w-4 h-4 shrink-0" aria-hidden="true" />
-                      {cls.maxBags}
-                    </span>
+
+                  {/* Info area */}
+                  <div className="px-4 pt-3 pb-4">
+                    {/* Name + capacity on same row */}
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-base font-bold text-gray-900">{cls.name}</p>
+                      <div className="flex items-center gap-3 text-sm font-semibold text-[#2534ff]">
+                        <span className="flex items-center gap-1">
+                          <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
+                          {cls.maxPax}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Luggage className="w-4 h-4 shrink-0" aria-hidden="true" />
+                          {cls.maxBags}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Divider */}
+                    <div className="border-t border-gray-100 mb-3" />
+                    {/* Model names */}
+                    <p className="text-xs text-gray-400 leading-relaxed">{cls.models}</p>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
