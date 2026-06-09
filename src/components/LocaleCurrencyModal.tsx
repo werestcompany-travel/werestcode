@@ -43,15 +43,15 @@ function LangItem({
       onClick={() => onSelect(l.code)}
       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center
         ${active
-          ? 'border-orange-500 bg-orange-50'
+          ? 'border-[#2534ff] bg-[#2534ff]/5'
           : 'border-transparent bg-gray-50 hover:border-gray-200 hover:bg-gray-100'
         }`}
     >
       <img src={l.flagSrc} alt={l.label} className="w-8 h-[22px] object-cover rounded shadow-sm" />
-      <span className={`text-[13px] font-semibold leading-tight ${active ? 'text-orange-600' : 'text-gray-800'}`}>
+      <span className={`text-[13px] font-semibold leading-tight ${active ? 'text-[#2534ff]' : 'text-gray-800'}`}>
         {l.native}
       </span>
-      <span className={`text-[10px] leading-tight ${active ? 'text-orange-400' : 'text-gray-400'}`}>
+      <span className={`text-[10px] leading-tight ${active ? 'text-[#2534ff]/60' : 'text-gray-400'}`}>
         {l.country}
       </span>
     </button>
@@ -67,15 +67,15 @@ function CurrItem({
       onClick={() => onSelect(c.code)}
       className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-center
         ${active
-          ? 'border-orange-500 bg-orange-50'
+          ? 'border-[#2534ff] bg-[#2534ff]/5'
           : 'border-transparent bg-gray-50 hover:border-gray-200 hover:bg-gray-100'
         }`}
     >
       <span className="text-2xl leading-none">{c.flag}</span>
-      <span className={`text-[13px] font-bold leading-tight ${active ? 'text-orange-600' : 'text-gray-800'}`}>
+      <span className={`text-[13px] font-bold leading-tight ${active ? 'text-[#2534ff]' : 'text-gray-800'}`}>
         {c.code}
       </span>
-      <span className={`text-[10px] leading-tight ${active ? 'text-orange-400' : 'text-gray-400'}`}>
+      <span className={`text-[10px] leading-tight ${active ? 'text-[#2534ff]/60' : 'text-gray-400'}`}>
         {c.name}
       </span>
     </button>
@@ -140,7 +140,7 @@ export default function LocaleCurrencyModal({ open, tab, onClose, onTabChange }:
               onClick={() => onTabChange(t)}
               className={`pb-3 mr-6 text-[14px] font-semibold border-b-2 transition-colors
                 ${tab === t
-                  ? 'border-orange-500 text-orange-500'
+                  ? 'border-[#2534ff] text-[#2534ff]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
             >
