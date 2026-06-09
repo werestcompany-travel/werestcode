@@ -384,17 +384,31 @@ export default function Navbar({
 
           <div className="hidden lg:flex items-center gap-0.5">
 
-            {/* Globe + lang | currency */}
-            <button
-              type="button"
-              onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-              className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span>{lang}</span>
-              <span className={`${useWhite ? 'text-white/30' : 'text-gray-300'}`}>|</span>
-              <span>{currency}</span>
-            </button>
+            {/* Flag + lang | currency */}
+            {(() => {
+              const FLAG_MAP: Record<string, string> = {
+                EN: 'https://flagcdn.com/w40/gb.png',
+                TH: 'https://flagcdn.com/w40/th.png',
+                ZH: 'https://flagcdn.com/w40/cn.png',
+              };
+              const flagUrl = FLAG_MAP[lang] ?? FLAG_MAP['EN'];
+              return (
+                <button
+                  type="button"
+                  onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
+                  className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
+                >
+                  <img
+                    src={flagUrl}
+                    alt={lang}
+                    className="w-4 h-4 rounded-full object-cover shrink-0"
+                  />
+                  <span>{lang}</span>
+                  <span className={`${useWhite ? 'text-white/30' : 'text-gray-300'}`}>|</span>
+                  <span>{currency}</span>
+                </button>
+              );
+            })()}
 
 
             {/* Recently viewed / Bookings */}
