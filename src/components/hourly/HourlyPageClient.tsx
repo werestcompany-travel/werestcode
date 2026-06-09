@@ -269,22 +269,7 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
 
         {/* TripAdvisor row */}
         <div className="flex items-center justify-center gap-2.5 py-4 border-b border-gray-100">
-          {/* TripAdvisor owl logo */}
-          <svg viewBox="0 0 64 40" className="h-6 w-auto shrink-0" aria-label="TripAdvisor">
-            <g>
-              {/* Left eye */}
-              <circle cx="13" cy="20" r="11" fill="#34E0A1"/>
-              <circle cx="13" cy="20" r="7"  fill="white"/>
-              <circle cx="13" cy="20" r="4"  fill="#1A1A1A"/>
-              {/* Right eye */}
-              <circle cx="51" cy="20" r="11" fill="#34E0A1"/>
-              <circle cx="51" cy="20" r="7"  fill="white"/>
-              <circle cx="51" cy="20" r="4"  fill="#1A1A1A"/>
-              {/* Nose bridge */}
-              <ellipse cx="32" cy="23" rx="4" ry="3" fill="#1A1A1A"/>
-            </g>
-          </svg>
-          <span className="font-bold text-gray-900 text-sm tracking-tight">Tripadvisor</span>
+          <img src="/images/tripadvisor-logo.svg" alt="Tripadvisor" className="h-6 w-auto object-contain" />
           {/* 5 green dots */}
           {[0,1,2,3,4].map(i => (
             <span key={i} className="w-4 h-4 rounded-full bg-[#34E0A1] inline-block" />

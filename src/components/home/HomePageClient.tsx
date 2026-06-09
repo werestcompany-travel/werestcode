@@ -501,7 +501,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           {/* ── TripAdvisor ── */}
           <div className="flex items-center gap-2.5 px-8 py-3.5">
             <img
-              src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
+              src="/images/tripadvisor-logo.svg"
               alt="Tripadvisor"
               className="h-5 w-auto object-contain"
             />
