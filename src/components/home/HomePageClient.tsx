@@ -550,42 +550,42 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <Sparkles className="w-5 h-5 text-[#2534ff]" />
             <h2 className="text-xl font-bold text-gray-900">New user exclusive</h2>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Coupon 1 */}
-            <div className="relative flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
+          <div className="grid grid-cols-3 gap-4">
+            {/* Coupon 1 — Airport Transfers */}
+            <div className="relative bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
               style={{ boxShadow: '0 0 0 1.5px #e5e7eb' }}>
-              {/* dashed divider */}
-              <div className="absolute right-[120px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
-              {/* notch top */}
-              <div className="absolute right-[108px] -top-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
-              <div className="absolute right-[108px] -bottom-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
-              <div className="flex-1 pr-6">
-                <p className="text-lg font-extrabold text-gray-900">15% off</p>
-                <p className="text-sm text-gray-500 mt-0.5">Airport Transfers</p>
-                <Link href="/transfers" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
-                  Use
-                </Link>
-              </div>
-              <div className="w-[100px] flex items-center justify-center">
-                <Car className="w-12 h-12 text-red-400" />
-              </div>
+              <div className="absolute right-[88px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
+              <div className="absolute right-[76px] -top-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <div className="absolute right-[76px] -bottom-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <p className="text-lg font-extrabold text-gray-900">15% off</p>
+              <p className="text-sm text-gray-500 mt-0.5">Airport Transfers</p>
+              <Link href="/transfers" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                Use
+              </Link>
             </div>
-            {/* Coupon 2 */}
-            <div className="relative flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
+            {/* Coupon 2 — Tours & Experiences */}
+            <div className="relative bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
               style={{ boxShadow: '0 0 0 1.5px #e5e7eb' }}>
-              <div className="absolute right-[120px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
-              <div className="absolute right-[108px] -top-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
-              <div className="absolute right-[108px] -bottom-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
-              <div className="flex-1 pr-6">
-                <p className="text-lg font-extrabold text-gray-900">10% off</p>
-                <p className="text-sm text-gray-500 mt-0.5">Tours &amp; Experiences</p>
-                <Link href="/tours" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
-                  Use
-                </Link>
-              </div>
-              <div className="w-[100px] flex items-center justify-center">
-                <Compass className="w-12 h-12 text-red-400" />
-              </div>
+              <div className="absolute right-[88px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
+              <div className="absolute right-[76px] -top-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <div className="absolute right-[76px] -bottom-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <p className="text-lg font-extrabold text-gray-900">10% off</p>
+              <p className="text-sm text-gray-500 mt-0.5">Tours &amp; Experiences</p>
+              <Link href="/tours" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                Use
+              </Link>
+            </div>
+            {/* Coupon 3 — Group Tours */}
+            <div className="relative bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
+              style={{ boxShadow: '0 0 0 1.5px #e5e7eb' }}>
+              <div className="absolute right-[88px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
+              <div className="absolute right-[76px] -top-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <div className="absolute right-[76px] -bottom-3 w-6 h-6 rounded-full bg-gray-50 border border-gray-200" />
+              <p className="text-lg font-extrabold text-gray-900">10% off</p>
+              <p className="text-sm text-gray-500 mt-0.5">Group Tours</p>
+              <Link href="/group-booking" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                Use
+              </Link>
             </div>
           </div>
         </div>
