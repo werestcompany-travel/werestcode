@@ -503,7 +503,8 @@ export default function Navbar({
           )}
         >
           {/* ── Overlay header (mirrors main nav) ── */}
-          <div className="h-16 flex items-center gap-2 px-4 shrink-0 border-b border-gray-100">
+          <div className="h-16 shrink-0 border-b border-gray-100 px-3 lg:px-6">
+          <div className="max-w-7xl mx-auto h-full flex items-center gap-2">
             <Link href="/" onClick={closeMobileMenu} className="flex items-center shrink-0 -ml-[5px]">
               <Image src="/images/logo.png" alt="Werest Travel" height={32} width={106} priority className="object-contain" />
             </Link>
@@ -529,6 +530,7 @@ export default function Navbar({
               className="p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors shrink-0">
               <X className="w-[22px] h-[22px]" strokeWidth={1.8} />
             </button>
+          </div>
           </div>
 
           {/* ── Scrollable body ── */}
