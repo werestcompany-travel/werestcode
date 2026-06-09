@@ -11,7 +11,6 @@ interface UserRow {
   name: string;
   phone: string | null;
   loyaltyPoints: number;
-  tierLevel: string;
   createdAt: string;
 }
 
@@ -23,12 +22,6 @@ interface UserDetail extends UserRow {
 
 interface Stats { total: number; }
 
-const TIER_PILL: Record<string, string> = {
-  EXPLORER:   'bg-gray-100 text-gray-600',
-  ADVENTURER: 'bg-blue-100 text-blue-700',
-  NAVIGATOR:  'bg-purple-100 text-purple-700',
-  VOYAGER:    'bg-amber-100 text-amber-700',
-};
 
 export default function AdminUsersPage() {
   const [users,         setUsers]         = useState<UserRow[]>([]);
@@ -145,8 +138,8 @@ export default function AdminUsersPage() {
                         className="font-semibold text-sm text-brand-600 hover:underline truncate">{u.name}</Link>
                       <p className="text-xs text-gray-500 truncate">{u.email}</p>
                       <p className="text-xs text-gray-500">{u.phone ?? '—'}</p>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${TIER_PILL[u.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {u.tierLevel}
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#2534ff]">
+                        💎 {u.loyaltyPoints.toLocaleString()} pts
                       </span>
                       <p className="text-sm font-bold text-gray-900">{u.loyaltyPoints.toLocaleString()} pts</p>
                       <p className="text-xs text-gray-400">
@@ -182,8 +175,8 @@ export default function AdminUsersPage() {
                   <div className="grid grid-cols-2 gap-3 mb-5">
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Tier</p>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${TIER_PILL[selectedUser.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {selectedUser.tierLevel}
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#2534ff]">
+                        💎 {selectedUser.loyaltyPoints.toLocaleString()} pts
                       </span>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">

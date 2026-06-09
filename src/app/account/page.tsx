@@ -22,7 +22,6 @@ interface UserInfo {
   email: string;
   phone?: string;
   loyaltyPoints: number;
-  tierLevel: string;
   createdAt: string;
 }
 
@@ -94,13 +93,6 @@ const SERVICE_ICONS: Record<string, string> = {
   transfer:   '🚗',
   tour:       '🗺️',
   attraction: '🎟️',
-};
-
-const TIER_META: Record<string, { label: string; icon: string; color: string }> = {
-  EXPLORER:   { label: 'Explorer',   icon: '🌱', color: 'text-emerald-600 bg-emerald-50' },
-  ADVENTURER: { label: 'Adventurer', icon: '🏔️', color: 'text-blue-600 bg-blue-50'      },
-  NAVIGATOR:  { label: 'Navigator',  icon: '🧭', color: 'text-violet-600 bg-violet-50'   },
-  VOYAGER:    { label: 'Voyager',    icon: '⛵', color: 'text-amber-600 bg-amber-50'     },
 };
 
 // ─── Sidebar item ─────────────────────────────────────────────────────────────
@@ -447,7 +439,6 @@ function AccountContent() {
     );
   }
 
-  const tier         = TIER_META[user?.tierLevel ?? 'EXPLORER'] ?? TIER_META.EXPLORER;
   const isBookingTab = ['all', 'transfers', 'tours', 'attractions'].includes(tab);
   const filteredBookings = getFilteredBookings(getBookingsForTab());
 
@@ -486,8 +477,8 @@ function AccountContent() {
             </div>
             <div className="min-w-0">
               <p className="font-bold text-gray-900 truncate">{user?.name}</p>
-              <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${tier.color}`}>
-                {tier.icon} {tier.label}
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full text-[#2534ff] bg-blue-50">
+                💎 {(user?.loyaltyPoints ?? 0).toLocaleString()} pts
               </span>
             </div>
           </div>
@@ -587,13 +578,13 @@ function AccountContent() {
                     </div>
                   )}
 
-                  {/* Werest Rewards */}
+                  {/* My Points */}
                   <Link
-                    href="/account/rewards"
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-amber-600 hover:bg-amber-50 border-l-[3px] border-transparent hover:border-amber-400 transition-colors"
+                    href="/account/points"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[#2534ff] hover:bg-blue-50 border-l-[3px] border-transparent hover:border-[#2534ff] transition-colors"
                   >
                     <Award className="w-4 h-4 shrink-0" />
-                    <span className="flex-1">Werest Rewards</span>
+                    <span className="flex-1">View My Points</span>
                     <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                   </Link>
 
@@ -770,12 +761,9 @@ function AccountContent() {
                           {(user?.loyaltyPoints ?? 0).toLocaleString()} <span className="text-base font-semibold text-blue-200">pts</span>
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-sm font-bold px-3 py-1.5 rounded-full">
-                        {tier.icon} {tier.label}
-                      </span>
                     </div>
-                    <Link href="/account/rewards" className="mt-3 inline-flex items-center gap-1 text-blue-100 text-xs font-semibold hover:text-white transition-colors">
-                      View Werest Rewards <ChevronRight className="w-3.5 h-3.5" />
+                    <Link href="/account/points" className="mt-3 inline-flex items-center gap-1 text-blue-100 text-xs font-semibold hover:text-white transition-colors">
+                      View My Points <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
 

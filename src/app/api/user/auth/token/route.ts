@@ -46,7 +46,6 @@ export async function POST(req: NextRequest) {
         name:          user.name,
         phone:         user.phone,
         loyaltyPoints: user.loyaltyPoints,
-        tierLevel:     user.tierLevel,
       },
     });
   } catch (e) {

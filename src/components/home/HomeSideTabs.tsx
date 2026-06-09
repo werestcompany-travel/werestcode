@@ -58,13 +58,6 @@ const ATTRACTIONS_DATA = [
   { name: 'Doi Inthanon',        loc: 'Chiang Mai', price: '฿800',   rating: 4.6, emoji: '⛰️', href: '/attractions' },
 ];
 
-const TIER_ROWS = [
-  { label: 'Explorer',   emoji: '🌍', pts: '0 pts',      g: 'from-amber-400 to-orange-500'  },
-  { label: 'Adventurer', emoji: '🧭', pts: '1,000 pts',  g: 'from-slate-400 to-slate-600'    },
-  { label: 'Navigator',  emoji: '⭐', pts: '3,000 pts',  g: 'from-yellow-400 to-amber-500'   },
-  { label: 'Voyager',    emoji: '💎', pts: '8,000 pts',  g: 'from-indigo-500 to-purple-600'  },
-];
-
 /* shared row card */
 function RowCard({ href, emoji, title, sub, right }: { href: string; emoji: string; title: string; sub: string; right: React.ReactNode }) {
   return (

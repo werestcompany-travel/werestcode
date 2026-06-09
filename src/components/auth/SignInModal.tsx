@@ -99,7 +99,7 @@ export default function SignInModal({ open, onClose }: Props) {
           {/* Benefit pills */}
           <div className="flex items-center justify-center gap-4 mb-7">
             <span className="flex items-center gap-1.5 text-[12px] text-gray-600">
-              <span className="text-base">🏅</span> Membership rewards
+              <span className="text-base">💎</span> Earn loyalty points
             </span>
             <span className="flex items-center gap-1.5 text-[12px] text-gray-600">
               <span className="text-base">📋</span> Manage bookings with ease

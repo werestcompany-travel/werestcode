@@ -11,7 +11,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     where: { id: params.id },
     select: {
       id: true, email: true, name: true, phone: true,
-      loyaltyPoints: true, tierLevel: true, createdAt: true,
+      loyaltyPoints: true, createdAt: true,
       loyaltyTransactions: {
         orderBy: { createdAt: 'desc' },
         take: 20,

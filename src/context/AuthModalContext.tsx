@@ -14,7 +14,6 @@ export interface AuthUser {
   name: string;
   email: string;
   loyaltyPoints?: number;
-  tierLevel?: string;
 }
 
 interface AuthModalContextValue {

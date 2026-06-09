@@ -402,7 +402,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   </span>
                 </div>
               </div>
-            ) : (activeService !== 'rewards' && (
+            ) : ((
               <div className="hidden lg:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
                 {activeService === 'dinner'  && <Ship     className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'group'   && <Users    className="w-12 h-12 text-white mx-auto mb-4" />}

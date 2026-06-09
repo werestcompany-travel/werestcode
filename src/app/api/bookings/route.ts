@@ -11,13 +11,6 @@ import { calculateSurcharges } from '@/lib/surcharges';
 import { VehicleType, type BookingDetail } from '@/types';
 import { getUserFromCookies } from '@/lib/user-auth';
 
-// Loyalty tier multipliers for points earned per booking
-const TIER_MULTIPLIERS: Record<string, number> = {
-  EXPLORER:   1,
-  ADVENTURER: 1.2,
-  NAVIGATOR:  1.5,
-  VOYAGER:    2,
-};
 
 /**
  * Generates a unique booking reference inside a transaction.
@@ -163,8 +156,6 @@ export async function POST(req: NextRequest) {
     const loyaltyPointsRedeemed = data.loyaltyPointsRedeemed ?? 0;
     let loyaltyDiscount         = 0;
     let loyaltyUserId: string | null = null;
-    let loyaltyUserTier: string = 'EXPLORER';
-
     if (loyaltyPointsRedeemed > 0) {
       const sessionUser = await getUserFromCookies();
       if (!sessionUser) {
@@ -191,7 +182,7 @@ export async function POST(req: NextRequest) {
 
       const dbUser = await prisma.user.findUnique({
         where: { id: sessionUser.id },
-        select: { id: true, loyaltyPoints: true, tierLevel: true },
+        select: { id: true, loyaltyPoints: true },
       });
       if (!dbUser || dbUser.loyaltyPoints < loyaltyPointsRedeemed) {
         return NextResponse.json(
@@ -202,7 +193,6 @@ export async function POST(req: NextRequest) {
 
       loyaltyDiscount = loyaltyPointsRedeemed; // 1 point = ฿1
       loyaltyUserId   = dbUser.id;
-      loyaltyUserTier = dbUser.tierLevel as string;
     }
 
     const finalTotal = Math.max(0, serverTotal - loyaltyDiscount);
@@ -304,28 +294,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── Loyalty: award points earned for this booking ─────────────────────
-      if (loyaltyUserId) {
-        const multiplier = TIER_MULTIPLIERS[loyaltyUserTier] ?? 1;
-        const pointsEarned = Math.floor(Math.floor(finalTotal / 10) * multiplier);
-
-        if (pointsEarned > 0) {
-          await tx.user.update({
-            where: { id: loyaltyUserId },
-            data:  { loyaltyPoints: { increment: pointsEarned } },
-          });
-
-          await tx.loyaltyTransaction.create({
-            data: {
-              userId:      loyaltyUserId,
-              points:      pointsEarned,
-              type:        'EARN',
-              description: 'Points earned for booking',
-              bookingRef:  created.bookingRef,
-            },
-          });
-        }
-      }
+      // Points are awarded via payment webhook on successful payment
 
       return created;
     });

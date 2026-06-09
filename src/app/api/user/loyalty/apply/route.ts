@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // Fetch current user balance from DB (never trust the cookie for point balance)
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { loyaltyPoints: true, tierLevel: true },
+      select: { loyaltyPoints: true },
     });
 
     if (!dbUser) {
@@ -72,7 +72,6 @@ export async function POST(req: NextRequest) {
       discountAmount:  pointsToRedeem,          // 1 point = ฿1
       remainingPoints: dbUser.loyaltyPoints - pointsToRedeem,
       currentPoints:   dbUser.loyaltyPoints,
-      tierLevel:       dbUser.tierLevel,
     });
   } catch (err) {
     console.error('[loyalty/apply] POST error:', err);

@@ -60,13 +60,6 @@ const TOP_SEARCHES = [
   { rank: 4, title: 'Elephant Nature Park Half-Day Experience',           location: 'Chiang Mai',       price: 'From ฿1,800', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=80&q=80' },
 ];
 
-const TIER_CHIP: Record<string, string> = {
-  EXPLORER:   'bg-gray-100 text-gray-600',
-  ADVENTURER: 'bg-green-100 text-green-700',
-  NAVIGATOR:  'bg-blue-100 text-blue-700',
-  VOYAGER:    'bg-purple-100 text-purple-700',
-};
-
 const TRENDING_DESTINATIONS = [
   { rank: 1, name: 'Bangkok',    desc: 'Iconic landmarks | History and culture | Nightlife',   img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=80&q=80' },
   { rank: 2, name: 'Phuket',     desc: 'Beach paradise | Island hopping | Water sports',       img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=80&q=80' },
@@ -425,11 +418,6 @@ export default function Navbar({
                     {user.name[0].toUpperCase()}
                   </div>
                   <span className="max-w-[90px] truncate">{user.name.split(' ')[0]}</span>
-                  {user.tierLevel && (
-                    <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {user.tierLevel}
-                    </span>
-                  )}
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -438,14 +426,11 @@ export default function Navbar({
                     <div className="px-4 py-2 border-b border-gray-100 mb-1">
                       <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
                       <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                      {(user.tierLevel || user.loyaltyPoints != null) && (
+                      {user.loyaltyPoints != null && (
                         <div className="flex items-center gap-1.5 mt-1.5">
-                          {user.tierLevel && (
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>{user.tierLevel}</span>
-                          )}
-                          {user.loyaltyPoints != null && (
-                            <CoinIcon className="w-4 h-4" />
-                          )}
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-[#2534ff]">
+                            💎 {user.loyaltyPoints.toLocaleString()} pts
+                          </span>
                         </div>
                       )}
                     </div>
@@ -569,9 +554,9 @@ export default function Navbar({
                         <CoinIcon className="w-4 h-4 mt-0.5" />
                       )}
                     </div>
-                    {user.tierLevel && (
-                      <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full ${TIER_CHIP[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {user.tierLevel}
+                    {user.loyaltyPoints != null && (
+                      <span className="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-[#2534ff]">
+                        💎 {user.loyaltyPoints.toLocaleString()} pts
                       </span>
                     )}
                   </div>

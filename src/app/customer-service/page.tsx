@@ -566,7 +566,7 @@ export default function CustomerServicePage() {
                     { label: 'Track my transfer', href: '/tracking' },
                     { label: 'Cancellation policy', href: '/customer-service#cancellation' },
                     { label: 'Service standards', href: '/service' },
-                    { label: 'Werest Rewards', href: '/account/rewards' },
+                    { label: 'My Points', href: '/account/points' },
                   ].map(link => (
                     <Link
                       key={link.label}

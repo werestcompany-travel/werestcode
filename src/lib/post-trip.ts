@@ -1,10 +1,10 @@
 import { db } from '@/lib/db';
-import { awardPoints, calcTier } from '@/lib/loyalty';
+import { awardPoints, calcPointsEarned } from '@/lib/loyalty';
 import { LoyaltyTxType } from '@prisma/client';
 
-// Points earned: 1 point per 10 THB spent (rounded down), minimum 10 points
+// Points earned: 20 THB = 1 point
 export function calcLoyaltyPoints(totalPrice: number): number {
-  return Math.max(10, Math.floor(totalPrice / 10));
+  return calcPointsEarned(totalPrice);
 }
 
 /**

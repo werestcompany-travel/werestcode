@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
-import { calcTier, nextTierInfo, TIER_META, TIER_THRESHOLDS } from '@/lib/loyalty';
 
 export async function GET(req: NextRequest) {
   const session = await getUserFromRequest(req);
@@ -9,7 +8,7 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where:  { id: session.id },
-    select: { loyaltyPoints: true, tierLevel: true },
+    select: { loyaltyPoints: true },
   });
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -20,19 +19,8 @@ export async function GET(req: NextRequest) {
     select:  { id: true, points: true, type: true, description: true, bookingRef: true, createdAt: true },
   });
 
-  const tier      = calcTier(user.loyaltyPoints);
-  const tierData  = TIER_META[tier];
-  const { next, needed, progress } = nextTierInfo(user.loyaltyPoints);
-
   return NextResponse.json({
     points:       user.loyaltyPoints,
-    tier,
-    tierMeta:     tierData,
-    nextTier:     next,
-    nextTierMeta: next ? TIER_META[next] : null,
-    needed,
-    progress,
-    thresholds:   TIER_THRESHOLDS,
     transactions,
   });
 }

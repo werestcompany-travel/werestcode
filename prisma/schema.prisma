@@ -54,13 +54,6 @@ enum BlogCategory {
   CHIANG_RAI
 }
 
-enum TierLevel {
-  EXPLORER
-  ADVENTURER
-  NAVIGATOR
-  VOYAGER
-}
-
 enum LoyaltyTxType {
   EARN
   REDEEM
@@ -92,7 +85,6 @@ model User {
   name          String
   phone         String?
   loyaltyPoints Int        @default(0)
-  tierLevel     TierLevel  @default(EXPLORER)
   preferredPaymentMethod String?   // "CREDIT_CARD" | "PROMPTPAY" | "QR_CODE"
   lastPaymentAt          DateTime?
   whatsappOptOut         Boolean   @default(false)

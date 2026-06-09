@@ -6,13 +6,6 @@ import Link from 'next/link';
 import AdminShell from '@/components/admin/AdminShell';
 import { ArrowLeft, User, Mail, Phone, Calendar, Award, BookOpen, Car, Ticket, Save } from 'lucide-react';
 
-const TIER_PILL: Record<string, string> = {
-  EXPLORER:   'bg-gray-100 text-gray-600',
-  ADVENTURER: 'bg-blue-100 text-blue-700',
-  NAVIGATOR:  'bg-purple-100 text-purple-700',
-  VOYAGER:    'bg-amber-100 text-amber-700',
-};
-
 interface LoyaltyTx { id: string; points: number; type: string; description: string; bookingRef: string | null; createdAt: string; }
 interface TourBooking { id: string; bookingRef: string; tourTitle: string; totalPrice: number; status: string; createdAt: string; }
 interface AttractionBooking { id: string; bookingRef: string; attractionName: string; totalPrice: number; status: string; createdAt: string; }
@@ -20,7 +13,7 @@ interface TransferBooking { id: string; bookingRef: string; pickupAddress: strin
 
 interface UserProfile {
   id: string; email: string; name: string; phone: string | null;
-  loyaltyPoints: number; tierLevel: string; createdAt: string;
+  loyaltyPoints: number; createdAt: string;
   tourBookings: TourBooking[];
   attractionBookings: AttractionBooking[];
   loyaltyTransactions: LoyaltyTx[];
@@ -99,8 +92,8 @@ export default function CustomerProfilePage() {
               </div>
               <div>
                 <p className="font-bold text-gray-900">{user.name}</p>
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${TIER_PILL[user.tierLevel] ?? 'bg-gray-100 text-gray-600'}`}>
-                  {user.tierLevel}
+                <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#2534ff]">
+                  💎 {user.loyaltyPoints.toLocaleString()} pts
                 </span>
               </div>
             </div>

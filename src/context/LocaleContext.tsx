@@ -213,18 +213,15 @@ const T: Record<Lang, Strings> = {
     'hero.deals.title':       'Exclusive Deals & Offers',
     'hero.dinner.title':      'Unforgettable Cruises',
     'hero.group.title':       'Group Adventures Await',
-    'hero.rewards.title':     'Earn Werest Rewards',
     /* hero service card labels */
     'hero.card.cruises':  'Cruises',
     'hero.card.group':    'Group Tours',
     'hero.card.deals':    'Hot Deals',
-    'hero.card.rewards':  'Werest Rewards',
     'hero.card.learnMore':    'Learn More',
     'hero.card.viewDeals':    'View Deals',
     'hero.card.notifyMe':     'Notify Me',
     'hero.card.comingSoon':   'Coming soon — be the first to know when it launches.',
     'hero.card.dealsDesc':    'Browse our latest exclusive discounts.',
-    'hero.card.rewardsDesc':  'Earn points on every booking and redeem for free trips.',
     /* hero trust bar */
     'hero.priceLocked': 'Price locked at booking — no surprises',
     /* service tabs */
@@ -233,7 +230,6 @@ const T: Record<Lang, Strings> = {
     'svc.attractions': 'Attraction Tickets',
     'svc.group':       'Group Tours',
     'svc.deals':       'Deals & Offers',
-    'svc.rewards':     'Werest Rewards',
     /* svc children */
     'svc.airport':      'Airport Transfer',
     'svc.cityToCity':   'City-to-City',
@@ -598,18 +594,15 @@ const T: Record<Lang, Strings> = {
     'hero.deals.title':       'ดีลและข้อเสนอพิเศษ',
     'hero.dinner.title':      'ล่องเรือสุดประทับใจ',
     'hero.group.title':       'ผจญภัยกลุ่มรออยู่',
-    'hero.rewards.title':     'รับ Werest Rewards',
     /* hero service card labels */
     'hero.card.cruises':  'ล่องเรือ',
     'hero.card.group':    'ทัวร์กลุ่ม',
     'hero.card.deals':    'ดีลร้อน',
-    'hero.card.rewards':  'Werest Rewards',
     'hero.card.learnMore':    'เรียนรู้เพิ่มเติม',
     'hero.card.viewDeals':    'ดูดีล',
     'hero.card.notifyMe':     'แจ้งเตือนฉัน',
     'hero.card.comingSoon':   'เร็วๆ นี้ — เป็นคนแรกที่รู้เมื่อเปิดตัว',
     'hero.card.dealsDesc':    'ดูส่วนลดพิเศษล่าสุดของเรา',
-    'hero.card.rewardsDesc':  'สะสมคะแนนทุกการจองและแลกเป็นทริปฟรี',
     /* hero trust bar */
     'hero.priceLocked': 'ราคาคงที่ตอนจอง — ไม่มีเซอร์ไพรส์',
     /* service tabs */
@@ -618,7 +611,6 @@ const T: Record<Lang, Strings> = {
     'svc.attractions': 'ตั๋วสถานที่ท่องเที่ยว',
     'svc.group':       'ทัวร์กลุ่ม',
     'svc.deals':       'ดีลและข้อเสนอ',
-    'svc.rewards':     'Werest Rewards',
     /* svc children */
     'svc.airport':      'รถรับส่งสนามบิน',
     'svc.cityToCity':   'เมืองต่อเมือง',
@@ -983,18 +975,15 @@ const T: Record<Lang, Strings> = {
     'hero.deals.title':       '独家优惠与折扣',
     'hero.dinner.title':      '难忘邮轮之旅',
     'hero.group.title':       '团体冒险之旅',
-    'hero.rewards.title':     '赚取Werest奖励',
     /* hero service card labels */
     'hero.card.cruises':  '邮轮',
     'hero.card.group':    '团体游',
     'hero.card.deals':    '热门优惠',
-    'hero.card.rewards':  'Werest奖励',
     'hero.card.learnMore':    '了解更多',
     'hero.card.viewDeals':    '查看优惠',
     'hero.card.notifyMe':     '通知我',
     'hero.card.comingSoon':   '即将推出 — 第一时间获取通知',
     'hero.card.dealsDesc':    '浏览我们最新的独家折扣',
-    'hero.card.rewardsDesc':  '每次预订赚取积分，兑换免费旅行',
     /* hero trust bar */
     'hero.priceLocked': '预订时锁定价格 — 无意外费用',
     /* service tabs */
@@ -1003,7 +992,6 @@ const T: Record<Lang, Strings> = {
     'svc.attractions': '景点门票',
     'svc.group':       '团体游',
     'svc.deals':       '优惠与折扣',
-    'svc.rewards':     'Werest奖励',
     /* svc children */
     'svc.airport':      '机场接送',
     'svc.cityToCity':   '城市间接送',

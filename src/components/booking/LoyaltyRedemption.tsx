@@ -6,11 +6,8 @@ import { formatCurrency } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type TierLevel = 'EXPLORER' | 'ADVENTURER' | 'NAVIGATOR' | 'VOYAGER';
-
 interface UserLoyalty {
   loyaltyPoints: number;
-  tierLevel: TierLevel;
 }
 
 interface LoyaltyRedemptionProps {
@@ -18,15 +15,6 @@ interface LoyaltyRedemptionProps {
   onApplied:   (discount: number, points: number) => void;
   onRemoved:   () => void;
 }
-
-// ─── Tier display config ──────────────────────────────────────────────────────
-
-const TIER_CONFIG: Record<TierLevel, { label: string; color: string; bg: string; multiplier: number }> = {
-  EXPLORER:   { label: 'Explorer',   color: 'text-gray-600',   bg: 'bg-gray-100',   multiplier: 1   },
-  ADVENTURER: { label: 'Adventurer', color: 'text-blue-700',   bg: 'bg-blue-100',   multiplier: 1.2 },
-  NAVIGATOR:  { label: 'Navigator',  color: 'text-purple-700', bg: 'bg-purple-100', multiplier: 1.5 },
-  VOYAGER:    { label: 'Voyager',    color: 'text-amber-700',  bg: 'bg-amber-100',  multiplier: 2   },
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -48,7 +36,7 @@ export default function LoyaltyRedemption({ orderTotal, onApplied, onRemoved }: 
         if (!res.ok) { setLoadingUser(false); return; }
         const json = await res.json();
         if (json.user?.loyaltyPoints !== undefined) {
-          setUserData({ loyaltyPoints: json.user.loyaltyPoints, tierLevel: json.user.tierLevel });
+          setUserData({ loyaltyPoints: json.user.loyaltyPoints });
         }
       } catch {
         // Not logged in — silently hide the component
@@ -108,7 +96,6 @@ export default function LoyaltyRedemption({ orderTotal, onApplied, onRemoved }: 
   if (!userData)   return null;
   if (userData.loyaltyPoints === 0) return null;
 
-  const tier = TIER_CONFIG[userData.tierLevel] ?? TIER_CONFIG.EXPLORER;
   const canApply = pointsInput >= minRedeemable && pointsInput <= maxRedeemable;
 
   // ── Applied state ────────────────────────────────────────────────────────────
@@ -158,9 +145,6 @@ export default function LoyaltyRedemption({ orderTotal, onApplied, onRemoved }: 
             </p>
           </div>
         </div>
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${tier.bg} ${tier.color} shrink-0 uppercase tracking-wide`}>
-          {tier.label}
-        </span>
       </div>
 
       {/* Slider */}
@@ -226,8 +210,7 @@ export default function LoyaltyRedemption({ orderTotal, onApplied, onRemoved }: 
           {error && <p className="text-xs text-red-600 pl-0.5">{error}</p>}
 
           <p className="text-[10px] text-amber-500 leading-snug">
-            Min {minRedeemable} pts · Max 20% of order ({formatCurrency(maxByPercent)}) ·
-            Earn {tier.multiplier}× points on this booking
+            Min {minRedeemable} pts · Max 20% of order ({formatCurrency(maxByPercent)}) · 1 pt = ฿1
           </p>
         </>
       ) : (

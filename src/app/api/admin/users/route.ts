@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
         { name:  { contains: q, mode: 'insensitive' } },
       ],
     } : undefined,
-    select: { id: true, email: true, name: true, phone: true, loyaltyPoints: true, tierLevel: true, createdAt: true },
+    select: { id: true, email: true, name: true, phone: true, loyaltyPoints: true, createdAt: true },
     orderBy: { createdAt: 'desc' },
     take: 100,
   });
