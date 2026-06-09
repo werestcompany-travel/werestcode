@@ -363,7 +363,7 @@ export default function Navbar({
 
             {/* LEFT: hamburger + logo side by side */}
             <button type="button" onClick={openMobileMenu} aria-label="Menu"
-              className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
+              className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
               <Menu className="w-[22px] h-[22px]" strokeWidth={1.8} />
             </button>
             <Link href="/" aria-label="Werest home" className="ml-1 shrink-0">
@@ -377,7 +377,7 @@ export default function Navbar({
             {/* RIGHT: search (homepage only) + user */}
             {pathname === '/' && (
               <button type="button" onClick={() => router.push('/results')} aria-label="Search"
-                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
+                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
                 <Search className="w-[22px] h-[22px]" strokeWidth={1.8} />
               </button>
             )}
@@ -389,7 +389,7 @@ export default function Navbar({
               </Link>
             ) : (
               <button type="button" onClick={() => openModal()} aria-label="Sign in"
-                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
+                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white hover:text-white' : 'text-gray-600 hover:text-brand-600'}`}>
                 <User className="w-[22px] h-[22px]" strokeWidth={1.6} />
               </button>
             )}
