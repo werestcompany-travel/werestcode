@@ -524,10 +524,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           WHERE TO NEXT — portrait city card row
       ════════════════════════════════════════════════════════════ */}
       <section aria-labelledby="inspired-heading" className="py-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto lg:px-8">
 
           {/* Section header */}
-          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">{t('home.whereNext')}</h2>
+          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5 px-4 sm:px-6 lg:px-0">{t('home.whereNext')}</h2>
 
           {/* Portrait card row */}
           <div className="relative">
@@ -548,7 +548,23 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
           <div
             ref={inspiredSliderRef}
-            className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-4"
+            className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-4 cursor-grab active:cursor-grabbing select-none px-4 sm:px-6 lg:px-0"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+            onMouseDown={(e) => {
+              const el = e.currentTarget;
+              const startX = e.pageX - el.offsetLeft;
+              const scrollLeft = el.scrollLeft;
+              const onMove = (ev: MouseEvent) => {
+                const x = ev.pageX - el.offsetLeft;
+                el.scrollLeft = scrollLeft - (x - startX);
+              };
+              const onUp = () => {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+              };
+              document.addEventListener('mousemove', onMove);
+              document.addEventListener('mouseup', onUp);
+            }}
           >
             {INSPIRED_DESTS.map((dest) => {
               const isSelected = selectedDest === dest.id;
@@ -557,7 +573,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   key={dest.id}
                   type="button"
                   onClick={() => setSelectedDest(dest.id)}
-                  className="relative rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none shrink-0 w-[45vw] max-w-[210px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] h-[260px] transition-all duration-200"
+                  className="relative rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none shrink-0 w-[42vw] max-w-[200px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] aspect-square lg:h-[260px] lg:aspect-auto transition-all duration-200"
                 >
                   {/* Photo + selected overlay — clipped to card corners */}
                   <div className="absolute inset-0 rounded-2xl overflow-hidden">
