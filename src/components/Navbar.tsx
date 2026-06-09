@@ -309,7 +309,7 @@ export default function Navbar({
       ════════════════════════════════════════════════════════════ */}
       <div className={`hidden lg:block fixed top-2 left-0 right-0 z-[51] transition-opacity duration-300 ${(!transparent || scrolled) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-end gap-5 h-8 px-5 bg-black/30 backdrop-blur-sm rounded-xl text-white/80 text-xs font-medium">
+          <div className="flex items-center justify-end gap-5 h-8 px-5 rounded-xl text-white/80 text-xs font-medium">
             <Link href="/deals" className="flex items-center gap-1.5 hover:text-white transition-colors">
               <Gift className="w-3.5 h-3.5" />
               Deals &amp; Promo
