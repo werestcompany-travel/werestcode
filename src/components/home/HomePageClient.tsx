@@ -882,7 +882,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {showPromoPopup && (
         <div className="lg:hidden fixed inset-0 z-[9999] flex items-center justify-center px-4">
           {/* backdrop */}
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissPromoPopup} />
+          <div className="absolute inset-0 bg-black/50" onClick={dismissPromoPopup} />
           {/* card — centered on all mobile sizes */}
           <div className="relative bg-white w-full max-w-sm rounded-3xl shadow-2xl px-5 pt-6 pb-8 z-10">
             {/* close */}
