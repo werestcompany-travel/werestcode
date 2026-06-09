@@ -510,58 +510,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       </div>
 
       {/* ════════════════════════════════════════════════════════════
-          2. NEW USER EXCLUSIVE
+          2. RECENTLY VIEWED
       ════════════════════════════════════════════════════════════ */}
-      <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 lg:pt-7">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('home.newUser')}</h2>
-          {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 lg:grid lg:grid-cols-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-            {NEW_USER_CARDS.map((c) => {
-              const mobileCard = 'shrink-0 w-[75vw] max-w-[264px] snap-start lg:w-auto lg:max-w-none';
-              const cls = c.highlight
-                ? `group col-span-1 flex flex-col justify-between rounded-2xl p-4 lg:p-5 bg-gradient-to-br ${(c as { gradient?: string }).gradient ?? ''} min-h-[148px] ${mobileCard}`
-                : `group flex flex-col justify-between rounded-2xl p-4 lg:p-5 border border-gray-100 hover:border-brand-200 hover:shadow-md transition-all duration-200 min-h-[148px] bg-white ${mobileCard}`;
-
-              const inner = c.highlight ? (
-                <>
-                  <div>
-                    <span className="text-2xl">{c.emoji}</span>
-                    <p className="text-white font-bold text-sm leading-snug mt-2">{t(c.titleKey)}</p>
-                    <p className="text-white/70 text-xs mt-1 leading-snug">{t(c.subKey)}</p>
-                  </div>
-                  <span className="mt-4 inline-block bg-white text-brand-700 font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-50 transition-colors text-center">
-                    {t(c.ctaKey)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <span className="text-2xl">{c.emoji}</span>
-                    <p className="font-extrabold text-gray-900 text-xl mt-2 leading-tight">{t(c.titleKey)}</p>
-                    <p className="text-gray-500 text-xs mt-1">{t(c.subKey)}</p>
-                  </div>
-                  <span className="mt-4 inline-block bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-700 transition-colors text-center">
-                    {t(c.ctaKey)}
-                  </span>
-                </>
-              );
-
-              return c.openModal ? (
-                <button key={c.titleKey} type="button" onClick={() => openModal('register')} className={cls}>
-                  {inner}
-                </button>
-              ) : (
-                <Link key={c.titleKey} href={c.href} className={cls}>
-                  {inner}
-                </Link>
-              );
-            })}
-            {/* Trailing spacer so last card doesn't flush against screen edge on mobile */}
-            <div className="shrink-0 w-1 lg:hidden" aria-hidden="true" />
-          </div>
-        </div>
-      </section>
+      <RecentlyViewedSection />
 
 
 
@@ -659,7 +610,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           THINGS TO DO — directly under "Where to next?", auto-updates
           when a city card is selected
       ════════════════════════════════════════════════════════════ */}
-      <RecentlyViewedSection />
       <DynamicTourSections
         selectedDest={selectedDest}
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}
