@@ -651,7 +651,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           <div className="bg-white rounded-2xl px-0 py-0">
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-[2px] overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 sm:px-6 lg:px-8">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
