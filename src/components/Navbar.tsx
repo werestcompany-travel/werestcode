@@ -323,7 +323,8 @@ export default function Navbar({
           (!transparent || scrolled) ? 'opacity-100' : 'opacity-0',
         )} />
 
-        <nav className="relative z-10 h-16 flex items-center pl-3 pr-3">
+        <nav className="relative z-10 h-16">
+        <div className="max-w-7xl mx-auto h-full flex items-center px-3 lg:px-6">
 
           {/* ─── MOBILE (< lg) — Klook-style: [≡ + logo] [spacer] [search + user] ─── */}
           <div className="lg:hidden flex items-center flex-1 min-w-0">
@@ -468,6 +469,7 @@ export default function Navbar({
             )}
           </div>
 
+        </div>
         </nav>
       </header>
 

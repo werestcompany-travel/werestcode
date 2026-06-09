@@ -369,7 +369,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
           {/* Central content */}
           {/* pt-16 accounts for the fixed navbar height; lg:pt-20 gives extra breathing room on desktop */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-20 pb-2 lg:pt-24 lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-7xl mx-auto px-4 lg:px-6 pt-20 pb-2 lg:pt-24 lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
             {/* Title */}
             <h1 className="text-[22px] leading-snug lg:text-5xl font-extrabold text-white tracking-tight">
