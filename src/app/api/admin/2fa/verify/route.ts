@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       id: adminRecord.id,
       email: adminRecord.email,
       name: adminRecord.name,
+      role: adminRecord.role,
     });
 
     const res = NextResponse.json({

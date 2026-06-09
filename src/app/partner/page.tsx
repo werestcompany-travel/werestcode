@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
@@ -95,7 +95,7 @@ export default function PartnerPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white">
 
         {/* ══ HERO ════════════════════════════════════════════════════════════ */}

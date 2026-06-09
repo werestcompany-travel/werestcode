@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       return res;
     }
 
-    const token = await signAdminToken({ id: admin.id, email: admin.email, name: admin.name });
+    const token = await signAdminToken({ id: admin.id, email: admin.email, name: admin.name, role: admin.role });
 
     const res = NextResponse.json({ success: true, data: { name: admin.name } });
     res.cookies.set('admin_token', token, {

@@ -29,7 +29,7 @@ export default async function TourConfirmationPage({ params }: Props) {
   const booking = await prisma.tourBooking.findUnique({ where: { id: params.bookingId } });
   if (!booking) notFound();
 
-  const tour = getTourBySlug(booking.tourSlug);
+  const tour = await getTourBySlug(booking.tourSlug);
 
   const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
   const verifyUrl = `${appUrl}/confirmation/tour/${booking.id}`;
@@ -44,7 +44,7 @@ export default async function TourConfirmationPage({ params }: Props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* ── Hero confirmation bar ── */}

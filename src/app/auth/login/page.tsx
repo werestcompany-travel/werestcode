@@ -4,18 +4,21 @@ import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Mail } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') ?? '/account';
 
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [showPw,   setShowPw]   = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [email,             setEmail]             = useState('');
+  const [password,          setPassword]          = useState('');
+  const [showPw,            setShowPw]            = useState(false);
+  const [loading,           setLoading]           = useState(false);
+  const [error,             setError]             = useState('');
+  const [unverifiedEmail,   setUnverifiedEmail]   = useState('');
+  const [resendLoading,     setResendLoading]      = useState(false);
+  const [resendSent,        setResendSent]         = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,11 +31,33 @@ function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Login failed.'); return; }
+      if (!res.ok) {
+        if (data.code === 'EMAIL_NOT_VERIFIED') {
+          setUnverifiedEmail(email);
+          setError('');
+        } else {
+          setError(data.error ?? 'Login failed.');
+        }
+        return;
+      }
       router.push(redirect);
       router.refresh();
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setResendLoading(true);
+    try {
+      await fetch('/api/user/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      setResendSent(true);
+    } finally {
+      setResendLoading(false);
     }
   }
 
@@ -86,6 +111,25 @@ function LoginForm() {
                 </div>
               )}
 
+              {unverifiedEmail && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                  <p className="text-amber-800 text-sm font-semibold mb-1">Email not verified</p>
+                  <p className="text-amber-700 text-xs leading-relaxed mb-2">
+                    Please verify <strong>{unverifiedEmail}</strong> before signing in. Check your inbox (and spam folder).
+                  </p>
+                  {resendSent ? (
+                    <p className="text-green-700 text-xs font-semibold flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" /> Verification email sent!
+                    </p>
+                  ) : (
+                    <button type="button" onClick={handleResend} disabled={resendLoading}
+                      className="text-xs font-semibold text-amber-800 underline hover:text-amber-900 disabled:opacity-50">
+                      {resendLoading ? 'Sending…' : 'Resend verification email'}
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
                 <input
@@ -98,6 +142,9 @@ function LoginForm() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-sm font-semibold text-gray-700">Password</label>
+                  <Link href="/auth/forgot" className="text-xs text-brand-600 font-medium hover:underline">
+                    Forgot password?
+                  </Link>
                 </div>
                 <div className="relative">
                   <input

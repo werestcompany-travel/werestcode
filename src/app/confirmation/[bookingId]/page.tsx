@@ -8,7 +8,6 @@ import { bookingReservationSchema } from '@/lib/seo/schema';
 import { StatusBadge } from '@/components/ui/Badge';
 import { formatCurrency, formatDate, VEHICLE_LABELS } from '@/lib/utils';
 import { CheckCircle2, MapPin, Calendar, Clock, Users, Briefcase, ArrowRight, Car, Phone, Star } from 'lucide-react';
-import { tours } from '@/lib/tours';
 import PickupCountdown from '@/components/booking/PickupCountdown';
 import ConfirmationActions from '@/components/booking/ConfirmationActions';
 import PrepareChecklist from '@/components/booking/PrepareChecklist';
@@ -32,11 +31,29 @@ function detectCity(dropoff: string, pickup: string): string {
   return 'bangkok';
 }
 
-/** Return 2–3 recommended tours for the city */
-function getRecommendedTours(city: string) {
-  return tours
-    .filter(t => t.cities.some(c => c.includes(city.split(' ')[0])))
-    .slice(0, 3);
+/** Return 2–3 recommended tours for the city from DB */
+async function getRecommendedTours(city: string) {
+  try {
+    const cityWord = city.split(' ')[0];
+    const rows = await prisma.tour.findMany({
+      where: { isActive: true },
+      orderBy: { rating: 'desc' },
+      take: 20,
+      select: { slug: true, title: true, duration: true, images: true, options: true, cities: true },
+    });
+    return rows
+      .filter(t => t.cities.some(c => c.toLowerCase().includes(cityWord.toLowerCase())))
+      .slice(0, 3)
+      .map(t => ({
+        slug: t.slug,
+        title: t.title,
+        duration: t.duration,
+        images: t.images,
+        options: (t.options as { pricePerPerson: number }[]) ?? [],
+      }));
+  } catch {
+    return [];
+  }
 }
 
 /** Build a Google Calendar URL */
@@ -78,7 +95,7 @@ export default async function ConfirmationPage({ params }: Props) {
   if (!booking) notFound();
 
   const city = detectCity(booking.dropoffAddress, booking.pickupAddress);
-  const recommendedTours = getRecommendedTours(city);
+  const recommendedTours = await getRecommendedTours(city);
   const cityLabel = city.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
   const googleCalUrl = buildGoogleCalendarUrl(booking);
   const icsUrl = `/api/ics/${booking.id}`;
@@ -115,7 +132,7 @@ export default async function ConfirmationPage({ params }: Props) {
         vehicleType={booking.vehicleType}
       />
       <PWAInstallTrigger bookingId={booking.id} />
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import AdminShell from '@/components/admin/AdminShell';
-import { tours } from '@/lib/tours';
 import { Calendar, Plus, Trash2, RefreshCw } from 'lucide-react';
 
 interface AvailabilityRecord {
@@ -16,10 +15,20 @@ interface AvailabilityRecord {
   note: string | null;
 }
 
+interface TourListItem { slug: string; title: string }
+
 export default function TourAvailabilityPage() {
   const [selectedSlug, setSelectedSlug] = useState('');
   const [records, setRecords] = useState<AvailabilityRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [tourList, setTourList] = useState<TourListItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/tours')
+      .then(r => r.json())
+      .then(d => setTourList((d.tours ?? []).map((t: TourListItem) => ({ slug: t.slug, title: t.title }))))
+      .catch(() => {});
+  }, []);
 
   // Form state
   const [formDate, setFormDate] = useState('');
@@ -103,7 +112,7 @@ export default function TourAvailabilityPage() {
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#2534ff]"
           >
             <option value="">— Choose a tour —</option>
-            {tours.map(t => (
+            {tourList.map(t => (
               <option key={t.slug} value={t.slug}>{t.title}</option>
             ))}
           </select>

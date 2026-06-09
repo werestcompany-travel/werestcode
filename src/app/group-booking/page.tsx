@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
@@ -78,7 +78,7 @@ export default function GroupBookingPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* Hero */}

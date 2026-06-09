@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
-import { Suspense, useState, useMemo } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import TourCardCompact from '@/components/tours/TourCardCompact'
 import TourQuickViewModal from '@/components/tours/TourQuickViewModal'
-import { getToursForDestination, formatTHB, type Tour } from '@/lib/tours'
+import { formatTHB, type Tour } from '@/lib/tours'
 import { ArrowLeft, ArrowRight, Sparkles, X } from 'lucide-react'
 
 export default function AddExperiencesPage() {
@@ -48,10 +48,15 @@ function AddExperiencesInner() {
   const dropoffAddress     = params.get('dropoff_address') ?? ''
   const pickupAddress      = params.get('pickup_address')  ?? ''
 
-  const tours: Tour[] = useMemo(
-    () => getToursForDestination(dropoffAddress || pickupAddress),
-    [dropoffAddress, pickupAddress],
-  )
+  const [tours, setTours] = useState<Tour[]>([])
+  useEffect(() => {
+    const dest = encodeURIComponent(dropoffAddress || pickupAddress)
+    if (!dest) return
+    fetch(`/api/tours?q=${dest}&limit=20`)
+      .then(r => r.json())
+      .then(d => setTours(d.tours ?? []))
+      .catch(() => {})
+  }, [dropoffAddress, pickupAddress])
 
   const [selected,      setSelected]      = useState<Set<string>>(new Set())
   const [quickViewTour, setQuickViewTour] = useState<Tour | null>(null)
@@ -83,7 +88,7 @@ function AddExperiencesInner() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50 pt-16">
 

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -175,7 +175,7 @@ function AccordionItem({ q, a, defaultOpen }: QA) {
 export default function FAQPage() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

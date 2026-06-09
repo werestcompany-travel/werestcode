@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { tours as staticTours } from '@/lib/tours';
 
 export const revalidate = 3600;
 
@@ -24,30 +23,8 @@ export async function GET() {
       },
     });
 
-    if (dbTours.length >= 3) {
-      return NextResponse.json({ tours: dbTours });
-    }
+    return NextResponse.json({ tours: dbTours });
   } catch {
-    // DB unavailable — fall through to static data
+    return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
   }
-
-  // Fallback to static data
-  const fallback = staticTours
-    .filter((t) => t.badge === 'Best Seller')
-    .sort((a, b) => b.reviewCount - a.reviewCount)
-    .slice(0, 3)
-    .map((t) => ({
-      slug: t.slug,
-      title: t.title,
-      location: t.location,
-      rating: t.rating,
-      reviewCount: t.reviewCount,
-      duration: t.duration,
-      maxGroupSize: t.maxGroupSize,
-      images: t.images,
-      badge: t.badge ?? null,
-      options: t.options,
-    }));
-
-  return NextResponse.json({ tours: fallback });
 }

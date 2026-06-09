@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -7,7 +7,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getTourBySlug, formatTHB } from '@/lib/tours';
+import { formatTHB, type Tour } from '@/lib/tours';
 import {
   Calendar, Clock, Users, ArrowLeft, ArrowRight,
   Shield, CheckCircle2, Phone, Mail, User, FileText,
@@ -46,7 +46,18 @@ function TourCheckoutInner() {
   const adults      = parseInt(params.get('tour_adults')   ?? '1');
   const children    = parseInt(params.get('tour_children') ?? '0');
 
-  const tour   = getTourBySlug(tourSlug);
+  const [tour, setTour] = useState<Tour | null>(null);
+  useEffect(() => {
+    if (!tourSlug) return;
+    fetch(`/api/tours?q=${encodeURIComponent(tourSlug)}&limit=1`)
+      .then(r => r.json())
+      .then(d => {
+        const found = (d.tours ?? []).find((t: Tour) => t.slug === tourSlug) ?? null;
+        setTour(found);
+      })
+      .catch(() => {});
+  }, [tourSlug]);
+
   const option = tour?.options.find(o => o.id === optionId) ?? tour?.options[0];
 
   const adultPrice = option?.pricePerPerson ?? 0;
@@ -90,7 +101,7 @@ function TourCheckoutInner() {
   if (!tour || !option || !tourDate) {
     return (
       <>
-        <Navbar />
+        <Navbar transparent />
         <main className="min-h-screen flex flex-col items-center justify-center gap-4 pt-16">
           <p className="text-xl font-bold text-gray-700">Tour not found or session expired.</p>
           <Link href="/tours" className="text-brand-600 hover:underline font-medium">Browse tours →</Link>
@@ -223,7 +234,7 @@ function TourCheckoutInner() {
   // ── UI ─────────────────────────────────────────────────────────────────────
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* ── Breadcrumb ── */}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -77,7 +77,7 @@ export default function GiftVouchersClient() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       {/* Hero */}
       <section className="relative pt-24 pb-20 overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-brand-400">

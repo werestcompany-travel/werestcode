@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -123,7 +123,7 @@ const STATS = [
 export default function ServicePage() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <div className="pt-16 min-h-screen bg-[#f5f5f5]">
 
         {/* ── Hero ─────────────────────────────────────────────────────── */}

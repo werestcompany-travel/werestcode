@@ -21,16 +21,17 @@ export async function GET(req: NextRequest) {
     blog:        unknown[]
   } = { tours: [], attractions: [], blog: [] }
 
-  // ── Tours (static data) ───────────────────────────────────────────────────
+  // ── Tours (DB) ────────────────────────────────────────────────────────────
   if (type === 'all' || type === 'tours') {
-    results.tours = searchTours(q).slice(0, 8).map(t => ({
+    const tourResults = await searchTours(q).catch(() => [])
+    results.tours = tourResults.slice(0, 8).map(t => ({
       slug:     t.slug,
       title:    t.title,
       subtitle: t.subtitle,
       location: t.location,
       image:    t.images[0],
       rating:   t.rating,
-      price:    Math.min(...t.options.map(o => o.pricePerPerson)),
+      price:    t.priceFrom ?? (t.options.length > 0 ? Math.min(...t.options.map(o => o.pricePerPerson)) : 0),
       badge:    t.badge ?? null,
       category: t.category,
     }))

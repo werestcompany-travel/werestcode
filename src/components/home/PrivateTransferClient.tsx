@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -91,7 +91,7 @@ export default function PrivateTransferClient() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       {/* ── HERO ── */}
       <section aria-label="Hero" className="relative flex flex-col justify-center overflow-hidden" style={{ minHeight: '92vh' }}>

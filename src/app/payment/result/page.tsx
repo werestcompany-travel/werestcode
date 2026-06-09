@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -61,7 +61,7 @@ function PaymentResultInner() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+      <Navbar transparent />
       <main className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="max-w-md w-full">
 

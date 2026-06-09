@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 // Note: To add metadata for this page in Next.js App Router,
 // create src/app/help-center/layout.tsx and export metadata from there.
@@ -270,7 +270,7 @@ export default function HelpCenterPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50">
 

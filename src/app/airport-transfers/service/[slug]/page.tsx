@@ -151,7 +151,7 @@ export default async function AirportTransferServicePage(
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white pt-16">
 
         {/* ══ GALLERY ═══════════════════════════════════════════════════════════ */}

@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, ChevronRight } from 'lucide-react'
-import { tours as allTours, formatTHB } from '@/lib/tours'
+import { formatTHB, type Tour } from '@/lib/tours'
 import { useLocale } from '@/context/LocaleContext'
 
 const BADGE_BG: Record<string, string> = {
@@ -29,14 +29,15 @@ interface Props {
 export default function DynamicTourSections({ selectedDest, cityName }: Props) {
   const { t } = useLocale()
   const cityFilter = DEST_CITY[selectedDest] ?? ''
+  const [visibleTours, setVisibleTours] = useState<Tour[]>([])
 
-  const visibleTours = (
-    cityFilter
-      ? allTours.filter(t =>
-          t.cities.some(c => c.toLowerCase().includes(cityFilter.toLowerCase()))
-        )
-      : allTours
-  ).slice(0, 8)
+  useEffect(() => {
+    const q = cityFilter ? `&location=${encodeURIComponent(cityFilter.toLowerCase())}` : ''
+    fetch(`/api/tours?limit=8${q}`)
+      .then(r => r.json())
+      .then(d => setVisibleTours(d.tours ?? []))
+      .catch(() => {})
+  }, [cityFilter])
 
   const toursHref = cityFilter
     ? `/tours?location=${encodeURIComponent(cityFilter.toLowerCase())}`

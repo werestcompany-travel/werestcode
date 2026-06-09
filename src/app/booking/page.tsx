@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, Suspense } from 'react';
@@ -136,7 +136,7 @@ function BookingPageInner() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* Step bar */}

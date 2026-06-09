@@ -1,11 +1,11 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export default function NotFound() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
         <div className="text-center px-4 max-w-md mx-auto">
           <div className="text-8xl font-extrabold text-[#2534ff] opacity-20 mb-4">404</div>

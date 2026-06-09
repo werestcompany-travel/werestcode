@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -275,7 +275,7 @@ export default function SanctuaryDetailPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       {/* ══ GALLERY LIGHTBOX MODAL ══════════════════════════════════════════ */}
       {galleryOpen && (

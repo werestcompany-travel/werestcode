@@ -155,7 +155,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       <ViewTracker slug={post.slug} />
 
       <ReadingProgress />
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white">
 

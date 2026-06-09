@@ -1,0 +1,380 @@
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+   Creating an optimized production build ...
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+ ⚠ Compiled with warnings
+
+./src/lib/rate-limit.ts
+Module not found: Can't resolve '@upstash/redis' in 'C:\Users\UsEr\Desktop\Werest Code\src\lib'
+
+Import trace for requested module:
+./src/lib/rate-limit.ts
+./src/app/api/charter/route.ts
+
+   Linting and checking validity of types ...
+   Collecting page data ...
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+   Generating static pages (0/193) ...
+   Generating static pages (48/193) 
+   Generating static pages (96/193) 
+   Generating static pages (144/193) 
+Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {dest: ..., tours: ..., attractions: [], formatTHB: function s}
+                                                      ^^^^^^^^^^
+    at e_ (C:\Users\UsEr\Desktop\Werest Code\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:140758)
+    at Object.toJSON (C:\Users\UsEr\Desktop\Werest Code\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:135777)
+    at stringify (<anonymous>)
+    at eE (C:\Users\UsEr\Desktop\Werest Code\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:142242)
+    at eT (C:\Users\UsEr\Desktop\Werest Code\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:142721)
+    at Timeout._onTimeout (C:\Users\UsEr\Desktop\Werest Code\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:135497)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7) {
+  digest: '477297964'
+}
+ ✓ Generating static pages (193/193)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                Size     First Load JS
+┌ ƒ /                                                      12.9 kB         252 kB
+├ ƒ /about                                                 2.16 kB         201 kB
+├ ƒ /account                                               12.1 kB         215 kB
+├ ƒ /account/rewards                                       6.22 kB         209 kB
+├ ƒ /add-experiences                                       7.47 kB         226 kB
+├ ƒ /admin                                                 9 kB            193 kB
+├ ƒ /admin/addons                                          3.47 kB         180 kB
+├ ƒ /admin/analytics                                       114 kB          291 kB
+├ ƒ /admin/attraction-bookings                             6.16 kB         170 kB
+├ ƒ /admin/attractions                                     9.74 kB         192 kB
+├ ƒ /admin/attraction-tickets                              5.93 kB         195 kB
+├ ƒ /admin/audit-log                                       3.48 kB         185 kB
+├ ƒ /admin/blog                                            4.16 kB         186 kB
+├ ƒ /admin/blog/[id]                                       1.44 kB         302 kB
+├ ƒ /admin/blog/new                                        752 B           299 kB
+├ ƒ /admin/calendar                                        3 kB            180 kB
+├ ƒ /admin/charter-bookings                                5.05 kB         189 kB
+├ ƒ /admin/customers/[userId]                              2.91 kB         180 kB
+├ ƒ /admin/discount-codes                                  4.62 kB         181 kB
+├ ƒ /admin/discount-codes/[id]                             3.3 kB          180 kB
+├ ƒ /admin/dispatch                                        6.43 kB         195 kB
+├ ƒ /admin/drivers                                         3.46 kB         185 kB
+├ ƒ /admin/gift-vouchers                                   3.56 kB         180 kB
+├ ƒ /admin/google-business                                 2.5 kB          179 kB
+├ ƒ /admin/inquiries                                       5.72 kB         188 kB
+├ ƒ /admin/itinerary                                       4.99 kB         187 kB
+├ ƒ /admin/itinerary/[id]                                  7.68 kB         190 kB
+├ ƒ /admin/itinerary/new                                   6.13 kB         188 kB
+├ ƒ /admin/login                                           3.57 kB         172 kB
+├ ƒ /admin/login/2fa                                       1.82 kB         166 kB
+├ ƒ /admin/loyalty                                         2.96 kB         180 kB
+├ ƒ /admin/newsletter                                      2.56 kB         179 kB
+├ ƒ /admin/payments                                        2.25 kB         179 kB
+├ ƒ /admin/pricing                                         3.04 kB         180 kB
+├ ƒ /admin/pricing/dynamic                                 6.18 kB         183 kB
+├ ƒ /admin/refunds                                         5.01 kB         194 kB
+├ ƒ /admin/reports                                         2.39 kB         179 kB
+├ ƒ /admin/reviews                                         2.55 kB         185 kB
+├ ƒ /admin/today                                           2.7 kB          179 kB
+├ ƒ /admin/tour-bookings                                   4.69 kB         187 kB
+├ ƒ /admin/tour-notify                                     2.07 kB         179 kB
+├ ƒ /admin/tours                                           6.98 kB         189 kB
+├ ƒ /admin/tours/availability                              2.53 kB         199 kB
+├ ƒ /admin/transfers                                       8.36 kB         204 kB
+├ ƒ /admin/users                                           3.09 kB         180 kB
+├ ƒ /admin/whatsapp-bot                                    3.36 kB         185 kB
+├ ƒ /admin/whatsapp-templates                              2.82 kB         180 kB
+├ ƒ /airport-transfers                                     6.96 kB         220 kB
+├ ● /airport-transfers/service/[slug]                      5.51 kB         207 kB
+├   ├ /airport-transfers/service/bkk-suvarnabhumi-airport
+├   ├ /airport-transfers/service/dmk-don-mueang-airport
+├   ├ /airport-transfers/service/hkt-phuket-airport
+├   └ /airport-transfers/service/cnx-chiang-mai-airport
+├ ƒ /api/admin/2fa/disable                                 0 B                0 B
+├ ƒ /api/admin/2fa/enable                                  0 B                0 B
+├ ƒ /api/admin/2fa/setup                                   0 B                0 B
+├ ƒ /api/admin/2fa/verify                                  0 B                0 B
+├ ƒ /api/admin/addons                                      0 B                0 B
+├ ƒ /api/admin/addons/[id]                                 0 B                0 B
+├ ƒ /api/admin/ai/generate-seo                             0 B                0 B
+├ ƒ /api/admin/analytics                                   0 B                0 B
+├ ƒ /api/admin/attraction-bookings                         0 B                0 B
+├ ƒ /api/admin/attraction-bookings/[id]                    0 B                0 B
+├ ƒ /api/admin/attractions                                 0 B                0 B
+├ ƒ /api/admin/attractions/[id]                            0 B                0 B
+├ ƒ /api/admin/attractions/[id]/packages                   0 B                0 B
+├ ƒ /api/admin/attractions/[id]/packages/[pkgId]           0 B                0 B
+├ ƒ /api/admin/attractions/seed-defaults                   0 B                0 B
+├ ƒ /api/admin/audit-log                                   0 B                0 B
+├ ƒ /api/admin/auth                                        0 B                0 B
+├ ƒ /api/admin/blog                                        0 B                0 B
+├ ƒ /api/admin/blog/[id]                                   0 B                0 B
+├ ƒ /api/admin/bookings                                    0 B                0 B
+├ ƒ /api/admin/bookings/[id]/assign-driver                 0 B                0 B
+├ ƒ /api/admin/calendar                                    0 B                0 B
+├ ƒ /api/admin/charter-bookings                            0 B                0 B
+├ ƒ /api/admin/customers/[userId]                          0 B                0 B
+├ ƒ /api/admin/discount-codes                              0 B                0 B
+├ ƒ /api/admin/discount-codes/[id]                         0 B                0 B
+├ ƒ /api/admin/discount-codes/[id]/redemptions             0 B                0 B
+├ ƒ /api/admin/dispatch                                    0 B                0 B
+├ ƒ /api/admin/dispatch/assign                             0 B                0 B
+├ ƒ /api/admin/dispatch/auto                               0 B                0 B
+├ ƒ /api/admin/drivers                                     0 B                0 B
+├ ƒ /api/admin/drivers/[id]                                0 B                0 B
+├ ƒ /api/admin/gift-vouchers                               0 B                0 B
+├ ƒ /api/admin/gift-vouchers/[id]                          0 B                0 B
+├ ƒ /api/admin/inquiries                                   0 B                0 B
+├ ƒ /api/admin/inquiries/[id]                              0 B                0 B
+├ ƒ /api/admin/inquiries/[id]/quote                        0 B                0 B
+├ ƒ /api/admin/itinerary                                   0 B                0 B
+├ ƒ /api/admin/itinerary/generate                          0 B                0 B
+├ ƒ /api/admin/itinerary/[id]                              0 B                0 B
+├ ƒ /api/admin/itinerary/[id]/export                       0 B                0 B
+├ ƒ /api/admin/itinerary/presets                           0 B                0 B
+├ ƒ /api/admin/itinerary/presets/[id]                      0 B                0 B
+├ ƒ /api/admin/loyalty                                     0 B                0 B
+├ ƒ /api/admin/migrate-refs                                0 B                0 B
+├ ƒ /api/admin/newsletter                                  0 B                0 B
+├ ƒ /api/admin/newsletter/[id]                             0 B                0 B
+├ ƒ /api/admin/notifications                               0 B                0 B
+├ ƒ /api/admin/payments                                    0 B                0 B
+├ ƒ /api/admin/pricing                                     0 B                0 B
+├ ƒ /api/admin/pricing/dynamic                             0 B                0 B
+├ ƒ /api/admin/pricing/dynamic/[id]                        0 B                0 B
+├ ƒ /api/admin/pricing/[id]                                0 B                0 B
+├ ƒ /api/admin/refunds                                     0 B                0 B
+├ ƒ /api/admin/refunds/for-booking                         0 B                0 B
+├ ƒ /api/admin/refunds/[id]                                0 B                0 B
+├ ƒ /api/admin/reports                                     0 B                0 B
+├ ƒ /api/admin/reviews                                     0 B                0 B
+├ ƒ /api/admin/reviews/[id]                                0 B                0 B
+├ ƒ /api/admin/seo                                         0 B                0 B
+├ ƒ /api/admin/tour-bookings                               0 B                0 B
+├ ƒ /api/admin/tour-bookings/[id]/status                   0 B                0 B
+├ ƒ /api/admin/tour-notify                                 0 B                0 B
+├ ƒ /api/admin/tour-notify/[id]/notify                     0 B                0 B
+├ ƒ /api/admin/tours                                       0 B                0 B
+├ ƒ /api/admin/tours/availability                          0 B                0 B
+├ ƒ /api/admin/tours/[id]                                  0 B                0 B
+├ ƒ /api/admin/upload                                      0 B                0 B
+├ ƒ /api/admin/users                                       0 B                0 B
+├ ƒ /api/admin/users/[id]                                  0 B                0 B
+├ ƒ /api/admin/whatsapp-sessions                           0 B                0 B
+├ ƒ /api/admin/whatsapp-sessions/[phone]                   0 B                0 B
+├ ƒ /api/attraction-bookings                               0 B                0 B
+├ ƒ /api/attraction-bookings/[id]/cancel                   0 B                0 B
+├ ƒ /api/attraction-bookings/track                         0 B                0 B
+├ ƒ /api/attractions                                       0 B                0 B
+├ ƒ /api/attractions/[slug]                                0 B                0 B
+├ ƒ /api/blog                                              0 B                0 B
+├ ƒ /api/blog/[slug]                                       0 B                0 B
+├ ƒ /api/blog/[slug]/view                                  0 B                0 B
+├ ƒ /api/bookings                                          0 B                0 B
+├ ƒ /api/bookings/abandoned                                0 B                0 B
+├ ƒ /api/bookings/[id]                                     0 B                0 B
+├ ƒ /api/bookings/[id]/cancel                              0 B                0 B
+├ ƒ /api/bookings/[id]/driver-location                     0 B                0 B
+├ ƒ /api/bookings/[id]/eta                                 0 B                0 B
+├ ƒ /api/bookings/[id]/invoice                             0 B                0 B
+├ ƒ /api/bookings/[id]/modify                              0 B                0 B
+├ ƒ /api/bookings/[id]/qr                                  0 B                0 B
+├ ƒ /api/bookings/[id]/status                              0 B                0 B
+├ ƒ /api/bookings/[id]/stream                              0 B                0 B
+├ ƒ /api/bookings/route-stats                              0 B                0 B
+├ ƒ /api/bookings/track                                    0 B                0 B
+├ ƒ /api/calendar/[bookingId]                              0 B                0 B
+├ ƒ /api/charter                                           0 B                0 B
+├ ƒ /api/chat                                              0 B                0 B
+├ ƒ /api/contact                                           0 B                0 B
+├ ƒ /api/corporate/inquire                                 0 B                0 B
+├ ƒ /api/cron/abandoned-recovery                           0 B                0 B
+├ ƒ /api/cron/cleanup                                      0 B                0 B
+├ ƒ /api/cron/driver-reminders                             0 B                0 B
+├ ƒ /api/cron/email-journey                                0 B                0 B
+├ ƒ /api/cron/post-trip-reviews                            0 B                0 B
+├ ƒ /api/cron/reminders                                    0 B                0 B
+├ ƒ /api/currency-rates                                    0 B                0 B
+├ ○ /api/discount-codes/active                             0 B                0 B
+├ ƒ /api/discount-codes/validate                           0 B                0 B
+├ ƒ /api/driver/auth                                       0 B                0 B
+├ ƒ /api/driver/bookings                                   0 B                0 B
+├ ƒ /api/driver/bookings/[bookingId]/status                0 B                0 B
+├ ƒ /api/driver/location                                   0 B                0 B
+├ ƒ /api/driver/me                                         0 B                0 B
+├ ƒ /api/gift-vouchers/interest                            0 B                0 B
+├ ƒ /api/gift-vouchers/validate                            0 B                0 B
+├ ○ /api/google/reviews                                    0 B                0 B
+├ ƒ /api/group-booking/enquire                             0 B                0 B
+├ ƒ /api/health                                            0 B                0 B
+├ ƒ /api/ics/attraction/[bookingRef]                       0 B                0 B
+├ ƒ /api/ics/[bookingId]                                   0 B                0 B
+├ ƒ /api/ics/tour/[bookingRef]                             0 B                0 B
+├ ƒ /api/inquiries/accept                                  0 B                0 B
+├ ƒ /api/inquiry                                           0 B                0 B
+├ ƒ /api/newsletter/subscribe                              0 B                0 B
+├ ƒ /api/partner                                           0 B                0 B
+├ ƒ /api/payment/attraction/create                         0 B                0 B
+├ ƒ /api/payment/create                                    0 B                0 B
+├ ƒ /api/payment/status                                    0 B                0 B
+├ ƒ /api/payment/tour/create                               0 B                0 B
+├ ƒ /api/payment/transfer/create                           0 B                0 B
+├ ƒ /api/payment/webhook                                   0 B                0 B
+├ ƒ /api/pricing                                           0 B                0 B
+├ ƒ /api/push/expo-token                                   0 B                0 B
+├ ƒ /api/push/subscribe                                    0 B                0 B
+├ ○ /api/push/vapid-public-key                             0 B                0 B
+├ ƒ /api/reviews                                           0 B                0 B
+├ ƒ /api/reviews/reviews                                   0 B                0 B
+├ ƒ /api/reviews/reviews/tripadvisor                       0 B                0 B
+├ ƒ /api/reviews/reviews/verify-booking                    0 B                0 B
+├ ƒ /api/reviews/verify-booking                            0 B                0 B
+├ ƒ /api/search                                            0 B                0 B
+├ ƒ /api/search/places-autocomplete                        0 B                0 B
+├ ○ /api/stats                                             0 B                0 B
+├ ƒ /api/tour-bookings                                     0 B                0 B
+├ ƒ /api/tour-bookings/[id]/modify                         0 B                0 B
+├ ƒ /api/tours                                             0 B                0 B
+├ ƒ /api/tours/bookings                                    0 B                0 B
+├ ƒ /api/tours/facets                                      0 B                0 B
+├ ƒ /api/tours/notify                                      0 B                0 B
+├ ○ /api/tours/popular                                     0 B                0 B
+├ ƒ /api/tours/sections                                    0 B                0 B
+├ ƒ /api/tours/[slug]/availability                         0 B                0 B
+├ ƒ /api/user/activity                                     0 B                0 B
+├ ƒ /api/user/auth/google                                  0 B                0 B
+├ ƒ /api/user/auth/google/callback                         0 B                0 B
+├ ƒ /api/user/auth/token                                   0 B                0 B
+├ ƒ /api/user/bookings                                     0 B                0 B
+├ ƒ /api/user/forgot-password                              0 B                0 B
+├ ƒ /api/user/login                                        0 B                0 B
+├ ƒ /api/user/logout                                       0 B                0 B
+├ ƒ /api/user/loyalty                                      0 B                0 B
+├ ƒ /api/user/loyalty/apply                                0 B                0 B
+├ ƒ /api/user/loyalty/redeem                               0 B                0 B
+├ ƒ /api/user/me                                           0 B                0 B
+├ ƒ /api/user/payment-preference                           0 B                0 B
+├ ƒ /api/user/register                                     0 B                0 B
+├ ƒ /api/user/resend-verification                          0 B                0 B
+├ ƒ /api/user/reset-password                               0 B                0 B
+├ ƒ /api/user/saved-routes                                 0 B                0 B
+├ ƒ /api/user/saved-routes/[id]                            0 B                0 B
+├ ƒ /api/user/sessions                                     0 B                0 B
+├ ƒ /api/user/sessions/[jti]                               0 B                0 B
+├ ƒ /api/user/transfer-bookings                            0 B                0 B
+├ ƒ /api/user/verify-email                                 0 B                0 B
+├ ƒ /api/user/wishlist                                     0 B                0 B
+├ ƒ /api/user/wishlist/merge                               0 B                0 B
+├ ƒ /api/voucher/[bookingRef]                              0 B                0 B
+├ ƒ /api/whatsapp/webhook                                  0 B                0 B
+├ ƒ /attractions                                           7.47 kB         211 kB
+├ ƒ /attractions/checkout                                  5.8 kB          211 kB
+├ ƒ /attractions/sanctuary-of-truth                        16.8 kB         220 kB
+├ ƒ /attractions/[slug]                                    2.16 kB         201 kB
+├ ƒ /auth/forgot                                           1.99 kB         172 kB
+├ ƒ /auth/login                                            3.11 kB         173 kB
+├ ƒ /auth/register                                         2.84 kB         173 kB
+├ ƒ /auth/reset                                            2.94 kB         173 kB
+├ ƒ /auth/verify-email                                     3.69 kB         207 kB
+├ ƒ /blog                                                  3.04 kB         202 kB
+├ ● /blog/category/[category]                              334 B           203 kB
+├   ├ /blog/category/bangkok
+├   ├ /blog/category/pattaya
+├   ├ /blog/category/thailand
+├   └ [+2 more paths]
+├ ○ /blog/feed.xml                                         0 B                0 B
+├ ● /blog/[slug]                                           6.69 kB         205 kB
+├ ƒ /blog/[slug]/opengraph-image/[[...__metadata_id__]]    0 B                0 B
+├ ƒ /blog/tag/[tag]                                        334 B           203 kB
+├ ƒ /booking                                               9.25 kB         218 kB
+├ ƒ /cancellation-policy                                   2.16 kB         201 kB
+├ ƒ /charter                                               7.27 kB         218 kB
+├ ƒ /charter/confirmation                                  3.73 kB         207 kB
+├ ƒ /confirmation/[bookingId]                              7.38 kB         206 kB
+├ ƒ /confirmation/[bookingId]/voucher                      3.3 kB          167 kB
+├ ƒ /confirmation/tour/[bookingId]                         2.16 kB         201 kB
+├ ƒ /contact                                               7.02 kB         210 kB
+├ ƒ /cookie-policy                                         2.16 kB         201 kB
+├ ƒ /corporate                                             6.53 kB         210 kB
+├ ƒ /customer-service                                      10.3 kB         213 kB
+├ ƒ /deals                                                 5.77 kB         209 kB
+├ ƒ /destinations/bangkok                                  339 B           231 kB
+├ ƒ /destinations/chiang-mai                               340 B           231 kB
+├ ƒ /destinations/kanchanaburi                             340 B           231 kB
+├ ƒ /destinations/khao-lak                                 340 B           231 kB
+├ ƒ /destinations/khao-sok                                 340 B           231 kB
+├ ƒ /destinations/koh-chang                                340 B           231 kB
+├ ƒ /destinations/koh-kood                                 339 B           231 kB
+├ ƒ /destinations/koh-larn                                 339 B           231 kB
+├ ƒ /destinations/koh-samui                                339 B           231 kB
+├ ƒ /destinations/krabi                                    340 B           231 kB
+├ ƒ /destinations/pattaya                                  339 B           231 kB
+├ ƒ /destinations/phang-nga                                339 B           231 kB
+├ ƒ /destinations/phuket                                   339 B           231 kB
+├ ● /destinations/[slug]                                   5.74 kB         209 kB
+├   ├ /destinations/bangkok
+├   ├ /destinations/phuket
+├   ├ /destinations/chiang-mai
+├   └ [+3 more paths]
+├ ƒ /destinations/surat-thani                              338 B           231 kB
+├ ƒ /destinations/thailand                                 2.16 kB         201 kB
+├ ƒ /driver                                                5.41 kB         176 kB
+├ ƒ /driver/login                                          2.63 kB         164 kB
+├ ƒ /driver/trip/[bookingId]                               6.05 kB         177 kB
+├ ƒ /faq                                                   2.16 kB         201 kB
+├ ƒ /gift-vouchers                                         5.08 kB         208 kB
+├ ƒ /group-booking                                         5.37 kB         208 kB
+├ ƒ /help-center                                           7.08 kB         210 kB
+├ ƒ /host-agencies                                         2.16 kB         201 kB
+├ ƒ /inquiry                                               11.6 kB         215 kB
+├ ƒ /_not-found                                            357 B           162 kB
+├ ƒ /offline                                               539 B           164 kB
+├ ƒ /opengraph-image                                       0 B                0 B
+├ ƒ /partner                                               11.9 kB         215 kB
+├ ƒ /partners                                              2.27 kB         201 kB
+├ ƒ /payment/result                                        3.73 kB         207 kB
+├ ƒ /privacy-policy                                        2.16 kB         201 kB
+├ ƒ /private-transfer                                      8.84 kB         228 kB
+├ ƒ /results                                               10.9 kB         212 kB
+├ ƒ /review/write                                          5.59 kB         214 kB
+├ ○ /robots.txt                                            0 B                0 B
+├ ● /routes/[slug]                                         2.16 kB         201 kB
+├   ├ /routes/bangkok-to-pattaya
+├   ├ /routes/pattaya-to-bangkok
+├   ├ /routes/suvarnabhumi-to-pattaya
+├   └ [+12 more paths]
+├ ƒ /search                                                5.42 kB         228 kB
+├ ƒ /service                                               2.16 kB         201 kB
+├ ○ /sitemap.xml                                           0 B                0 B
+├ ƒ /terms-of-service                                      2.16 kB         201 kB
+├ ƒ /tours                                                 2.66 kB         233 kB
+├ ● /tours/c/[category]                                    407 B           231 kB
+├   ├ /tours/c/cultural
+├   ├ /tours/c/day-trip
+├   ├ /tours/c/food
+├   └ [+3 more paths]
+├ ƒ /tours/checkout                                        5.72 kB         236 kB
+├ ƒ /tours/confirmation/[bookingRef]                       2.16 kB         201 kB
+├ ● /tours/l/[location]                                    407 B           231 kB
+├   ├ /tours/l/bangkok
+├   ├ /tours/l/phuket
+├   ├ /tours/l/chiang-mai
+├   └ [+3 more paths]
+├ ● /tours/[slug]                                          10.2 kB         241 kB
+├ ƒ /tours/[slug]/opengraph-image/[[...__metadata_id__]]   0 B                0 B
+├ ƒ /tracking                                              9.01 kB         212 kB
+└ ƒ /transfers                                             7.64 kB         224 kB
++ First Load JS shared by all                              162 kB
+  ├ chunks/4661-a8bbc87645068e74.js                        104 kB
+  ├ chunks/fd9d1056-89aaf8cb024a1bdd.js                    53.8 kB
+  └ other shared chunks (total)                            3.6 kB
+
+
+ƒ Middleware                                               60.6 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+ƒ  (Dynamic)  server-rendered on demand
+

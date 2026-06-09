@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -403,7 +403,7 @@ export default function CharterPage() {
         strategy="afterInteractive"
         onReady={() => setMapsReady(true)}
       />
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* Hero banner */}

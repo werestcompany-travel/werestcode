@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getUserFromCookies } from '@/lib/user-auth';
 import { awardPoints } from '@/lib/loyalty';
-import { getTourBySlug, type Tour, type TourOption } from '@/lib/tours';
+import { type Tour, type TourOption } from '@/lib/tours';
 import { sendTourBookingEmail, sendTourBookingConfirmationEmail } from '@/lib/email';
 import { sendTourBookingToAdmin } from '@/lib/whatsapp';
+
+// ─── Zod validation schema ────────────────────────────────────────────────────
+const createTourBookingSchema = z.object({
+  tourSlug:      z.string().min(1, 'Tour slug is required'),
+  tourDate:      z.string().refine(v => !isNaN(Date.parse(v)) && new Date(v) >= new Date(new Date().toDateString()), {
+    message: 'Tour date must be today or in the future',
+  }),
+  tourOptionId:  z.string().min(1, 'Tour option is required'),
+  adultQty:      z.coerce.number().int().min(0),
+  childQty:      z.coerce.number().int().min(0),
+  customerName:  z.string().min(1, 'Customer name is required'),
+  customerEmail: z.string().email('Valid email address required'),
+  customerPhone: z.string().min(5, 'Phone number is required'),
+  specialNotes:  z.string().optional(),
+  paymentMethod: z.string().optional(),
+}).refine(d => d.adultQty + d.childQty > 0, { message: 'At least one participant required' });
 
 // ─── Resolve tour from DB first, fall back to static catalogue ───────────────
 
@@ -44,10 +61,9 @@ async function resolveTour(slug: string): Promise<Tour | null> {
       };
     }
   } catch {
-    // DB unavailable – fall through to static
+    return null;
   }
-  // Fallback: static catalogue (until DB is fully seeded)
-  return getTourBySlug(slug) ?? null;
+  return null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -63,6 +79,10 @@ async function resolveTour(slug: string): Promise<Tour | null> {
  *
  * Example: WRTOUR-19052604001
  */
+/**
+ * Generates a unique tour booking reference inside a serializable transaction
+ * to prevent race conditions under concurrent requests.
+ */
 async function generateTourRef(tourDate: Date, participants: number): Promise<string> {
   const dd = String(tourDate.getDate()).padStart(2, '0');
   const mm = String(tourDate.getMonth() + 1).padStart(2, '0');
@@ -70,19 +90,27 @@ async function generateTourRef(tourDate: Date, participants: number): Promise<st
   const pp = String(participants).padStart(2, '0');
   const prefix = `WRTOUR-${dd}${mm}${yy}${pp}`;
 
-  const existing = await prisma.tourBooking.count({
-    where: { bookingRef: { startsWith: prefix } },
-  });
-
-  const seq = String(existing + 1).padStart(3, '0');
-  return `${prefix}${seq}`;
+  // Use a serializable transaction to prevent duplicate ref generation under concurrency
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.tourBooking.count({
+      where: { bookingRef: { startsWith: prefix } },
+    });
+    return `${prefix}${String(existing + 1).padStart(3, '0')}`;
+  }, { isolationLevel: 'Serializable' });
 }
 
 // ─── POST /api/tours/bookings ─────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.json();
+    const parsed = createTourBookingSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid input' },
+        { status: 400 },
+      );
+    }
 
     const {
       tourSlug,
@@ -95,20 +123,10 @@ export async function POST(req: NextRequest) {
       customerPhone,
       specialNotes,
       paymentMethod,
-    } = body;
+    } = parsed.data;
 
-    // ── Validate required fields ──────────────────────────────────────────────
-    if (!tourSlug)    return NextResponse.json({ error: 'Tour slug is required.'    }, { status: 400 });
-    if (!tourDate)    return NextResponse.json({ error: 'Tour date is required.'    }, { status: 400 });
-    if (!tourOptionId) return NextResponse.json({ error: 'Tour option is required.' }, { status: 400 });
-    if (!customerName || !customerEmail || !customerPhone) {
-      return NextResponse.json({ error: 'Customer name, email and phone are required.' }, { status: 400 });
-    }
-    const adults   = Number(adultQty)  || 0;
-    const children = Number(childQty)  || 0;
-    if (adults + children === 0) {
-      return NextResponse.json({ error: 'At least one participant required.' }, { status: 400 });
-    }
+    const adults   = adultQty;
+    const children = childQty;
 
     // ── Validate tour + option (DB-first, static fallback) ───────────────────
     const tour = await resolveTour(tourSlug);
@@ -238,9 +256,18 @@ export async function GET(req: NextRequest) {
 
   // ── Public tracking lookup (by email or ref) ────────────────────────────────
   if (email || ref) {
+    // Return only fields needed for customer tracking — never expose price internals or full PII
+    const safeSelect = {
+      bookingRef: true, tourTitle: true, tourSlug: true,
+      bookingDate: true, tourTime: true, optionLabel: true,
+      adultQty: true, childQty: true, totalPrice: true,
+      status: true, paymentStatus: true, createdAt: true,
+      customerName: true,
+    } as const;
+
     const booking = ref
-      ? await prisma.tourBooking.findUnique({ where: { bookingRef: ref } })
-      : await prisma.tourBooking.findFirst({ where: { customerEmail: email! }, orderBy: { createdAt: 'desc' } });
+      ? await prisma.tourBooking.findUnique({ where: { bookingRef: ref }, select: safeSelect })
+      : await prisma.tourBooking.findFirst({ where: { customerEmail: email! }, orderBy: { createdAt: 'desc' }, select: safeSelect });
 
     if (!booking) return NextResponse.json({ error: 'Booking not found.' }, { status: 404 });
     return NextResponse.json({ success: true, data: booking });

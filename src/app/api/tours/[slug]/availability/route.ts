@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getTourBySlug } from '@/lib/tours';
 
 interface Params {
   params: { slug: string };
@@ -44,9 +43,9 @@ export async function GET(req: NextRequest, { params }: Params) {
   const startDate = new Date(year, month, 1);
   const endDate = new Date(year, month + 1, 0); // last day of month
 
-  // Get default maxGroupSize from static tour data (fallback 15)
-  const staticTour = getTourBySlug(params.slug);
-  const defaultCapacity = staticTour?.maxGroupSize ?? 15;
+  // Get default maxGroupSize from DB (fallback 15)
+  const dbTour = await prisma.tour.findUnique({ where: { slug: params.slug }, select: { maxGroupSize: true } });
+  const defaultCapacity = dbTour?.maxGroupSize ?? 15;
 
   // Fetch TourAvailability overrides for the month
   const availabilityRecords = await prisma.tourAvailability.findMany({

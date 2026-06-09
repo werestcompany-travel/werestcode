@@ -7,7 +7,7 @@ if (!jwtSecret && process.env.NODE_ENV === 'production') {
 }
 const SECRET = new TextEncoder().encode(jwtSecret ?? 'dev-only-insecure-secret-do-not-use-in-prod');
 
-export async function signAdminToken(payload: { id: string; email: string; name: string }) {
+export async function signAdminToken(payload: { id: string; email: string; name: string; role: string }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -18,7 +18,7 @@ export async function signAdminToken(payload: { id: string; email: string; name:
 export async function verifyAdminToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] });
-    return payload as { id: string; email: string; name: string };
+    return payload as { id: string; email: string; name: string; role: string };
   } catch {
     return null;
   }

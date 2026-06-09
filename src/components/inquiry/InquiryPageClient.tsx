@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef } from 'react';
 
@@ -297,7 +297,7 @@ export default function InquiryPageClient() {
 
     return (
       <>
-        <Navbar />
+        <Navbar transparent />
         <main className="min-h-screen bg-gray-50 pb-20">
           {/* Top confirmation banner */}
           <div className="bg-gradient-to-br from-brand-600 to-brand-800 text-white px-4 py-14 text-center">
@@ -409,7 +409,7 @@ export default function InquiryPageClient() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       {/* ── Hero ── */}
       <section

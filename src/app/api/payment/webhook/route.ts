@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
-import { sendBookingConfirmationEmail } from '@/lib/email'
+import { sendBookingConfirmationEmail, sendTourBookingConfirmationEmail } from '@/lib/email'
 import { sendCustomerBookingConfirmation, sendPostBookingUpsell } from '@/lib/whatsapp'
 
 /** Map Payso/internal raw method strings to our canonical values. */
@@ -161,6 +161,12 @@ export async function POST(req: NextRequest) {
     if (orderId.startsWith('TR-')) {
       const tourBooking = await prisma.tourBooking.findUnique({ where: { bookingRef: orderId } })
       if (tourBooking) {
+        // Idempotency: skip if already in the target state
+        if (tourBooking.paymentStatus === 'PAID' && paymentStatus === 'PAID') {
+          console.log(`[payment/webhook] TourBooking ${orderId} already PAID — skipping (idempotent)`)
+          return NextResponse.json({ success: true })
+        }
+
         await prisma.tourBooking.update({
           where: { id: tourBooking.id },
           data: {
@@ -172,6 +178,23 @@ export async function POST(req: NextRequest) {
 
         if (paymentStatus === 'PAID') {
           await recordPaymentPreference(tourBooking.customerEmail, tourBooking.paymentMethod)
+
+          // Send customer confirmation email + WhatsApp
+          sendTourBookingConfirmationEmail({
+            bookingRef:    tourBooking.bookingRef,
+            customerName:  tourBooking.customerName,
+            customerEmail: tourBooking.customerEmail,
+            tourTitle:     tourBooking.tourTitle,
+            tourSlug:      tourBooking.tourSlug,
+            optionLabel:   tourBooking.optionLabel,
+            bookingDate:   tourBooking.bookingDate,
+            adultQty:      tourBooking.adultQty,
+            childQty:      tourBooking.childQty,
+            adultPrice:    tourBooking.adultPrice,
+            childPrice:    tourBooking.childPrice,
+            totalPrice:    tourBooking.totalPrice,
+            notes:         tourBooking.notes,
+          }).catch(err => console.error('[payment/webhook] TourBooking email error:', err))
         }
 
         console.log(`[payment/webhook] TourBooking ${orderId} → ${paymentStatus}`)
@@ -181,6 +204,12 @@ export async function POST(req: NextRequest) {
     // ── Handle AttractionBooking (look up by paysoOrderId) ───────────────────
     const attractionBooking = await prisma.attractionBooking.findFirst({ where: { paysoOrderId: orderId } })
     if (attractionBooking) {
+      // Idempotency: skip if already in the target state
+      if (attractionBooking.paymentStatus === 'PAID' && paymentStatus === 'PAID') {
+        console.log(`[payment/webhook] AttractionBooking ${attractionBooking.bookingRef} already PAID — skipping (idempotent)`)
+        return NextResponse.json({ success: true })
+      }
+
       await prisma.attractionBooking.update({
         where: { id: attractionBooking.id },
         data: {

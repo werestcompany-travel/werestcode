@@ -116,7 +116,7 @@ export default function RouteSlugPage({ params }: { params: { slug: string } }) 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50">
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -474,7 +474,7 @@ function AccountContent() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <div className="pt-16 min-h-screen bg-[#f5f5f5]">
 

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
@@ -101,12 +101,12 @@ const TOP_TRANSFERS = [
 
 /* ═══════════════════════════════════════════════════════════════════════════════ */
 
-export default function ThailandPage() {
-  const tours = getToursForDestination('Bangkok').slice(0, 6)
+export default async function ThailandPage() {
+  const tours = await getToursForDestination('Bangkok', 6)
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white">
 
         {/* ════════ HERO ════════ */}

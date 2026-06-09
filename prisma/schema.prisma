@@ -1001,7 +1001,7 @@ model CurrencyRate {
   fetchedAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
-  // @@unique([base]) -- pending data deduplication in CurrencyRate table
+  @@unique([base])
   @@index([fetchedAt])
 }
 

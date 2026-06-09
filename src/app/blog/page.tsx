@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Search } from 'lucide-react'
@@ -92,7 +92,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white">
 
         {/* ════════════════════════════════════════════

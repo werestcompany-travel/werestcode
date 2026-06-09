@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -147,7 +147,7 @@ export default function RewardsPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <div className="pt-16 min-h-screen bg-[#f5f5f5]">
 
         {/* ── Breadcrumb ─────────────────────────────────────────────────── */}

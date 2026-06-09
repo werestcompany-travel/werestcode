@@ -32,26 +32,27 @@ export async function GET(req: NextRequest) {
     const profile = await profileRes.json()
     if (!profile.email) throw new Error('No email returned from Google')
 
-    /* Upsert user */
+    /* Upsert user — Google OAuth accounts are auto-verified */
     const user = await prisma.user.upsert({
       where:  { email: profile.email },
-      update: { name: profile.name ?? undefined, isVerified: true },
+      update: { name: profile.name ?? undefined, emailVerified: true },
       create: {
-        email:      profile.email,
-        name:       profile.name ?? profile.email.split('@')[0],
-        isVerified: true,
-        password:   '',
+        email:         profile.email,
+        name:          profile.name ?? profile.email.split('@')[0],
+        emailVerified: true,
+        password:      '',
       },
     })
 
     /* Create session JWT + set cookie */
-    const { token, expiresAt } = await signUserToken({
+    const token = await signUserToken({
       id:    user.id,
       email: user.email,
       name:  user.name ?? '',
     })
 
     const res = NextResponse.redirect(new URL('/', req.url))
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     res.cookies.set('user_token', token, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === 'production',

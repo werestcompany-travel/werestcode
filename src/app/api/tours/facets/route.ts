@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { tours as staticTours, Tour } from '@/lib/tours'
+import { Tour } from '@/lib/tours'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 300
@@ -133,54 +133,43 @@ export async function GET(request: NextRequest) {
 
   let tourList: Tour[] = []
 
-  // 1. Try DB
   try {
-    const dbTours = await prisma.tour.findMany({
-      where: { isActive: true },
-    })
-    if (dbTours.length > 0) {
-      // Map Prisma records to Tour shape (subset sufficient for facets)
-      tourList = dbTours.map((t) => ({
-        slug: t.slug,
-        title: t.title,
-        subtitle: t.subtitle ?? '',
-        location: t.location,
-        cities: t.cities,
-        duration: t.duration,
-        maxGroupSize: t.maxGroupSize,
-        languages: t.languages,
-        rating: t.rating,
-        reviewCount: t.reviewCount,
-        category: t.category as Tour['category'],
-        badge: t.badge as Tour['badge'],
-        images: t.images,
-        highlights: t.highlights,
-        description: t.description,
-        includes: t.includes,
-        excludes: t.excludes,
-        itinerary: (t.itinerary as unknown as Tour['itinerary']) ?? [],
-        options: (t.options as unknown as Tour['options']) ?? [],
-        meetingPoint: t.meetingPoint ?? '',
-        importantInfo: t.importantInfo,
-        reviews: (t.reviews as unknown as Tour['reviews']) ?? [],
-        primaryLocation: t.primaryLocation,
-        tags: t.tags,
-        priceFrom: t.priceFrom,
-        isFeatured: t.isFeatured,
-        isPopular: t.isPopular,
-        instantConfirmation: t.instantConfirmation,
-      }))
-    }
+    const dbTours = await prisma.tour.findMany({ where: { isActive: true } })
+    tourList = dbTours.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      subtitle: t.subtitle ?? '',
+      location: t.location,
+      cities: t.cities,
+      duration: t.duration,
+      maxGroupSize: t.maxGroupSize,
+      languages: t.languages,
+      rating: t.rating,
+      reviewCount: t.reviewCount,
+      category: t.category as Tour['category'],
+      badge: t.badge as Tour['badge'],
+      images: t.images,
+      highlights: t.highlights,
+      description: t.description,
+      includes: t.includes,
+      excludes: t.excludes,
+      itinerary: (t.itinerary as unknown as Tour['itinerary']) ?? [],
+      options: (t.options as unknown as Tour['options']) ?? [],
+      meetingPoint: t.meetingPoint ?? '',
+      importantInfo: t.importantInfo,
+      reviews: (t.reviews as unknown as Tour['reviews']) ?? [],
+      primaryLocation: t.primaryLocation ?? undefined,
+      tags: t.tags,
+      priceFrom: t.priceFrom ?? undefined,
+      isFeatured: t.isFeatured,
+      isPopular: t.isPopular,
+      instantConfirmation: t.instantConfirmation,
+    }))
   } catch {
-    // DB unavailable — use static data
+    return NextResponse.json({ error: 'Database unavailable' }, { status: 503 })
   }
 
-  // 2. Fall back to static data
-  if (tourList.length === 0) {
-    tourList = staticTours
-  }
-
-  // 3. Apply pre-filters
+  // Apply pre-filters
   if (location) {
     const loc = location.toLowerCase()
     tourList = tourList.filter(t => matchesLocation(t, loc))

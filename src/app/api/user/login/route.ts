@@ -36,6 +36,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
+    // Block login for unverified email accounts
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { error: 'Please verify your email address before logging in. Check your inbox for the verification link.', code: 'EMAIL_NOT_VERIFIED' },
+        { status: 403 },
+      );
+    }
+
     const token = await signUserToken({ id: user.id, email: user.email, name: user.name });
 
     const res = NextResponse.json({

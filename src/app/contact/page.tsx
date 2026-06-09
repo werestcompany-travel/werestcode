@@ -1,4 +1,4 @@
-/**
+﻿/**
  * metadata for this page (cannot export from 'use client'):
  * title: 'Contact Us | Werest Travel'
  * description: 'Get in touch with Werest Travel via WhatsApp, email, or LINE. Support available 7:00–22:00 ICT, 7 days a week.'
@@ -193,7 +193,7 @@ export default function ContactPage() {
   // ── render ─────────────────────────────────────────────────────────────
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white">
 

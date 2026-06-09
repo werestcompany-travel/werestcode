@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -114,7 +114,7 @@ function SearchInner() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
 
         {/* ── Search hero ── */}

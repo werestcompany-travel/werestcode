@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -19,7 +19,7 @@ function CharterConfirmationInner() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-lg mx-auto px-4 sm:px-6 py-16">
 

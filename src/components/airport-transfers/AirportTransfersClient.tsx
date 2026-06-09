@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -185,7 +185,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 export default function AirportTransfersClient() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white">
 

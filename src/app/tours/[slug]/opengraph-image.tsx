@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 import { prisma } from '@/lib/db';
-import { getTourBySlug } from '@/lib/tours';
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -50,23 +49,7 @@ async function getTourData(slug: string): Promise<TourData | null> {
       };
     }
   } catch {
-    // fall through to static data
-  }
-
-  // Fall back to static data
-  const staticTour = getTourBySlug(slug);
-  if (staticTour) {
-    return {
-      title: staticTour.title,
-      subtitle: staticTour.subtitle,
-      location: staticTour.location,
-      duration: staticTour.duration,
-      rating: staticTour.rating,
-      reviewCount: staticTour.reviewCount,
-      category: staticTour.category,
-      badge: staticTour.badge ?? null,
-      options: staticTour.options,
-    };
+    // DB error
   }
 
   return null;

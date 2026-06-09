@@ -65,7 +65,7 @@ export async function generateMetadata({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function CategoryPage({
+export default async function CategoryPage({
   params,
 }: {
   params: { category: string }
@@ -73,7 +73,7 @@ export default function CategoryPage({
   const { category } = params
   const label        = CATEGORY_LABELS[category] ?? category
   const icon         = CATEGORY_ICONS[category] ?? '🗺️'
-  const results      = searchTours({ category })
+  const results      = await searchTours({ category })
   const related      = RELATED_CATEGORIES.filter(c => c.key !== category)
 
   const jsonLd = {
@@ -96,7 +96,7 @@ export default function CategoryPage({
   return (
     <>
       <JsonLd data={jsonLd} />
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen">
         {/* ── Hero ──────────────────────────────────────────────────────────── */}

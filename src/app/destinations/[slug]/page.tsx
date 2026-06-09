@@ -172,7 +172,7 @@ export default async function DestinationPage({ params }: { params: { slug: stri
   if (!dest) notFound()
 
   // Tours relevant to this destination
-  const tours = getToursForDestination(dest.name).slice(0, 6)
+  const tours = await getToursForDestination(dest.name, 6)
 
   // Attractions from DB
   let attractions: { slug: string; name: string; location: string; price: number; rating: number; featureImage: string | null; emoji: string; badge: string | null }[] = []

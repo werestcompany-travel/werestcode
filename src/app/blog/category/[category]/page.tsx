@@ -108,7 +108,7 @@ export default async function BlogCategoryPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50">
 

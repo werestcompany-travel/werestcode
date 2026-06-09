@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -152,7 +152,7 @@ export default function CorporatePage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       {/* ── HERO ── */}
       <section className="relative bg-gradient-to-br from-gray-900 via-brand-900 to-brand-800 pt-24 pb-20 overflow-hidden">

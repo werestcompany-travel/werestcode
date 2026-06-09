@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TourGrid from '@/components/tours/TourGrid'
 import JsonLd from '@/components/seo/JsonLd'
-import { tours as ALL_TOURS } from '@/lib/tours'
+import { getToursForDestination } from '@/lib/tours'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -34,21 +34,6 @@ const RELATED_DESTINATIONS = [
   { key: 'krabi',      label: 'Krabi' },
   { key: 'chiang-rai', label: 'Chiang Rai' },
 ]
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function filterByLocation(locationKey: string, locationLabel: string) {
-  const lowerKey   = locationKey.toLowerCase().replace('-', '')
-  const lowerLabel = locationLabel.toLowerCase()
-
-  return ALL_TOURS.filter(tour =>
-    tour.cities.some(c =>
-      c.toLowerCase().includes(lowerKey) ||
-      c.toLowerCase().includes(lowerLabel)
-    ) ||
-    tour.location.toLowerCase().includes(lowerLabel)
-  )
-}
 
 // ─── Static params ─────────────────────────────────────────────────────────────
 
@@ -80,14 +65,14 @@ export async function generateMetadata({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function LocationPage({
+export default async function LocationPage({
   params,
 }: {
   params: { location: string }
 }) {
   const { location } = params
   const label        = LOCATION_LABELS[location] ?? location
-  const results      = filterByLocation(location, label)
+  const results      = await getToursForDestination(label)
   const related      = RELATED_DESTINATIONS.filter(d => d.key !== location)
 
   const jsonLd = {
@@ -106,7 +91,7 @@ export default function LocationPage({
   return (
     <>
       <JsonLd data={jsonLd} />
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen">
         {/* ── Hero ──────────────────────────────────────────────────────────── */}

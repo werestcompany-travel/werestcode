@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { tours as staticTours } from '@/lib/tours'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 300 // 5 min cache
@@ -52,16 +51,11 @@ export async function GET() {
     // Attempt to fetch from DB
     let rawTours: LightTour[]
 
-    try {
-      const dbTours = await prisma.tour.findMany({
-        where: { isActive: true },
-        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-      })
-      rawTours = dbTours.map(toLight)
-    } catch {
-      // Fallback to static tour data
-      rawTours = staticTours.map(toLight)
-    }
+    const dbTours = await prisma.tour.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+    })
+    rawTours = dbTours.map(toLight)
 
     const SECTION_DEFS: {
       id: string

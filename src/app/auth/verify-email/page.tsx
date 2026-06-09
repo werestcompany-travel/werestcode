@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
@@ -35,7 +35,7 @@ function VerifyEmailContent() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <Navbar />
+      <Navbar transparent />
 
       <div className="flex-1 flex items-center justify-center px-4 pt-28 pb-16">
         <div className="w-full max-w-md">

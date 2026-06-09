@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -125,7 +125,7 @@ const PARTNER_LOGOS = [
 export default function HostAgenciesPage() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white">
 
         {/* ══════════════════════════════════════════════════════

@@ -48,7 +48,7 @@ export default async function TagPage({ params }: { params: { tag: string } }) {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <main className="min-h-screen bg-white">
         {/* Breadcrumb */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-4">

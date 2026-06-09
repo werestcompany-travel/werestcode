@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -81,7 +81,7 @@ function WriteReviewContent() {
 export default function WriteReviewPage() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <Suspense>
         <WriteReviewContent />
       </Suspense>

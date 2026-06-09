@@ -20,7 +20,7 @@ import QuickInfoBar from '@/components/tours/QuickInfoBar'
 import ItineraryItem from '@/components/tours/ItineraryItem'
 import JsonLd from '@/components/seo/JsonLd'
 import { tourProductSchema } from '@/lib/seo/schema'
-import { formatTHB, getToursForDestination, tours as TOURS, type Tour } from '@/lib/tours'
+import { formatTHB, mapDbTour, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 import TrackTourView from '@/components/tours/TrackTourView'
 
@@ -145,36 +145,9 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
       take: 3,
       orderBy: { sortOrder: 'asc' },
     })
-    if (dbRelated.length > 0) {
-      related = dbRelated.map(t => ({
-        slug:          t.slug,
-        title:         t.title,
-        subtitle:      t.subtitle ?? '',
-        location:      t.location,
-        cities:        t.cities,
-        duration:      t.duration,
-        maxGroupSize:  t.maxGroupSize,
-        languages:     t.languages,
-        rating:        t.rating,
-        reviewCount:   t.reviewCount,
-        category:      t.category as Tour['category'],
-        badge:         t.badge as Tour['badge'] ?? undefined,
-        images:        t.images,
-        highlights:    t.highlights,
-        description:   t.description,
-        includes:      t.includes,
-        excludes:      t.excludes,
-        itinerary:     (t.itinerary as unknown as Tour['itinerary']) ?? [],
-        options:       (t.options as unknown as Tour['options']) ?? [],
-        meetingPoint:  t.meetingPoint ?? '',
-        importantInfo: t.importantInfo,
-        reviews:       (t.reviews as unknown as Tour['reviews']) ?? [],
-      }))
-    } else {
-      related = getToursForDestination(tour.location ?? '').filter(t => t.slug !== tour.slug).slice(0, 3)
-    }
+    related = dbRelated.map(mapDbTour)
   } catch {
-    related = getToursForDestination(tour.location ?? '').filter(t => t.slug !== tour.slug).slice(0, 3)
+    // DB error — leave related empty
   }
 
   // ── Rating distribution (Feature 8 – prefer ratingBreakdown, fall back to review array) ──
@@ -586,9 +559,10 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
 
               {/* ── Frequently Booked Together (Feature 9) ─────────────────── */}
               {tour.frequentlyBookedWith && tour.frequentlyBookedWith.length > 0 && (() => {
-                const fbtTours = tour.frequentlyBookedWith!
-                  .map(slug => TOURS.find(t => t.slug === slug))
-                  .filter(Boolean) as Tour[]
+                // frequentlyBookedWith slugs — resolved by TourCard when rendered from related
+                const fbtTours: Tour[] = related.filter(r =>
+                  tour.frequentlyBookedWith!.includes(r.slug)
+                )
                 if (!fbtTours.length) return null
                 return (
                   <section className="py-10 border-t border-gray-100">

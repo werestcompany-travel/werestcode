@@ -54,13 +54,18 @@ export async function GET() {
 
       const rates = pickRates(json.rates as RatesMap);
 
-      // Persist to DB
-      await prisma.currencyRate.create({
-        data: {
-          base: 'THB',
-          rates,
-        },
-      });
+      // Persist to DB — keep only one row per base currency to prevent unbounded table growth
+      // NOTE: after running `prisma migrate dev` to apply the @@unique([base]) constraint,
+      // this can be simplified to a single prisma.currencyRate.upsert({ where: { base: 'THB' } })
+      const existingRate = await prisma.currencyRate.findFirst({ where: { base: 'THB' } });
+      if (existingRate) {
+        await prisma.currencyRate.update({
+          where: { id: existingRate.id },
+          data:  { rates, fetchedAt: new Date() },
+        });
+      } else {
+        await prisma.currencyRate.create({ data: { base: 'THB', rates } });
+      }
 
       return NextResponse.json(
         { rates, fetchedAt: new Date().toISOString() },

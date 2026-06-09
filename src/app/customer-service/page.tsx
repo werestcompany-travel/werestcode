@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -462,7 +462,7 @@ export default function CustomerServicePage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
       <div className="pt-16 min-h-screen bg-[#f5f5f5]">
 
         {/* ── Hero banner ──────────────────────────────────────────────── */}

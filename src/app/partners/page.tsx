@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AuthTriggerButton } from '@/components/ui/AuthTriggerButton';
 import Navbar from '@/components/Navbar';
@@ -104,7 +104,7 @@ const TESTIMONIALS = [
 export default function PartnersPage() {
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white">
 
