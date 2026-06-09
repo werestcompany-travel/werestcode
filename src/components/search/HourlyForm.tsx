@@ -92,9 +92,9 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      const outside = (ref: React.RefObject<HTMLDivElement | null>) =>
-        ref.current && !ref.current.contains(e.target as Node)
-      if (outside(durRefMob) && outside(durRefDesk)) setShowDur(false)
+      const insideMob  = durRefMob.current?.contains(e.target as Node)
+      const insideDesk = durRefDesk.current?.contains(e.target as Node)
+      if (!insideMob && !insideDesk) setShowDur(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
