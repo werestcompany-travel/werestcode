@@ -70,7 +70,7 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
   }, [])
 
   return (
-    <section className="py-10 bg-white">
+    <section className="bg-white">
       <div className="max-w-7xl mx-auto">
 
         {/* ── Header ── */}
@@ -181,7 +181,7 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
             <div className="shrink-0 w-1" aria-hidden />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="flex flex-col items-center justify-center py-6 text-center px-4">
             <p className="text-5xl mb-4">🗺️</p>
             <h3 className="text-lg font-bold text-gray-900 mb-2">
               {t('tours.comingSoon')} {cityName}
