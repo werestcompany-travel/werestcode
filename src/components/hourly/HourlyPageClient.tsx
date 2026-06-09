@@ -277,19 +277,8 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
         </div>
 
         {/* Trustpilot row */}
-        <div className="flex items-center justify-center gap-2.5 py-4">
-          <span className="text-sm font-semibold text-gray-700">Excellent</span>
-          {/* 5 green star boxes */}
-          <div className="flex gap-0.5">
-            {[0,1,2,3,4].map(i => (
-              <div key={i} className="w-[22px] h-[22px] bg-[#00B67A] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white">
-                  <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-                </svg>
-              </div>
-            ))}
-          </div>
-          <img src="/images/trustpilot-logo.png" alt="Trustpilot" className="h-5 w-auto object-contain" />
+        <div className="flex items-center justify-center py-4">
+          <img src="/images/trustpilot-logo.png" alt="Trustpilot" className="h-12 w-auto object-contain" />
         </div>
 
       </section>

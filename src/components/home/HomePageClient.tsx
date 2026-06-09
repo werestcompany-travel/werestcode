@@ -514,23 +514,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           {/* ── Trustpilot ── */}
-          <div className="flex items-center gap-2.5 px-8 py-3.5">
-            <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">{t('trust.bar.excellent')}</span>
-            <div className="flex gap-0.5">
-              {[1,2,3,4,5].map(i => (
-                <div key={i} className="w-[17px] h-[17px] flex items-center justify-center" style={{background:'#00b67a'}}>
-                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="white" aria-hidden="true">
-                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.1l-6.2 4.2 2.4-7.4L2 9.4h7.6z"/>
-                  </svg>
-                </div>
-              ))}
-            </div>
+          <div className="flex items-center justify-center px-8 py-3.5">
             <img
               src="/images/trustpilot-logo.png"
               alt="Trustpilot"
-              className="h-5 w-auto object-contain"
+              className="h-12 w-auto object-contain"
             />
-            <span className="text-xs text-gray-400 whitespace-nowrap">({t('trust.bar.tp.reviews')})</span>
           </div>
 
         </div>
