@@ -371,7 +371,6 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
             </div>
             <div className="flex items-center gap-1.5">
               <Luggage className="w-4 h-4 text-[#2534ff]" />
-              <Luggage className="w-4 h-4 text-[#2534ff] -ml-2.5" />
               <span className="text-sm font-semibold text-gray-900">{pax.extraBags}</span>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showPax ? 'rotate-180' : ''}`} />
