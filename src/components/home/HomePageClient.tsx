@@ -661,10 +661,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[75vw] max-w-[300px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-2 px-3 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[78vw] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-3 px-4 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
-                  <div className="relative w-full mb-2" style={{ height: 'clamp(117px, 18vw, 195px)' }}>
+                  <div className="relative w-full mb-2" style={{ height: 'clamp(152px, 24vw, 254px)' }}>
                     <Image
                       src={cls.image}
                       alt={`${cls.name} — private transfer Thailand`}
