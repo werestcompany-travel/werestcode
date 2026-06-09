@@ -389,7 +389,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Search container — desktop only */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="hidden lg:block w-[80%] mx-auto my-3 lg:my-[30px]">
+              <div className="hidden lg:block w-[65%] mx-auto my-3 lg:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
                 {/* Price-locked promise + payment logos */}
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
@@ -405,21 +405,18 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   </span>
                 </div>
               </div>
-            ) : (
+            ) : (activeService !== 'rewards' && (
               <div className="hidden lg:block bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl px-10 py-10 max-w-sm w-full">
                 {activeService === 'dinner'  && <Ship     className="w-12 h-12 text-white mx-auto mb-4" />}
                 {activeService === 'group'   && <Users    className="w-12 h-12 text-white mx-auto mb-4" />}
-                {activeService === 'rewards' && <Gift     className="w-12 h-12 text-amber-400 mx-auto mb-4" />}
                 {activeService === 'deals'   && <Tag      className="w-12 h-12 text-white mx-auto mb-4" />}
                 <h2 className="text-2xl font-extrabold text-white mb-2">
                   {activeService === 'dinner'  ? t('hero.card.cruises') :
                    activeService === 'group'   ? t('hero.card.group')   :
-                   activeService === 'deals'   ? t('hero.card.deals')   : t('hero.card.rewards')}
+                   t('hero.card.deals')}
                 </h2>
                 <p className="text-white/75 text-sm mb-6">
-                  {activeService === 'rewards'
-                    ? t('hero.card.rewardsDesc')
-                    : activeService === 'deals'
+                  {activeService === 'deals'
                     ? t('hero.card.dealsDesc')
                     : t('hero.card.comingSoon')}
                 </p>
@@ -427,10 +424,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                   className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-brand-50 transition-colors"
                 >
-                  {activeService === 'rewards' ? t('hero.card.learnMore') : activeService === 'deals' ? t('hero.card.viewDeals') : t('hero.card.notifyMe')}
+                  {activeService === 'deals' ? t('hero.card.viewDeals') : t('hero.card.notifyMe')}
                 </Link>
               </div>
-            )}
+            ))}
 
           </div>
         </div>
