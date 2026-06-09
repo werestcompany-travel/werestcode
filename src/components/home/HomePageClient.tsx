@@ -392,7 +392,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Title */}
             <h1 className="text-[32px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
-              {activeService === 'transfer'    && <><span className="block mt-[10px]"><span className="font-medium">Hey there,</span> Your Thailand Journey</span><span className="block">{t('hero.transfer.title2')}</span></>}
+              {activeService === 'transfer'    && <span className="block mt-[10px]"><span className="font-medium">Hey there,</span> Your Thailand Journey {t('hero.transfer.title2')}</span>}
               {activeService === 'tours'       && t('hero.tours.title')}
               {activeService === 'attractions' && t('hero.attractions.title')}
               {activeService === 'deals'       && t('hero.deals.title')}
