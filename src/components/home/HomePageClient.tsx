@@ -350,7 +350,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section aria-label="Hero" className="-mt-16 mb-0 lg:mb-[30px]">
 
         {/* ── Hero card ── */}
-        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '260px' }}>
+        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '420px' }}>
           {/* Background — Wat Rong Suea Ten (Blue Temple), Chiang Rai at blue hour */}
           <div className="absolute inset-0">
             <Image
@@ -370,7 +370,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
           {/* Central content */}
           {/* pt-16 accounts for the fixed navbar height; lg:pt-20 gives extra breathing room on desktop */}
-          <div id="hero-search-anchor" className="relative z-10 w-full max-w-7xl mx-auto px-4 lg:px-6 pt-20 pb-16 lg:pt-[141px] lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
+          <div id="hero-search-anchor" className="relative z-10 w-full max-w-7xl mx-auto px-4 lg:px-6 pt-20 pb-[140px] lg:pt-[141px] lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
             {/* Title */}
             <h1 className="text-[22px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
@@ -435,7 +435,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       {/* ════════════════════════════════════════════════════════════
           MOBILE SERVICE ICON CARD — floats below hero
       ════════════════════════════════════════════════════════════ */}
-      <div className="lg:hidden max-w-7xl mx-auto px-4 -mt-[40px] relative z-10">
+      <div className="lg:hidden max-w-7xl mx-auto px-4 -mt-[110px] relative z-10">
       <div className="bg-white rounded-2xl shadow-lg px-4 pt-5 pb-4">
         <div className="grid grid-cols-3 gap-y-5">
           {SERVICE_TABS.map((tab) => {
