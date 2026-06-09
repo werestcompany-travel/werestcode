@@ -547,7 +547,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section className="hidden lg:block bg-white pt-6 pb-2">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-[#2534ff]" />
             <h2 className="text-xl font-bold text-gray-900">New user exclusive</h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
