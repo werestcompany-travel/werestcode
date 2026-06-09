@@ -119,7 +119,7 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
 
   if (mode === 'dropdown') {
     return (
-      <div className="absolute top-full right-0 mt-2 z-50">
+      <div className="absolute top-full right-0 mt-[3px] z-50">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
           <div className="flex divide-x divide-gray-100">
             {/* Left: passengers + bag allowance */}
@@ -130,15 +130,6 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
             <div className="px-5 pt-5 pb-6 w-[240px]">
               {ExtraBagsSection}
             </div>
-          </div>
-          <div className="px-5 pb-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full bg-[#2534ff] hover:bg-[#1420cc] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
-            >
-              Done
-            </button>
           </div>
         </div>
       </div>
