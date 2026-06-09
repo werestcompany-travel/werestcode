@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftRight, Calendar, ChevronDown, Users, Luggage, MapPin, Search, Plus } from 'lucide-react';
+import { ArrowLeftRight, Calendar, ChevronDown, Users, Luggage, MapPin, Search, Plus, X } from 'lucide-react';
 import PassengerSheet, { type PassengerState } from './PassengerSheet';
 import { cn } from '@/lib/utils';
 import { PlaceResult } from '@/types';
@@ -506,11 +506,11 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           )}
         </div>
 
-        {/* RETURN DATE */}
-        {hasReturn && (
-          <>
-            <Divider />
-            <div ref={returnTrigger} className="relative flex items-center shrink-0">
+        {/* RETURN DATE — or "Add return" trigger */}
+        <>
+          <Divider />
+          <div ref={returnTrigger} className="relative flex items-center shrink-0">
+            {hasReturn ? (
               <button
                 type="button"
                 onClick={() => { setShowReturnDesk(s => !s); setShowDepartDesk(false); setShowPax(false); }}
@@ -526,22 +526,39 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
                     {returnDate ? fmtTime(returnTime) : '—'}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); setHasReturn(false); setReturnDate(''); setShowReturnDesk(false); }}
+                  className="ml-1 p-0.5 rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+                  aria-label="Remove return"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </button>
-              {showReturnDesk && (
-                <CalendarPicker
-                  label={t('cal.returnDate')}
-                  date={returnDate || date}
-                  time={returnTime}
-                  minDate={date || today}
-                  triggerRef={returnTrigger}
-                  onChange={(d, tm) => { setReturnDate(d); setReturnTime(tm); }}
-                  onClose={() => setShowReturnDesk(false)}
-                  align="right"
-                />
-              )}
-            </div>
-          </>
-        )}
+            ) : (
+              <button
+                type="button"
+                onClick={() => setHasReturn(true)}
+                className="flex items-center gap-2 px-4 h-full text-gray-400 hover:text-[#2534ff] hover:bg-blue-50 rounded-xl transition-colors whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 shrink-0" />
+                <span className="text-sm font-medium">{t('form.addReturn')}</span>
+              </button>
+            )}
+            {showReturnDesk && hasReturn && (
+              <CalendarPicker
+                label={t('cal.returnDate')}
+                date={returnDate || date}
+                time={returnTime}
+                minDate={date || today}
+                triggerRef={returnTrigger}
+                onChange={(d, tm) => { setReturnDate(d); setReturnTime(tm); }}
+                onClose={() => setShowReturnDesk(false)}
+                align="right"
+              />
+            )}
+          </div>
+        </>
 
         <Divider />
 
@@ -578,28 +595,6 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
             {t('form.search')}
           </button>
         </div>
-      </div>
-
-      {/* Round trip checkbox (desktop only) */}
-      <div className="hidden lg:flex items-center gap-2 px-6 pb-3 -mt-1">
-        <input
-          id="round-trip-check"
-          type="checkbox"
-          checked={hasReturn}
-          onChange={e => {
-            setHasReturn(e.target.checked);
-            if (!e.target.checked) { setReturnDate(''); setShowReturnDesk(false); }
-          }}
-          className="w-4 h-4 rounded accent-[#2534ff] cursor-pointer"
-        />
-        <label htmlFor="round-trip-check" className="text-sm text-gray-600 cursor-pointer font-medium select-none">
-          {t('form.roundTripLabel')}
-        </label>
-        {hasReturn && returnDate && (
-          <span className="text-xs text-gray-400 ml-1">
-            · Return {fmtDate(returnDate)} {fmtTime(returnTime)}
-          </span>
-        )}
       </div>
 
       {/* Error (desktop) */}
