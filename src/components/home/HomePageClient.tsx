@@ -402,7 +402,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Search container — desktop only */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="hidden lg:block w-[65%] mx-auto my-3 lg:my-[30px]">
+              <div className="hidden lg:block w-[82%] mx-auto my-3 lg:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
                 {/* Price-locked promise + payment logos */}
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
