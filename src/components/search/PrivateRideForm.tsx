@@ -274,11 +274,11 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-gray-500" />
+              <Users className="w-4 h-4 text-[#2534ff]" />
               <span className="text-sm font-semibold text-gray-800">{pax.adults + pax.children}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Luggage className="w-4 h-4 text-gray-500" />
+              <Luggage className="w-4 h-4 text-[#2534ff]" />
               <span className="text-sm font-semibold text-gray-800">{pax.extraBags}</span>
             </div>
           </div>
