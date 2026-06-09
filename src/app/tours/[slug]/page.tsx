@@ -20,8 +20,9 @@ import QuickInfoBar from '@/components/tours/QuickInfoBar'
 import ItineraryItem from '@/components/tours/ItineraryItem'
 import JsonLd from '@/components/seo/JsonLd'
 import { tourProductSchema } from '@/lib/seo/schema'
-import { formatTHB, type Tour } from '@/lib/tours'
+import { formatTHB, getToursForDestination, tours as TOURS, type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
+import TrackTourView from '@/components/tours/TrackTourView'
 
 // ─── Static params from DB ─────────────────────────────────────────────────────
 
@@ -245,7 +246,15 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripLd) }}
       />
-      <Navbar />
+      <TrackTourView
+        id={tour.slug}
+        title={tour.title}
+        image={tour.images[0] ?? ''}
+        href={`/tours/${tour.slug}`}
+        price={minPrice ? formatTHB(minPrice) : undefined}
+        location={tour.location}
+      />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white pt-16">
 

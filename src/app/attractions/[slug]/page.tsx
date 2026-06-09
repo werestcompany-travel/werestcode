@@ -12,6 +12,7 @@ import JsonLd from '@/components/seo/JsonLd'
 import { touristAttractionSchema } from '@/lib/seo/schema'
 import { prisma } from '@/lib/db'
 import type { AttractionListing, AttractionPackage } from '@prisma/client'
+import TrackAttractionView from '@/components/attractions/TrackAttractionView'
 
 // Render on every request — prevents build-time DB connection exhaustion
 // and ensures attraction data is always fresh
@@ -110,11 +111,19 @@ export default async function AttractionDetailPage({
 
   return (
     <>
+      <TrackAttractionView
+        id={attraction.slug}
+        title={attraction.name}
+        image={attraction.featureImage ?? ''}
+        href={`/attractions/${params.slug}`}
+        price={minPrice ? formatTHB(minPrice) : undefined}
+        location={attraction.location}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
-      <Navbar />
+      <Navbar transparent />
       <JsonLd data={touristAttractionSchema({
         slug: params.slug,
         name: attraction.name,

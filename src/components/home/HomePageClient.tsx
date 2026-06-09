@@ -11,6 +11,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { type BlogPostSummary } from '@/lib/blog';
 import DynamicTourSections from '@/components/home/DynamicTourSections'
+import RecentlyViewedSection from '@/components/RecentlyViewedSection'
 import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 import {
   Star, CheckCircle2, BookOpen, Heart,
@@ -658,6 +659,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           THINGS TO DO — directly under "Where to next?", auto-updates
           when a city card is selected
       ════════════════════════════════════════════════════════════ */}
+      <RecentlyViewedSection />
       <DynamicTourSections
         selectedDest={selectedDest}
         cityName={INSPIRED_DESTS.find(d => d.id === selectedDest)?.name ?? 'Thailand'}

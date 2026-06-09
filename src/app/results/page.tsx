@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import TripEditPanel from '@/components/booking/TripEditPanel';
+import { useRecentlyViewed } from '@/context/RecentlyViewedContext';
 
 export default function ResultsPage() {
   return (
@@ -193,6 +194,8 @@ function ResultsPageInner() {
   const [mapsReady, setMapsReady]             = useState(false);
   const [isEditing, setIsEditing]             = useState(false);
 
+  const { addItem: addRecentItem } = useRecentlyViewed();
+
   const mapDivRef      = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const rendererRef    = useRef<google.maps.DirectionsRenderer | null>(null);
@@ -274,6 +277,24 @@ function ResultsPageInner() {
 
   const selectedVehicleData = vehicles.find(v => v.vehicleType === selectedVehicle);
   const basePrice   = selectedVehicleData?.baseFare ?? 0;
+
+  // Track this transfer route as recently viewed when a vehicle is selected
+  useEffect(() => {
+    if (!selectedVehicle || !pickupAddress || !dropoffAddress) return;
+    const cfg = VEHICLE_CONFIGS[selectedVehicle];
+    const routeTitle = `${pickupAddress} → ${dropoffAddress}`;
+    const routeId = `transfer-${encodeURIComponent(pickupAddress)}-${encodeURIComponent(dropoffAddress)}`;
+    addRecentItem({
+      id: routeId,
+      type: 'transfer',
+      title: routeTitle,
+      image: cfg?.imageUrl ?? '/images/vehicles/sedan.png',
+      href: `/results?pickup_address=${encodeURIComponent(pickupAddress)}&dropoff_address=${encodeURIComponent(dropoffAddress)}&pickup_lat=${params.get('pickup_lat') ?? ''}&pickup_lng=${params.get('pickup_lng') ?? ''}&dropoff_lat=${params.get('dropoff_lat') ?? ''}&dropoff_lng=${params.get('dropoff_lng') ?? ''}&date=${date}&time=${time}&passengers=${passengers}&luggage=${luggage}`,
+      price: basePrice ? formatCurrency(basePrice) : undefined,
+      location: dropoffAddress,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVehicle]);
   const addOnsTotal = selectedAddOns.reduce((s, a) => s + a.unitPrice * a.quantity, 0);
   const totalPrice  = basePrice * (isRoundTrip ? 2 : 1) + addOnsTotal;
 
@@ -323,7 +344,7 @@ function ResultsPageInner() {
         strategy="afterInteractive"
         onReady={() => setMapsReady(true)}
       />
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50 pt-16">
 

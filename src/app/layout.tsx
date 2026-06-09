@@ -29,6 +29,7 @@ import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/next';
 import { LocaleProvider } from '@/context/LocaleContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import { RecentlyViewedProvider } from '@/context/RecentlyViewedContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import FontSwitcher from '@/components/FontSwitcher';
@@ -147,6 +148,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <LocaleProvider>
           <FontSwitcher />
+          <RecentlyViewedProvider>
           <WishlistProvider>
             <AuthModalProvider>
               <ChatProvider>
@@ -163,6 +165,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </ChatProvider>
             </AuthModalProvider>
           </WishlistProvider>
+          </RecentlyViewedProvider>
         </LocaleProvider>
 
         {/* Vercel Analytics */}
