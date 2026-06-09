@@ -595,13 +595,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   {/* City text */}
                   <div className="absolute bottom-0 left-0 px-4 pb-4 text-left">
                     <p className="font-bold text-white text-[18px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{dest.name}</p>
-                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">{t('dest.explore')}</p>
                   </div>
-
-                  {/* ▼ Downward triangle — points to the content section below */}
-                  {isSelected && (
-                    <div className="absolute -bottom-[13px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[13px] border-r-[13px] border-t-[13px] border-l-transparent border-r-transparent border-t-[#2534ff] z-20" />
-                  )}
                 </button>
               );
             })}
