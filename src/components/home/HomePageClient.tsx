@@ -639,13 +639,15 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           5. VEHICLE OPTIONS — fleet showcase
       ════════════════════════════════════════════════════════════ */}
       <section aria-labelledby="fleet-heading" className="pt-0 pb-6 lg:py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="text-center mb-4 lg:mb-8">
-            <h2 id="fleet-heading" className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">{t('home.vehicleOpts')}</h2>
+        <div className="max-w-7xl mx-auto">
+
+          {/* Header — matches "Things to do" style */}
+          <div className="mb-5 px-4 sm:px-6 lg:px-8">
+            <h2 id="fleet-heading" className="text-xl font-bold text-gray-900">{t('home.vehicleOpts')}</h2>
           </div>
 
-          <div className="bg-white rounded-2xl px-3 py-0 lg:px-8 lg:py-3">
-          <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-12 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="bg-white rounded-2xl px-0 py-0">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-8 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 sm:px-6 lg:px-8">
             {CAR_CLASSES.map((cls) => {
               const open = activeVehicle === cls.id;
               return (
@@ -655,7 +657,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[70vw] max-w-[286px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-2 px-5 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="shrink-0 w-[44vw] max-w-[220px] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-2 px-3 rounded-2xl transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
                   <div className="relative w-full mb-2" style={{ height: 'clamp(117px, 18vw, 195px)' }}>
