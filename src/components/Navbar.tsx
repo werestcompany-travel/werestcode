@@ -481,11 +481,7 @@ export default function Navbar({
                 </button>
                 {/* Login — filled #2534ff */}
                 <button type="button" onClick={() => openModal('email')}
-                  className={`text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
-                    useWhite
-                      ? 'bg-white/20 hover:bg-white/30 text-white border border-white/40 backdrop-blur-sm'
-                      : 'bg-[#2534ff] hover:bg-[#1a27e0] text-white'
-                  }`}>
+                  className="text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap bg-[#2534ff] hover:bg-[#1a27e0] text-white">
                   {t('nav.login')}
                 </button>
               </div>
