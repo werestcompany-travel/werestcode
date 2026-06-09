@@ -8,6 +8,7 @@ import PrivateRideForm from './PrivateRideForm';
 import HourlyForm from './HourlyForm';
 import ToursForm from './ToursForm';
 import TicketsForm from './TicketsForm';
+import { useLocale } from '@/context/LocaleContext';
 
 interface PrefillRoute { from: string; to: string; }
 
@@ -20,6 +21,7 @@ export default function SearchTabs({
   prefillRoute?: PrefillRoute | null;
   activeService?: string;
 }) {
+  const { t } = useLocale();
   const [activeTab,       setActiveTab]       = useState<TabType>('private-ride');
   const [transferSubTab,  setTransferSubTab]  = useState<TransferSubTab>('transfers');
 
@@ -36,14 +38,14 @@ export default function SearchTabs({
   }, [activeService]);
 
   const TABS = [
-    { id: 'private-ride' as TabType, label: 'Private Transfers',  Icon: Car,     badge: null, href: undefined },
-    { id: 'tours'        as TabType, label: 'Tours & Experiences', Icon: Compass, badge: null, href: undefined },
-    { id: 'tickets'      as TabType, label: 'Attractions ticket',  Icon: Ticket,  badge: null, href: undefined },
+    { id: 'private-ride' as TabType, label: t('tab.privateTransfers'),  Icon: Car,     badge: null, href: undefined },
+    { id: 'tours'        as TabType, label: t('tab.toursExp'),           Icon: Compass, badge: null, href: undefined },
+    { id: 'tickets'      as TabType, label: t('tab.attractionsTicket'),  Icon: Ticket,  badge: null, href: undefined },
   ];
 
   const TRANSFER_SUB_TABS: { id: TransferSubTab; label: string; Icon: typeof Car }[] = [
-    { id: 'transfers', label: 'Transfers', Icon: Car   },
-    { id: 'hourly',    label: 'Hourly',    Icon: Clock },
+    { id: 'transfers', label: t('tab.sub.transfers'), Icon: Car   },
+    { id: 'hourly',    label: t('tab.sub.hourly'),    Icon: Clock },
   ];
 
   return (

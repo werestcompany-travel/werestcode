@@ -239,8 +239,8 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   };
 
   const handleSearch = () => {
-    if (!pickup)  { setError('Please enter a pickup location');  return; }
-    if (!dropoff) { setError('Please enter a drop-off location'); return; }
+    if (!pickup)  { setError(t('form.errPickup'));  return; }
+    if (!dropoff) { setError(t('form.errDropoff')); return; }
     setError('');
     router.push(`/results?${new URLSearchParams({
       pickup_address:  pickup.address,  pickup_lat:  String(pickup.lat),  pickup_lng:  String(pickup.lng),
@@ -302,7 +302,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           type="text"
           value={pickupInput}
           onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null); }}
-          placeholder="From city, hotel, airport"
+          placeholder={t('form.fromPlaceholder')}
           className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent outline-none"
         />
         {pickupInput && (
@@ -319,7 +319,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           type="text"
           value={dropoffInput}
           onChange={e => { setDropoffInput(e.target.value); if (!e.target.value) setDropoff(null); }}
-          placeholder="To city, hotel, airport"
+          placeholder={t('form.toPlaceholder')}
           className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent outline-none"
         />
         {dropoffInput && (
@@ -377,7 +377,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
               className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
             >
               <Plus className="w-4 h-4 text-gray-400 shrink-0" />
-              <span className="text-sm text-gray-400">Add return</span>
+              <span className="text-sm text-gray-400">{t('form.addReturn')}</span>
             </button>
           )}
           {showReturnMob && hasReturn && (
@@ -399,7 +399,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
       <div className="px-4 py-3 border-b border-gray-100">
         <button type="button"
           className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1.5 rounded-full transition-colors">
-          Multi-city
+          {t('form.multiCity')}
         </button>
       </div>
 
@@ -419,7 +419,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           onClick={handleSearch}
           className="w-full bg-[#2534ff] hover:bg-[#1420cc] active:bg-[#0f18a8] text-white font-bold text-base py-3.5 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2"
         >
-          Search
+          {t('form.search')}
         </button>
       </div>
 
@@ -554,7 +554,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
             <div className="text-left">
               <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.paxLuggage')}</p>
               <p className="text-sm font-semibold text-gray-900">
-                {pax.adults + pax.children} pax · {pax.extraBags} extra bags
+                {pax.adults + pax.children} {t('form.paxSummary')} · {pax.extraBags} {t('form.extraBags')}
               </p>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showPax ? 'rotate-180' : ''}`} />
@@ -593,7 +593,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           className="w-4 h-4 rounded accent-[#2534ff] cursor-pointer"
         />
         <label htmlFor="round-trip-check" className="text-sm text-gray-600 cursor-pointer font-medium select-none">
-          Round trip
+          {t('form.roundTripLabel')}
         </label>
         {hasReturn && returnDate && (
           <span className="text-xs text-gray-400 ml-1">

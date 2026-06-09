@@ -226,7 +226,7 @@ export default function Navbar({
         {searchHistory.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-800">Search history</span>
+              <span className="text-sm font-semibold text-gray-800">{t('search.history')}</span>
               <button type="button" onMouseDown={e => e.preventDefault()} onClick={clearHistory}
                 className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Clear search history">
                 <Trash2 className="w-4 h-4" />
@@ -244,7 +244,7 @@ export default function Navbar({
         )}
 
         <div className="mb-4">
-          <p className="text-sm font-semibold text-gray-800 mb-2">Other travelers searched for</p>
+          <p className="text-sm font-semibold text-gray-800 mb-2">{t('search.othersTravelled')}</p>
           <div className="flex flex-wrap gap-2">
             {(showMoreSuggestions ? POPULAR_SUGGESTIONS : POPULAR_SUGGESTIONS.slice(0, 6)).map(s => (
               <button key={s} type="button" onMouseDown={e => e.preventDefault()} onClick={() => handleSearchChipClick(s)}
@@ -265,7 +265,7 @@ export default function Navbar({
           <div>
             <div className="flex items-center gap-1.5 mb-3">
               <TrendingUp className="w-3.5 h-3.5 text-brand-600" />
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Top searches</p>
+              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">{t('search.topSearches')}</p>
             </div>
             <div className="flex flex-col gap-2">
               {TOP_SEARCHES.map(item => (
@@ -287,7 +287,7 @@ export default function Navbar({
           <div className="hidden sm:block">
             <div className="flex items-center gap-1.5 mb-3">
               <TrendingUp className="w-3.5 h-3.5 text-brand-600" />
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Trending destinations</p>
+              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">{t('search.trending')}</p>
             </div>
             <div className="flex flex-col gap-2">
               {TRENDING_DESTINATIONS.map(dest => (

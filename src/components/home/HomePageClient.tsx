@@ -110,12 +110,12 @@ const SEO_ROUTE_TABS = [
 /* Keep flat SEO_ROUTES for any legacy usage */
 const SEO_ROUTES = SEO_ROUTE_TABS.map(t => t.routes);
 
-/* ── New-user exclusive cards ─────────────────────────────────────────────── */
+/* ── New-user exclusive cards — titleKey/subKey/ctaKey resolved at render ── */
 const NEW_USER_CARDS = [
-  { highlight: true,  title: 'New users get more discounts on travel!', sub: 'Sign in to unlock exclusive welcome deals', cta: 'Sign in & claim all', href: '#', openModal: true,  emoji: '🎁', gradient: 'from-brand-600 to-brand-800' },
-  { highlight: false, title: '10% off',       sub: 'First Transfer',         cta: 'Claim all', href: '#',        openModal: true,  emoji: '🚗' },
-  { highlight: false, title: 'Free cancel',   sub: 'Up to 24h before pickup',cta: 'Claim all', href: '/booking', openModal: false, emoji: '🛡️' },
-  { highlight: false, title: '15% off',       sub: 'Airport Transfers',      cta: 'Claim all', href: '/results', openModal: false, emoji: '✈️' },
+  { highlight: true,  titleKey: 'newUser.title',         subKey: 'newUser.sub',          ctaKey: 'newUser.cta',      href: '#',        openModal: true,  emoji: '🎁', gradient: 'from-brand-600 to-brand-800' },
+  { highlight: false, titleKey: 'newUser.off10.title',   subKey: 'newUser.off10.sub',    ctaKey: 'newUser.claimAll', href: '#',        openModal: true,  emoji: '🚗' },
+  { highlight: false, titleKey: 'newUser.cancel.title',  subKey: 'newUser.cancel.sub',   ctaKey: 'newUser.claimAll', href: '/booking', openModal: false, emoji: '🛡️' },
+  { highlight: false, titleKey: 'newUser.off15.title',   subKey: 'newUser.off15.sub',    ctaKey: 'newUser.claimAll', href: '/results', openModal: false, emoji: '✈️' },
 ];
 
 /* ── Platform review slider data ──────────────────────────────────────────── */
@@ -468,7 +468,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
-            <span className="text-sm text-gray-600 font-medium whitespace-nowrap">Cancel for free 24 hours before departure</span>
+            <span className="text-sm text-gray-600 font-medium whitespace-nowrap">{t('trust.bar.cancel')}</span>
           </div>
 
           {/* ── TripAdvisor ── */}
@@ -483,12 +483,12 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 <div key={i} className="w-[17px] h-[17px] rounded-full" style={{background:'#34e0a1'}} />
               ))}
             </div>
-            <span className="text-xs text-gray-400 whitespace-nowrap">(320+ reviews)</span>
+            <span className="text-xs text-gray-400 whitespace-nowrap">({t('trust.bar.reviews')})</span>
           </div>
 
           {/* ── Trustpilot ── */}
           <div className="flex items-center gap-2.5 px-8 py-3.5">
-            <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Excellent</span>
+            <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">{t('trust.bar.excellent')}</span>
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map(i => (
                 <div key={i} className="w-[17px] h-[17px] flex items-center justify-center" style={{background:'#00b67a'}}>
@@ -503,7 +503,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               alt="Trustpilot"
               className="h-5 w-auto object-contain"
             />
-            <span className="text-xs text-gray-400 whitespace-nowrap">(95+ reviews)</span>
+            <span className="text-xs text-gray-400 whitespace-nowrap">({t('trust.bar.tp.reviews')})</span>
           </div>
 
         </div>
@@ -527,32 +527,32 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 <>
                   <div>
                     <span className="text-2xl">{c.emoji}</span>
-                    <p className="text-white font-bold text-sm leading-snug mt-2">{c.title}</p>
-                    <p className="text-white/70 text-xs mt-1 leading-snug">{c.sub}</p>
+                    <p className="text-white font-bold text-sm leading-snug mt-2">{t(c.titleKey)}</p>
+                    <p className="text-white/70 text-xs mt-1 leading-snug">{t(c.subKey)}</p>
                   </div>
                   <span className="mt-4 inline-block bg-white text-brand-700 font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-50 transition-colors text-center">
-                    {c.cta}
+                    {t(c.ctaKey)}
                   </span>
                 </>
               ) : (
                 <>
                   <div>
                     <span className="text-2xl">{c.emoji}</span>
-                    <p className="font-extrabold text-gray-900 text-xl mt-2 leading-tight">{c.title}</p>
-                    <p className="text-gray-500 text-xs mt-1">{c.sub}</p>
+                    <p className="font-extrabold text-gray-900 text-xl mt-2 leading-tight">{t(c.titleKey)}</p>
+                    <p className="text-gray-500 text-xs mt-1">{t(c.subKey)}</p>
                   </div>
                   <span className="mt-4 inline-block bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-lg group-hover:bg-brand-700 transition-colors text-center">
-                    {c.cta}
+                    {t(c.ctaKey)}
                   </span>
                 </>
               );
 
               return c.openModal ? (
-                <button key={c.title} type="button" onClick={() => openModal('register')} className={cls}>
+                <button key={c.titleKey} type="button" onClick={() => openModal('register')} className={cls}>
                   {inner}
                 </button>
               ) : (
-                <Link key={c.title} href={c.href} className={cls}>
+                <Link key={c.titleKey} href={c.href} className={cls}>
                   {inner}
                 </Link>
               );
@@ -624,7 +624,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   {/* City text */}
                   <div className="absolute bottom-0 left-0 px-4 pb-4 text-left">
                     <p className="font-bold text-white text-[18px] leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{dest.name}</p>
-                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">Explore →</p>
+                    <p className="text-white text-[13px] mt-0.5 font-medium [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">{t('dest.explore')}</p>
                   </div>
 
                   {/* ▼ Downward triangle — points to the content section below */}

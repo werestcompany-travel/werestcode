@@ -1,13 +1,10 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
+﻿import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Suspense } from 'react'
-import { LayoutGrid, ChevronRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import TourGrid from '@/components/tours/TourGrid'
 import TripHeroSearch from '@/components/tours/TripHeroSearch'
-import KlookCategorySection from '@/components/tours/KlookCategorySection'
+import ToursPageClient from '@/components/tours/ToursPageClient'
 import { type Tour } from '@/lib/tours'
 import { prisma } from '@/lib/db'
 
@@ -286,7 +283,7 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
 
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-gray-50">
 
@@ -315,7 +312,7 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
             className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pb-12"
             style={{ paddingTop: 112 }}
           >
-            {/* Title with orange dot */}
+            {/* Title with orange dot — static text for SEO; translated via client hydration */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-2 drop-shadow">
               Attractions &amp; Tours
               <span style={{ color: '#FF6D00' }}>.</span>
@@ -325,6 +322,7 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
             <p className="text-white/80 text-base sm:text-lg font-normal mb-6">
               Discover places and things to do
             </p>
+            {/* Note: hero text is static for SSR/SEO — full i18n handled by ToursPageClient below */}
 
             {/* Trip.com-style search bar */}
             <Suspense fallback={
@@ -348,144 +346,16 @@ export default async function ToursPage({ searchParams }: ToursPageProps) {
         </section>
 
         {/* ── Tour listing ──────────────────────────────────────────────────── */}
-        <div className="bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            {hasFilters ? (
-              /* ── Filtered view ── */
-              <div className="py-8 pb-24">
-                {/* Result count */}
-                <p className="text-sm text-gray-600 mb-5">
-                  {filteredTours.length > 0 ? (
-                    <>
-                      <strong className="text-gray-900">{filteredTours.length}</strong>{' '}
-                      experience{filteredTours.length !== 1 ? 's' : ''}
-                      {locationLabel && (
-                        <> in <strong className="text-[#2534ff]">{locationLabel}</strong></>
-                      )}
-                      {categoryLabel && (
-                        <> · <strong>{categoryLabel}</strong></>
-                      )}
-                      {q && (
-                        <> matching &ldquo;<strong className="text-[#2534ff]">{q}</strong>&rdquo;</>
-                      )}
-                    </>
-                  ) : (
-                    <strong className="text-gray-900">No experiences found</strong>
-                  )}
-                </p>
-
-                {/* Tour grid or empty state */}
-                {filteredTours.length === 0 ? (
-                  <div className="text-center py-20">
-                    <p className="text-5xl mb-4">{q ? '🔍' : '🗺️'}</p>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">No experiences found</h2>
-                    <p className="text-gray-500 mb-6">
-                      {q
-                        ? `We couldn't find experiences matching "${q}". Try different keywords.`
-                        : resolvedLocation
-                        ? `No experiences available in "${locationLabel}" yet.`
-                        : 'No experiences match these filters.'}
-                    </p>
-                    <Link
-                      href="/tours"
-                      className="inline-flex items-center gap-2 bg-[#2534ff] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#1e2ce6] transition-colors text-sm"
-                    >
-                      Browse all experiences
-                    </Link>
-                  </div>
-                ) : (
-                  <TourGrid tours={filteredTours} />
-                )}
-              </div>
-            ) : (
-              /* ── Klook grouped sections view ── */
-              <div className="py-10">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Unmissable experiences</h2>
-
-                {/* Category panels */}
-                {CATEGORY_CONFIGS.map(cat => {
-                  const tours = categoryGroups.get(cat.key) ?? []
-                  if (!tours.length) return null
-                  return (
-                    <KlookCategorySection
-                      key={cat.key}
-                      label={cat.label}
-                      tours={tours.slice(0, 8)}
-                    />
-                  )
-                })}
-
-                {/* Explore all button */}
-                <div className="flex justify-center mt-4 mb-10">
-                  <Link
-                    href="/tours?sort=popular"
-                    className="flex items-center gap-2 border border-gray-300 rounded-full px-8 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                    Explore all experiences
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-
-                {/* Promo codes section */}
-                <div className="border border-gray-100 rounded-2xl p-5 mb-8">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="font-bold text-gray-900 text-[15px]">
-                        <span className="mr-1.5">⚡</span>Promo codes
-                      </p>
-                      <p className="text-gray-400 text-[13px] mt-0.5">Redeem and save on bookings</p>
-                    </div>
-                    <Link
-                      href="/tours"
-                      className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
-                    >
-                      View all
-                    </Link>
-                  </div>
-
-                  {/* Promo pills */}
-                  <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-                    {[
-                      { top: '10% off',   bottom: 'No min. spend' },
-                      { top: '6% off',    bottom: 'Min. ฿3,000' },
-                      { top: '5% off',    bottom: 'Min. ฿1,500' },
-                      { top: 'Free cancel', bottom: 'On select tours' },
-                      { top: '฿200 off',  bottom: 'Min. ฿5,000' },
-                    ].map((pill) => (
-                      <div
-                        key={pill.top + pill.bottom}
-                        className="border border-red-200 rounded-lg px-3 py-2 text-center shrink-0 w-[110px]"
-                      >
-                        <p className="text-red-500 font-bold text-sm">{pill.top}</p>
-                        <p className="text-gray-400 text-[11px] mt-0.5">{pill.bottom}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Browse by destination */}
-                <div className="mt-4 pt-10 border-t border-gray-200 mb-8">
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Browse by destination</p>
-                  <div className="flex flex-wrap gap-3">
-                    {Object.entries(LOCATION_MAP).map(([key, label]) => (
-                      <Link
-                        key={key}
-                        href={`/tours?location=${encodeURIComponent(key)}`}
-                        className="px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#2534ff] hover:text-[#2534ff] transition-colors shadow-sm"
-                      >
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
+        <ToursPageClient
+          filteredTours={filteredTours}
+          categoryGroups={categoryGroups}
+          locationMap={LOCATION_MAP}
+          locationLabel={locationLabel}
+          categoryLabel={categoryLabel}
+          hasFilters={hasFilters}
+          q={q}
+          resolvedLocation={resolvedLocation}
+        />
       </main>
 
       <Footer />

@@ -7,6 +7,7 @@ import PassengerSheet, { type PassengerState } from './PassengerSheet'
 import { cn } from '@/lib/utils'
 import { PlaceResult } from '@/types'
 import CalendarPicker from './CalendarPicker'
+import { useLocale } from '@/context/LocaleContext'
 
 declare global { interface Window { google: typeof google } }
 
@@ -33,6 +34,7 @@ function fmtTime(t: string) {
 
 export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
   const router = useRouter()
+  const { t } = useLocale()
 
   const [pickup,      setPickup]      = useState<PlaceResult | null>(null)
   const [pickupInput, setPickupInput] = useState('')
@@ -104,7 +106,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
   }, [])
 
   const handleSearch = () => {
-    if (!pickup) { setError('Please enter a pickup location'); return }
+    if (!pickup) { setError(t('form.errPickup')); return }
     setError('')
     router.push(`/results?${new URLSearchParams({
       pickup_address: pickup.address,
@@ -209,7 +211,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           type="text"
           value={pickupInput}
           onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null) }}
-          placeholder="From city, hotel, airport"
+          placeholder={t('form.fromPlaceholder')}
           className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent outline-none"
         />
         {pickupInput && (
@@ -227,12 +229,12 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
         >
           <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
           <span className={cn('text-sm', date ? 'text-gray-800 font-medium' : 'text-gray-400')}>
-            {date ? `${fmtDate(date)} · ${fmtTime(time)}` : 'Date and time'}
+            {date ? `${fmtDate(date)} · ${fmtTime(time)}` : t('hourly.dateTime')}
           </span>
         </button>
         {showCal && (
           <CalendarPicker
-            label="Pick-up date"
+            label={t('hourly.pickupDate')}
             date={date}
             time={time}
             minDate={today}
@@ -258,7 +260,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           onClick={handleSearch}
           className="w-full bg-[#2534ff] hover:bg-[#1420cc] active:bg-[#0f18a8] text-white font-bold text-base py-3.5 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2"
         >
-          Search
+          {t('form.search')}
         </button>
       </div>
 
@@ -278,13 +280,13 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
         <div className="flex items-center gap-2.5 flex-[3] min-w-0 px-4">
           <MapPin className="w-4 h-4 text-[#2534ff] shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">Pickup location</p>
+            <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('hourly.pickupLocation')}</p>
             <input
               ref={pickupRefDesk}
               type="text"
               value={pickupInput}
               onChange={e => { setPickupInput(e.target.value); if (!e.target.value) setPickup(null) }}
-              placeholder="Hotel, airport, address…"
+              placeholder={t('hourly.hotelAirport')}
               className="text-sm font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none w-full truncate"
             />
           </div>
@@ -301,16 +303,16 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           >
             <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
             <div className="text-left">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">Date &amp; time</p>
+              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('hourly.dateTime')}</p>
               <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
-                {fmtDate(date) || <span className="font-normal text-gray-300">Select date</span>}
+                {fmtDate(date) || <span className="font-normal text-gray-300">{t('hourly.selectDate')}</span>}
               </p>
               <p className="text-[10px] text-gray-500 leading-none mt-0.5">{fmtTime(time)}</p>
             </div>
           </button>
           {showCal && (
             <CalendarPicker
-              label="Pick-up date"
+              label={t('hourly.pickupDate')}
               date={date}
               time={time}
               minDate={today}
@@ -333,7 +335,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           >
             <Clock className="w-4 h-4 text-[#2534ff] shrink-0" />
             <div className="text-left">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">Duration</p>
+              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('hourly.duration')}</p>
               <p className="text-sm font-semibold text-gray-900">{selectedDur?.label}</p>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showDur ? 'rotate-180' : ''}`} />
@@ -370,9 +372,9 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           >
             <Users className="w-4 h-4 text-[#2534ff]" />
             <div className="text-left">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">Passengers</p>
+              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('hourly.passengers')}</p>
               <p className="text-sm font-semibold text-gray-900">
-                {pax.adults + pax.children} pax · {pax.extraBags} extra bags
+                {pax.adults + pax.children} {t('form.paxSummary')} · {pax.extraBags} {t('form.extraBags')}
               </p>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showPax ? 'rotate-180' : ''}`} />
@@ -395,7 +397,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
             className="flex items-center gap-2 bg-[#2534ff] hover:bg-[#1420cc] text-white font-bold text-sm px-6 h-11 rounded-xl transition-colors shadow-md whitespace-nowrap"
           >
             <Search className="w-4 h-4" />
-            Search
+            {t('form.search')}
           </button>
         </div>
       </div>

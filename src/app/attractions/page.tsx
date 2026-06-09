@@ -41,10 +41,10 @@ const DESTINATION_CHIPS = [
 ];
 
 const SECTION_GROUPS = [
-  { key: 'unmissable',  label: 'Unmissable experiences', badge: '🔥', categories: ['Theme Parks', 'Water Parks', 'Cable Cars', 'Observation Decks'] },
-  { key: 'cultural',    label: 'Culture & history',      badge: '🏯', categories: ['Museums', 'Historical Sites', 'Parks & Gardens'] },
-  { key: 'fun',         label: 'Fun & entertainment',    badge: '🎉', categories: ['Playgrounds', 'Indoor Games', 'Zoos & Aquariums'] },
-  { key: 'shows',       label: 'Events & shows',         badge: '🎭', categories: ['Events & Shows', 'Attraction Passes'] },
+  { key: 'unmissable',  labelKey: 'attr.sec.unmissable', badge: '🔥', categories: ['Theme Parks', 'Water Parks', 'Cable Cars', 'Observation Decks'] },
+  { key: 'cultural',    labelKey: 'attr.sec.cultural',   badge: '🏯', categories: ['Museums', 'Historical Sites', 'Parks & Gardens'] },
+  { key: 'fun',         labelKey: 'attr.sec.fun',        badge: '🎉', categories: ['Playgrounds', 'Indoor Games', 'Zoos & Aquariums'] },
+  { key: 'shows',       labelKey: 'attr.sec.shows',      badge: '🎭', categories: ['Events & Shows', 'Attraction Passes'] },
 ];
 
 const PROMO_CODES = [
@@ -96,6 +96,7 @@ function ActivityCard({
   onToggleWishlist: (a: Attraction) => void;
   onView: (a: Attraction) => void;
 }) {
+  const { t } = useLocale();
   const [imgErr, setImgErr] = useState(false);
   const showImg = a.featureImage && !imgErr;
   const discount = a.originalPrice ? Math.round((1 - a.price / a.originalPrice) * 100) : 0;
@@ -148,7 +149,7 @@ function ActivityCard({
           <span className="text-[10px] text-gray-400">({a.reviewCount})</span>
         </div>
         <div className="mt-auto pt-2 border-t border-gray-50">
-          <p className="text-[9px] text-gray-400 uppercase tracking-wide">from</p>
+          <p className="text-[9px] text-gray-400 uppercase tracking-wide">{t('attr.fromPrice')}</p>
           <div className="flex items-baseline gap-1.5">
             <p className="text-base font-extrabold text-gray-900">฿{a.price.toLocaleString()}</p>
             {a.originalPrice && <p className="text-xs text-gray-400 line-through">฿{a.originalPrice.toLocaleString()}</p>}
@@ -161,23 +162,24 @@ function ActivityCard({
 
 /* ─── Section row ────────────────────────────────────────────────────────── */
 function ActivitySection({
-  label, badge, attractions, wishlisted, onToggleWishlist, onView,
+  labelKey, badge, attractions, wishlisted, onToggleWishlist, onView,
 }: {
-  label: string; badge: string; attractions: Attraction[];
+  labelKey: string; badge: string; attractions: Attraction[];
   wishlisted: Set<string>;
   onToggleWishlist: (a: Attraction) => void;
   onView: (a: Attraction) => void;
 }) {
+  const { t } = useLocale();
   if (attractions.length === 0) return null;
   return (
     <section>
       <div className="flex items-center justify-between mb-3 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
           <span className="text-lg">{badge}</span>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900">{label}</h2>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">{t(labelKey)}</h2>
         </div>
         <Link href="#" className="flex items-center gap-1 text-sm font-semibold text-[#2534ff] hover:underline whitespace-nowrap">
-          See all <ChevronRight className="w-4 h-4" />
+          {t('attr.seeAll')} <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
       <HScroll className="px-4 sm:px-6 lg:px-8 pb-2">
@@ -241,8 +243,10 @@ export default function AttractionsPage() {
 
   /* Group by section */
   const sectionData = SECTION_GROUPS.map(sg => ({
-    ...sg,
-    items: filtered.filter(a => sg.categories.includes(a.category)).slice(0, 10),
+    key:      sg.key,
+    labelKey: sg.labelKey,
+    badge:    sg.badge,
+    items:    filtered.filter(a => sg.categories.includes(a.category)).slice(0, 10),
   }));
 
   /* All-mode grid (when "Explore all" clicked or search active) */
@@ -257,7 +261,7 @@ export default function AttractionsPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-2xl">
             <nav className="flex items-center gap-2 text-xs text-gray-400 mb-5">
-              <Link href="/" className="hover:text-gray-600">Home</Link>
+              <Link href="/" className="hover:text-gray-600">{t('nav.home')}</Link>
               <ChevronRight className="w-3 h-3" />
               <span className="text-gray-700 font-medium">{t('attr.breadcrumb')}</span>
             </nav>
@@ -334,7 +338,7 @@ export default function AttractionsPage() {
               sectionData.map(s => (
                 <ActivitySection
                   key={s.key}
-                  label={s.label}
+                  labelKey={s.labelKey}
                   badge={s.badge}
                   attractions={s.items}
                   wishlisted={wishlistSlugs}

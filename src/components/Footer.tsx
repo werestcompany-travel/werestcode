@@ -1,36 +1,39 @@
+'use client';
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useLocale } from '@/context/LocaleContext'
 
-/* ── Column data ──────────────────────────────────────────────────────────── */
+/* ── Column data — labelKey maps to i18n keys ─────────────────────────────── */
 
 const COMPANY_LINKS = [
-  { label: 'About Werest',    href: '/about'          },
-  { label: 'Travel Blog',     href: '/blog'           },
-  { label: 'Careers',         href: '/about'          },
-  { label: 'Corporate Travel',href: '/corporate'      },
-  { label: 'Partner Program', href: '/partners'       },
-  { label: 'Host Agencies',   href: '/host-agencies'  },
-  { label: 'Become a Partner',href: '/partner'        },
+  { labelKey: 'footer.aboutWerest',     href: '/about'          },
+  { labelKey: 'footer.travelBlog',      href: '/blog'           },
+  { labelKey: 'footer.careers',         href: '/about'          },
+  { labelKey: 'footer.corporateTravel', href: '/corporate'      },
+  { labelKey: 'footer.partnerProgram',  href: '/partners'       },
+  { labelKey: 'footer.hostAgencies',    href: '/host-agencies'  },
+  { labelKey: 'footer.becomePartner',   href: '/partner'        },
 ]
 
 const SERVICE_LINKS = [
-  { label: 'Private Transfers',    href: '/transfers'       },
-  { label: 'Airport Transfers',    href: '/airport-transfers'},
-  { label: 'Tours & Experiences',  href: '/tours'           },
-  { label: 'Group Booking',        href: '/group-booking'   },
-  { label: 'Deals & Offers',       href: '/deals'           },
-  { label: 'Gift Vouchers',        href: '/gift-vouchers'   },
-  { label: 'Charter',              href: '/charter'         },
+  { labelKey: 'footer.privateTransfers', href: '/transfers'        },
+  { labelKey: 'footer.airportTransfers', href: '/airport-transfers'},
+  { labelKey: 'footer.toursExp',         href: '/tours'            },
+  { labelKey: 'footer.groupBooking',     href: '/group-booking'    },
+  { labelKey: 'footer.dealsOffers',      href: '/deals'            },
+  { labelKey: 'footer.giftVouchers',     href: '/gift-vouchers'    },
+  { labelKey: 'footer.charter',          href: '/charter'          },
 ]
 
 const SUPPORT_LINKS = [
-  { label: 'Help Center',          href: '/help-center'          },
-  { label: 'Contact Us',           href: '/contact'              },
-  { label: 'Customer Support',     href: '/inquiry'              },
-  { label: 'Track My Booking',     href: '/tracking'             },
-  { label: 'Cancellation Policy',  href: '/cancellation-policy'  },
-  { label: 'Terms of Service',     href: '/terms-of-service'     },
-  { label: 'Privacy Policy',       href: '/privacy-policy'       },
+  { labelKey: 'footer.helpCenter',        href: '/help-center'         },
+  { labelKey: 'footer.contactUs',         href: '/contact'             },
+  { labelKey: 'footer.customerSupport',   href: '/inquiry'             },
+  { labelKey: 'footer.trackBooking',      href: '/tracking'            },
+  { labelKey: 'footer.cancellationPolicy',href: '/cancellation-policy' },
+  { labelKey: 'footer.termsOfService',    href: '/terms-of-service'    },
+  { labelKey: 'footer.privacyPolicy',     href: '/privacy-policy'      },
 ]
 
 /* ── Social icon ─────────────────────────────────────────────────────────── */
@@ -73,6 +76,7 @@ function PayBadge({ label, bg, color }: { label: string; bg: string; color: stri
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function Footer() {
+  const { t } = useLocale();
   return (
     <footer className="bg-white border-t border-gray-100 text-gray-700">
 
@@ -131,12 +135,12 @@ export default function Footer() {
 
           {/* ── Col 2: Company ── */}
           <div>
-            <p className="font-semibold text-[14px] text-gray-900 mb-4">Company</p>
+            <p className="font-semibold text-[14px] text-gray-900 mb-4">{t('footer.company')}</p>
             <ul className="space-y-2.5">
               {COMPANY_LINKS.map(l => (
-                <li key={l.label}>
+                <li key={l.labelKey}>
                   <Link href={l.href} className="text-[13px] text-gray-500 hover:text-[#2534ff] transition-colors">
-                    {l.label}
+                    {t(l.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -145,12 +149,12 @@ export default function Footer() {
 
           {/* ── Col 3: Services ── */}
           <div>
-            <p className="font-semibold text-[14px] text-gray-900 mb-4">Services</p>
+            <p className="font-semibold text-[14px] text-gray-900 mb-4">{t('footer.services')}</p>
             <ul className="space-y-2.5">
               {SERVICE_LINKS.map(l => (
-                <li key={l.label}>
+                <li key={l.labelKey}>
                   <Link href={l.href} className="text-[13px] text-gray-500 hover:text-[#2534ff] transition-colors">
-                    {l.label}
+                    {t(l.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -159,12 +163,12 @@ export default function Footer() {
 
           {/* ── Col 4: Support ── */}
           <div>
-            <p className="font-semibold text-[14px] text-gray-900 mb-4">Support</p>
+            <p className="font-semibold text-[14px] text-gray-900 mb-4">{t('footer.support')}</p>
             <ul className="space-y-2.5">
               {SUPPORT_LINKS.map(l => (
-                <li key={l.label}>
+                <li key={l.labelKey}>
                   <Link href={l.href} className="text-[13px] text-gray-500 hover:text-[#2534ff] transition-colors">
-                    {l.label}
+                    {t(l.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -173,8 +177,8 @@ export default function Footer() {
 
           {/* ── Col 5: Get the app ── */}
           <div>
-            <p className="font-semibold text-[14px] text-gray-900 mb-1">Cheaper on the app</p>
-            <p className="text-[12px] text-gray-400 mb-4">Exclusive mobile deals & instant updates</p>
+            <p className="font-semibold text-[14px] text-gray-900 mb-1">{t('footer.cheaperOnApp')}</p>
+            <p className="text-[12px] text-gray-400 mb-4">{t('footer.appDeals')}</p>
 
             {/* App Store — coming soon */}
             <div
@@ -222,7 +226,7 @@ export default function Footer() {
 
             {/* Secure payment */}
             <div>
-              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Secure your transaction</p>
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('footer.secureTransaction')}</p>
               <div className="flex flex-wrap items-center gap-2">
                 {PAYMENT_LOGOS.map((p) => (
                   <div
@@ -244,7 +248,7 @@ export default function Footer() {
 
             {/* Awards / partners */}
             <div>
-              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Trusted by</p>
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('footer.trustedBy')}</p>
               <div className="flex items-center gap-3">
                 {/* Google */}
                 <span className="text-[17px] font-medium tracking-tight" style={{ fontFamily: 'sans-serif' }}>
@@ -269,7 +273,7 @@ export default function Footer() {
 
             {/* Follow us */}
             <div>
-              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Follow us</p>
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('footer.followUs')}</p>
               <div className="flex items-center gap-2">
                 {/* Facebook */}
                 <SocialBtn href="https://facebook.com" label="Facebook">
