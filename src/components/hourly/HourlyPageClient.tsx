@@ -277,8 +277,8 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
         </div>
 
         {/* Trustpilot row */}
-        <div className="flex items-center justify-center py-4">
-          <img src="/images/trustpilot-logo.png" alt="Trustpilot" className="h-[54px] w-auto object-contain" />
+        <div className="flex items-center justify-center py-0">
+          <img src="/images/trustpilot-logo.png" alt="Trustpilot" className="h-[69px] w-auto object-contain" />
         </div>
 
       </section>

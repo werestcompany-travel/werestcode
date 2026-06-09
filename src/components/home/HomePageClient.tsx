@@ -514,11 +514,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
           {/* ── Trustpilot ── */}
-          <div className="flex items-center justify-center px-8 py-3.5">
+          <div className="flex items-center justify-center px-8 py-0">
             <img
               src="/images/trustpilot-logo.png"
               alt="Trustpilot"
-              className="h-[50px] w-auto object-contain"
+              className="h-[65px] w-auto object-contain"
             />
           </div>
 
