@@ -347,7 +347,7 @@ export default function Navbar({
       {/* ════════════════════════════════════════════════════════════
           MAIN NAVBAR — pushed down by 32px when top bar visible
       ════════════════════════════════════════════════════════════ */}
-      <header className={`fixed left-0 right-0 z-50 h-16 transition-all duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'} ${transparent && !scrolled ? 'top-8' : 'top-0'}`}>
+      <header className={`fixed left-0 right-0 z-50 h-16 transition-all duration-300 ease-in-out ${navHidden ? '-translate-y-full' : 'translate-y-0'} ${transparent && !scrolled ? 'top-0 lg:top-8' : 'top-0'}`}>
 
         {/* White background — shown when scrolled OR on non-transparent pages */}
         <div className={cn(
