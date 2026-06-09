@@ -289,13 +289,7 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
               </div>
             ))}
           </div>
-          {/* Trustpilot star + wordmark */}
-          <div className="w-[22px] h-[22px] bg-[#00B67A] flex items-center justify-center">
-            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-            </svg>
-          </div>
-          <span className="text-sm font-bold text-gray-900">Trustpilot</span>
+          <img src="/images/trustpilot-logo.png" alt="Trustpilot" className="h-5 w-auto object-contain" />
         </div>
 
       </section>

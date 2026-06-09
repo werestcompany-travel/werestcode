@@ -526,7 +526,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               ))}
             </div>
             <img
-              src="https://cdn.trustpilot.net/brand-assets/4.3.0/logo-black.svg"
+              src="/images/trustpilot-logo.png"
               alt="Trustpilot"
               className="h-5 w-auto object-contain"
             />
