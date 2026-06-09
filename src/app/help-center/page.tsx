@@ -116,7 +116,7 @@ const FAQS: FaqItem[] = [
   {
     category: 'Cancellations',
     q: 'How do I cancel my booking?',
-    a: 'Go to My Bookings in your account, select the booking, and click "Cancel". Or contact us via WhatsApp or email.',
+    a: 'Go to Manage Bookings in your account, select the booking, and click "Cancel". Or contact us via WhatsApp or email.',
   },
   {
     category: 'Cancellations',

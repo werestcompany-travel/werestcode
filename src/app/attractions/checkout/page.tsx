@@ -258,7 +258,7 @@ function CheckoutInner() {
                   <div className="flex gap-3 justify-center">
                     <Link href="/account?tab=bookings"
                       className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-sm transition-colors">
-                      View My Bookings
+                      Manage Bookings
                     </Link>
                     <Link href="/attractions/sanctuary-of-truth"
                       className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl text-sm transition-colors">

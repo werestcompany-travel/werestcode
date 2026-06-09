@@ -562,7 +562,7 @@ export default function CustomerServicePage() {
                 <h3 className="font-bold text-gray-900 mb-3 text-sm">Quick links</h3>
                 <div className="space-y-1">
                   {[
-                    { label: 'View my bookings', href: '/account?tab=all-bookings' },
+                    { label: 'Manage bookings', href: '/account?tab=all-bookings' },
                     { label: 'Track my transfer', href: '/tracking' },
                     { label: 'Cancellation policy', href: '/customer-service#cancellation' },
                     { label: 'Service standards', href: '/service' },

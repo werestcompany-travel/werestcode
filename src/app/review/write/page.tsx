@@ -36,7 +36,7 @@ function WriteReviewContent() {
 
         <Link href="/account?tab=bookings"
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6">
-          <ArrowLeft className="w-4 h-4" /> Back to my bookings
+          <ArrowLeft className="w-4 h-4" /> Back to Manage Bookings
         </Link>
 
         {done ? (
@@ -50,7 +50,7 @@ function WriteReviewContent() {
             </p>
             <Link href="/account?tab=bookings"
               className="inline-flex items-center gap-2 bg-[#2534ff] text-white rounded-xl px-6 py-3 text-sm font-bold hover:bg-[#1a27e0] transition-colors">
-              Back to My Bookings
+              Back to Manage Bookings
             </Link>
           </div>
         ) : (

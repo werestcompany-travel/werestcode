@@ -35,7 +35,7 @@ const T: Record<Lang, Strings> = {
     'nav.logout':      'Sign out',
     'nav.account':     'My Account',
     'nav.wishlist':    'Wishlist',
-    'nav.bookings':    'My Bookings',
+    'nav.bookings':    'Manage Bookings',
     /* locale panel */
     'locale.language': 'Language',
     'locale.currency': 'Currency',
@@ -264,7 +264,7 @@ const T: Record<Lang, Strings> = {
     'nav.searchBookings':    'Search Bookings',
     'nav.signInRegister':    'Sign in/register',
     'nav.myAccount':         'My Account',
-    'nav.myBookings':        'My Bookings',
+    'nav.myBookings':        'Manage Bookings',
     'nav.accessSavings':     'Access savings just for you – in only one step!',
     'nav.savingsPerks1':     '💰 Extraordinary Savings',
     'nav.savingsPerks2':     '⭐ Rewards for booking',
