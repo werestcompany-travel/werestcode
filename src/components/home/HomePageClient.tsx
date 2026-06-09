@@ -16,7 +16,7 @@ import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
 import {
   Star, CheckCircle2, BookOpen, Heart,
   Car, Plane, Users, ArrowRight,
-  ArrowLeftRight,
+  ArrowLeftRight, Luggage,
   Compass, Ticket, Ship, Gift, ChevronRight, Tag,
   Clock, Lock, Shield,
 } from 'lucide-react';
@@ -219,24 +219,28 @@ const CAR_CLASSES = [
     id: 'sedan',
     name: 'Sedan',
     maxPax: 2,
+    maxBags: 2,
     image: 'https://www.toyota.co.th/media/product/series/grades/v/altis/19/8055e76f92e3f8e92b2f16771cebb42db2bcb9eda12ca1565ed5ce5a98ad4d56.webp',
   },
   {
     id: 'suv',
     name: 'SUV',
     maxPax: 4,
+    maxBags: 4,
     image: 'https://www.toyota.co.th/media/product/series/grades/v/fortuner_leader/47/02eff79ee7167df9807c067a0025b87e55458f0203b2b91f70e6b537fc6abf84.webp',
   },
   {
     id: 'minivan',
     name: 'Minivan',
     maxPax: 10,
+    maxBags: 10,
     image: 'https://www.toyota.co.th/media/product/series/grades/v/hiace/214/7c64131428daae1b2ac92c35d5cb6432a75c65eb3df845fa0da308e55cd5f116.webp',
   },
   {
     id: 'luxury-mpv',
     name: 'Luxury MPV',
     maxPax: 6,
+    maxBags: 6,
     image: 'https://www.toyota.co.th/media/product/series/grades/v/alphard/27/9bd8c8811a6213ea1429d91b5bcba32246b73d1255cbb3ae6be04309d1231b08.webp',
   },
 ];
@@ -672,9 +676,15 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     />
                   </div>
                   <p className="text-lg sm:text-xl font-semibold text-gray-800">{cls.name}</p>
-                  <div className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-brand-600">
-                    <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    {t('home.upTo')} {cls.maxPax} {t('home.passengers')}
+                  <div className="mt-1.5 flex items-center gap-3 text-sm font-semibold text-[#2534ff]">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      {cls.maxPax}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Luggage className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      {cls.maxBags}
+                    </span>
                   </div>
                 </button>
               );
