@@ -317,9 +317,29 @@ export default function Navbar({
             <span className="w-px h-3 bg-white/30" />
             <Link href="/contact" className="hover:text-white transition-colors">Partner with Werest</Link>
             <span className="w-px h-3 bg-white/30" />
-            <Link href="/account/points" className="hover:text-white transition-colors">Werest Points</Link>
+            <Link href="/group-booking" className="hover:text-white transition-colors">Group Tours</Link>
             <span className="w-px h-3 bg-white/30" />
-            <Link href="/account?tab=all-bookings" className="hover:text-white transition-colors">My Bookings</Link>
+            {/* Language / currency switcher */}
+            {(() => {
+              const FLAG_MAP: Record<string, string> = {
+                EN: 'https://flagcdn.com/w40/gb.png',
+                TH: 'https://flagcdn.com/w40/th.png',
+                ZH: 'https://flagcdn.com/w40/cn.png',
+              };
+              return (
+                <button
+                  type="button"
+                  onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  <img src={FLAG_MAP[lang] ?? FLAG_MAP['EN']} alt={lang} className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+                  <span>{lang}</span>
+                  <span className="text-white/30">|</span>
+                  <span>{currency}</span>
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </button>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -397,31 +417,6 @@ export default function Navbar({
 
           <div className="hidden lg:flex items-center gap-1.5">
 
-            {/* Flag + lang | currency */}
-            {(() => {
-              const FLAG_MAP: Record<string, string> = {
-                EN: 'https://flagcdn.com/w40/gb.png',
-                TH: 'https://flagcdn.com/w40/th.png',
-                ZH: 'https://flagcdn.com/w40/cn.png',
-              };
-              const flagUrl = FLAG_MAP[lang] ?? FLAG_MAP['EN'];
-              return (
-                <button
-                  type="button"
-                  onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-                  className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg ${useWhite ? 'text-white/90' : 'text-gray-800'}`}
-                >
-                  <img
-                    src={flagUrl}
-                    alt={lang}
-                    className="w-4 h-4 rounded-full object-cover shrink-0"
-                  />
-                  <span>{lang}</span>
-                  <span className={useWhite ? 'text-white/30' : 'text-gray-300'}>|</span>
-                  <span>{currency}</span>
-                </button>
-              );
-            })()}
 
 
             {/* Recently viewed / Bookings */}
