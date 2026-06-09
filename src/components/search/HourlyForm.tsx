@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { MapPin, Calendar, Users, Luggage, ChevronDown, Clock, Search } from 'lucide-react'
+import { MapPin, Calendar, Users, Luggage, ChevronDown, Clock, Search, Plus, X } from 'lucide-react'
 import PassengerSheet, { type PassengerState } from './PassengerSheet'
 import { cn } from '@/lib/utils'
 import { PlaceResult } from '@/types'
@@ -363,16 +363,18 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
           <button
             type="button"
             onClick={() => { setShowPax(!showPax); setShowCal(false); setShowDur(false) }}
-            className="flex items-center gap-2 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors whitespace-nowrap"
+            className="flex items-center gap-3 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors whitespace-nowrap"
           >
-            <Users className="w-4 h-4 text-[#2534ff]" />
-            <div className="text-left">
-              <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('hourly.passengers')}</p>
-              <p className="text-sm font-semibold text-gray-900">
-                {pax.adults + pax.children} {t('form.paxSummary')} · {pax.extraBags} {t('form.extraBags')}
-              </p>
+            <div className="flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-[#2534ff]" />
+              <span className="text-sm font-semibold text-gray-900">{pax.adults + pax.children}</span>
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showPax ? 'rotate-180' : ''}`} />
+            <div className="flex items-center gap-1.5">
+              <Luggage className="w-4 h-4 text-[#2534ff]" />
+              <Luggage className="w-4 h-4 text-[#2534ff] -ml-2.5" />
+              <span className="text-sm font-semibold text-gray-900">{pax.extraBags}</span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showPax ? 'rotate-180' : ''}`} />
           </button>
           {showPax && (
             <PassengerSheet
