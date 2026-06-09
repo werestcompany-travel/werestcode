@@ -120,11 +120,11 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
       <div className="border-t border-gray-100 pt-5 mb-5">
         <p className="text-sm font-bold text-gray-900 mb-1">Need more space?</p>
         <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-          You can add extra sets of bags at no extra cost, but you might need a bigger vehicle.
+          You can add extra suitcases at no extra cost, but you might need a bigger vehicle.
         </p>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-900">Extra sets of bags</p>
+            <p className="text-sm font-semibold text-gray-900">Suitcases</p>
             <p className="text-xs text-gray-400">One checked bag + one carry on</p>
           </div>
           <Counter value={value.extraBags} min={0} max={10} onChange={v => set({ extraBags: v })} />
@@ -144,7 +144,7 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
 
   if (mode === 'dropdown') {
     return (
-      <div className="absolute bottom-full right-0 mb-3 z-50">
+      <div className="absolute top-full right-0 mt-2 z-50">
         {content}
       </div>
     );

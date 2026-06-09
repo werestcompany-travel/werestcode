@@ -324,7 +324,7 @@ const T: Record<Lang, Strings> = {
     'form.multiCity':         'Multi-city',
     'form.roundTripLabel':    'Round trip',
     'form.paxSummary':        'pax',
-    'form.extraBags':         'extra bags',
+    'form.extraBags':         'suitcase',
     'form.errPickup':         'Please enter a pickup location',
     'form.errDropoff':        'Please enter a drop-off location',
     /* hourly form */
