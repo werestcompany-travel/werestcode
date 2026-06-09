@@ -19,7 +19,7 @@ interface Props {
 export default function HourlySearchWidget({ activeTab, onTabChange }: Props) {
   return (
     <div className="w-full">
-      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto lg:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
 
         {/* Tab strip */}
         <div className="flex items-center px-2 pt-4 pb-0 border-b border-gray-100">

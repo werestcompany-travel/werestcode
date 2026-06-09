@@ -87,7 +87,7 @@ export default function SearchTabs({
       </div>
 
       {/* ── White search card ── */}
-      <div className="mt-0 lg:-mt-5 relative z-0 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div className="mt-0 lg:-mt-5 relative z-0 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.22)] overflow-x-auto lg:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
 
         {/* ── Transfers / Hourly sub-tabs (only for Private Transfers tab) ── */}
         {activeTab === 'private-ride' && (
