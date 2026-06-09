@@ -440,7 +440,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
       <div className="hidden lg:flex items-stretch h-[72px] px-2 min-w-[600px]">
 
         {/* FROM */}
-        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
+        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-[21px]">
           <MapPin className="w-4 h-4 text-[#2534ff] shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.pickup')}</p>
@@ -464,7 +464,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         </div>
 
         {/* TO */}
-        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-4">
+        <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-[21px]">
           <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] text-gray-400 font-medium leading-none mb-1">{t('form.dropoff')}</p>
