@@ -336,7 +336,7 @@ export default function HourlyForm({ noCard = false }: { noCard?: boolean }) {
             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ml-1 ${showDur ? 'rotate-180' : ''}`} />
           </button>
           {showDur && (
-            <div className="absolute bottom-full left-0 mb-3 w-44 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 p-2">
+            <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 p-2">
               {DURATION_OPTIONS.map(opt => (
                 <button
                   key={opt.value}

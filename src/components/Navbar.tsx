@@ -396,7 +396,7 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-                  className="flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors text-white/90 hover:text-white hover:bg-white/10"
+                  className="flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/90"
                 >
                   <img
                     src={flagUrl}
