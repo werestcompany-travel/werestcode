@@ -747,11 +747,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   <p className="text-lg sm:text-xl font-semibold text-gray-800">{cls.name}</p>
                   <div className="mt-1.5 flex items-center gap-3 text-sm font-semibold text-[#2534ff]">
                     <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <Users className="w-4 h-4 shrink-0 text-[#2534ff]" aria-hidden="true" />
                       {cls.maxPax}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Luggage className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <Luggage className="w-4 h-4 shrink-0 text-[#2534ff]" aria-hidden="true" />
                       {cls.maxBags}
                     </span>
                   </div>
