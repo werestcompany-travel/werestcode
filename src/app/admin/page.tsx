@@ -6,42 +6,11 @@ import AdminShell from '@/components/admin/AdminShell';
 import { formatCurrency } from '@/lib/utils';
 import {
   Car, Ticket, MapPin, TrendingUp, Clock,
-  CheckCircle2, AlertCircle, ArrowRight, RefreshCw, BookOpen, PenSquare, Eye,
-  ShieldCheck, TriangleAlert, XCircle, Minus, ExternalLink, Search,
-  Monitor, Smartphone, Plus, Gift,
+  CheckCircle2, AlertCircle, ArrowRight, RefreshCw, BookOpen, PenSquare, Eye, Plus, Gift,
 } from 'lucide-react';
 import Link from 'next/link';
 import SendRemindersButton from '@/components/admin/SendRemindersButton';
 
-/* ── SEO types (mirrors src/app/api/admin/seo/route.ts) ── */
-interface SeoCheck {
-  id: string;
-  category: 'technical' | 'on-page' | 'content';
-  perspective: 'desktop' | 'mobile' | 'shared';
-  label: string;
-  status: 'pass' | 'warn' | 'fail' | 'skip';
-  message: string;
-  detail?: string;
-  score: number;
-  max: number;
-  fixHref?: string;
-}
-interface SeoReport {
-  score: number;
-  grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
-  earned: number;
-  maxPossible: number;
-  desktopScore: number;
-  desktopGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
-  desktopEarned: number;
-  desktopMax: number;
-  mobileScore: number;
-  mobileGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
-  mobileEarned: number;
-  mobileMax: number;
-  checks: SeoCheck[];
-  checkedAt: string;
-}
 
 interface TransferStats { total: number; pending: number; active: number; completed: number; revenue: number }
 interface AttractionStats { total: number; pending: number; confirmed: number; revenue: number }
@@ -79,10 +48,6 @@ export default function AdminDashboard() {
   const [recentAttractions, setRecentAttractions] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /* SEO state — loaded on demand (slow check) */
-  const [seoReport,  setSeoReport]  = useState<SeoReport | null>(null);
-  const [seoLoading, setSeoLoading] = useState(false);
-  const [seoError,   setSeoError]   = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -147,20 +112,6 @@ export default function AdminDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  const runSeoAudit = useCallback(async () => {
-    setSeoLoading(true);
-    setSeoError(null);
-    try {
-      const res = await fetch('/api/admin/seo');
-      if (!res.ok) throw new Error('SEO audit failed');
-      const json = await res.json();
-      setSeoReport(json.data as SeoReport);
-    } catch {
-      setSeoError('Could not run SEO audit. Please try again.');
-    } finally {
-      setSeoLoading(false);
-    }
-  }, []);
 
   const totalRevenue = (transferStats?.revenue ?? 0) + (attractionStats?.revenue ?? 0);
   const totalBookings = (transferStats?.total ?? 0) + (attractionStats?.total ?? 0);
@@ -424,16 +375,6 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* ── SEO Health ────────────────────────────────────────── */}
-      <div className="mt-5">
-        <SeoWidget
-          report={seoReport}
-          loading={seoLoading}
-          error={seoError}
-          onRun={runSeoAudit}
-        />
-      </div>
-
       {/* ── Blog quick-access ─────────────────────────────────── */}
       <div className="mt-5 bg-gradient-to-r from-[#2534ff] to-indigo-500 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -588,270 +529,4 @@ function AttractionStatusPill({ status }: { status: string }) {
   );
 }
 
-/* ── SEO Widget ──────────────────────────────────────────────────────────────── */
 
-const GRADE_COLOR: Record<string, string> = {
-  'A+': 'text-emerald-600', A: 'text-emerald-500', B: 'text-yellow-500',
-  C: 'text-orange-500', D: 'text-red-500', F: 'text-red-700',
-};
-const GAUGE_COLOR: Record<string, string> = {
-  'A+': '#10b981', A: '#22c55e', B: '#eab308', C: '#f97316', D: '#ef4444', F: '#b91c1c',
-};
-const CATEGORY_LABEL: Record<string, string> = {
-  technical: 'Technical', 'on-page': 'On-Page', content: 'Content',
-};
-
-function SeoGauge({ score, grade, size = 100 }: { score: number; grade: string; size?: number }) {
-  const radius = (size / 2) - 8;
-  const circ   = 2 * Math.PI * radius;
-  const offset = circ * (1 - score / 100);
-  const color  = GAUGE_COLOR[grade] ?? '#6b7280';
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth="7" />
-        <circle
-          cx={size/2} cy={size/2} r={radius} fill="none"
-          stroke={color} strokeWidth="7"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.8s ease' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-extrabold text-gray-900 leading-none ${size < 90 ? 'text-base' : 'text-xl'}`}>{score}</span>
-        <span className={`font-bold leading-none mt-0.5 ${size < 90 ? 'text-[10px]' : 'text-xs'} ${GRADE_COLOR[grade] ?? 'text-gray-400'}`}>{grade}</span>
-      </div>
-    </div>
-  );
-}
-
-function CheckIcon({ status }: { status: SeoCheck['status'] }) {
-  if (status === 'pass') return <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />;
-  if (status === 'warn') return <TriangleAlert  className="w-4 h-4 text-amber-400 shrink-0" />;
-  if (status === 'fail') return <XCircle        className="w-4 h-4 text-red-500 shrink-0" />;
-  return <Minus className="w-4 h-4 text-gray-300 shrink-0" />;
-}
-
-type PerspectiveTab = 'all' | 'desktop' | 'mobile';
-
-function SeoWidget({
-  report, loading, error, onRun,
-}: {
-  report: SeoReport | null;
-  loading: boolean;
-  error: string | null;
-  onRun: () => void;
-}) {
-  const [perspTab, setPerspTab] = useState<PerspectiveTab>('all');
-
-  const visibleChecks = !report ? [] : perspTab === 'desktop'
-    ? report.checks.filter(c => c.perspective === 'desktop' || c.perspective === 'shared')
-    : perspTab === 'mobile'
-    ? report.checks.filter(c => c.perspective === 'mobile' || c.perspective === 'shared')
-    : report.checks;
-
-  const categories = (['technical', 'on-page', 'content'] as const).filter(cat =>
-    visibleChecks.some(c => c.category === cat)
-  );
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-violet-600" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">SEO Health Check</p>
-            {report && (
-              <p className="text-[10px] text-gray-400">
-                Last checked {new Date(report.checkedAt).toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </p>
-            )}
-          </div>
-        </div>
-        <button
-          onClick={onRun}
-          disabled={loading}
-          className="flex items-center gap-1.5 text-xs font-semibold bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white px-3.5 py-2 rounded-xl transition-colors"
-        >
-          {loading ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Search className="w-3.5 h-3.5" />
-          )}
-          {loading ? 'Checking…' : report ? 'Re-check' : 'Run SEO Audit'}
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="p-5">
-        {/* Idle state */}
-        {!report && !loading && !error && (
-          <div className="flex flex-col items-center justify-center py-8 gap-3">
-            <div className="w-14 h-14 bg-violet-50 rounded-2xl flex items-center justify-center">
-              <ShieldCheck className="w-7 h-7 text-violet-300" />
-            </div>
-            <p className="text-sm text-gray-400 text-center max-w-xs">
-              Click <strong className="text-gray-600">Run SEO Audit</strong> to scan your site&apos;s technical health, meta tags, and content quality — for both Desktop and Mobile.
-            </p>
-          </div>
-        )}
-
-        {/* Loading skeleton */}
-        {loading && (
-          <div className="flex flex-col items-center py-8 gap-4">
-            <div className="flex gap-6">
-              <div className="w-[88px] h-[88px] rounded-full bg-gray-100 animate-pulse" />
-              <div className="w-[88px] h-[88px] rounded-full bg-gray-100 animate-pulse" />
-            </div>
-            <div className="space-y-2 w-full max-w-md">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-8 bg-gray-50 rounded-xl animate-pulse" />
-              ))}
-            </div>
-            <p className="text-xs text-gray-400">Scanning for Desktop & Mobile SEO…</p>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && !loading && (
-          <div className="flex items-center gap-3 py-6 px-4 bg-red-50 rounded-xl">
-            <XCircle className="w-5 h-5 text-red-500 shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        )}
-
-        {/* Report */}
-        {report && !loading && (
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left: dual gauges */}
-            <div className="flex flex-col items-center gap-4 lg:w-[180px] shrink-0">
-
-              {/* Dual gauges */}
-              <div className="flex gap-5">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                    <Monitor className="w-3 h-3" /> Desktop
-                  </div>
-                  <SeoGauge score={report.desktopScore} grade={report.desktopGrade} size={84} />
-                  <p className="text-[10px] text-gray-400 text-center">{report.desktopEarned}/{report.desktopMax} pts</p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                    <Smartphone className="w-3 h-3" /> Mobile
-                  </div>
-                  <SeoGauge score={report.mobileScore} grade={report.mobileGrade} size={84} />
-                  <p className="text-[10px] text-gray-400 text-center">{report.mobileEarned}/{report.mobileMax} pts</p>
-                </div>
-              </div>
-
-              {/* Overall */}
-              <div className="w-full bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-gray-400 font-medium">Overall</p>
-                <p className={`text-lg font-extrabold leading-none mt-0.5 ${GRADE_COLOR[report.grade] ?? 'text-gray-400'}`}>
-                  {report.score}<span className="text-xs font-bold text-gray-400 ml-0.5">/100</span>
-                </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{report.earned}/{report.maxPossible} pts</p>
-              </div>
-
-              {/* Pass/warn/fail pills */}
-              <div className="flex gap-1.5 flex-wrap justify-center">
-                {(['pass', 'warn', 'fail'] as const).map(s => {
-                  const count = report.checks.filter(c => c.status === s).length;
-                  if (!count) return null;
-                  const cls = s === 'pass' ? 'bg-emerald-50 text-emerald-700'
-                            : s === 'warn' ? 'bg-amber-50 text-amber-700'
-                            : 'bg-red-50 text-red-700';
-                  const label = s === 'pass' ? `${count} passed` : s === 'warn' ? `${count} warnings` : `${count} failed`;
-                  return (
-                    <span key={s} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${cls}`}>
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right: tab + checks */}
-            <div className="flex-1 min-w-0">
-              {/* Perspective tabs */}
-              <div className="flex gap-1 mb-4 bg-gray-50 rounded-xl p-1 w-fit">
-                {([
-                  { key: 'all',     label: 'All checks' },
-                  { key: 'desktop', label: '🖥 Desktop',  icon: Monitor },
-                  { key: 'mobile',  label: '📱 Mobile',   icon: Smartphone },
-                ] as { key: PerspectiveTab; label: string; icon?: React.ComponentType<{ className?: string }> }[]).map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setPerspTab(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
-                      perspTab === tab.key
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-700'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Checks by category */}
-              <div className="space-y-5">
-                {categories.map(cat => (
-                  <div key={cat}>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                      {CATEGORY_LABEL[cat]}
-                    </p>
-                    <div className="space-y-1.5">
-                      {visibleChecks.filter(c => c.category === cat).map(check => (
-                        <div key={check.id} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-3 py-2.5">
-                          <CheckIcon status={check.status} />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <p className="text-xs font-semibold text-gray-800 truncate">{check.label}</p>
-                                {check.perspective !== 'shared' && (
-                                  <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                                    check.perspective === 'desktop'
-                                      ? 'bg-blue-100 text-blue-600'
-                                      : 'bg-green-100 text-green-600'
-                                  }`}>
-                                    {check.perspective === 'desktop' ? '🖥' : '📱'}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-gray-400 shrink-0 font-mono">
-                                {check.score}/{check.max}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-gray-500 mt-0.5">{check.message}</p>
-                            {check.detail && (
-                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{check.detail}</p>
-                            )}
-                          </div>
-                          {check.fixHref && check.status !== 'pass' && (
-                            <Link
-                              href={check.fixHref}
-                              className="shrink-0 flex items-center gap-0.5 text-[10px] text-brand-600 font-semibold hover:text-brand-800"
-                            >
-                              Fix <ExternalLink className="w-2.5 h-2.5" />
-                            </Link>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
