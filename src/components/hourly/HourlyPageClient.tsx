@@ -212,7 +212,7 @@ const HERO_CONFIG = {
   transfers: {
     title:   'Private, city-to-city rides with sightseeing stops.',
     subtitle:'Travel in comfort with professional drivers. Fully tailored to your plans — airport pickups, intercity rides, and more.',
-    img:     '/images/hero-transfers.jpg',
+    img:     '/images/hero-transfers.png',
     imgAlt:  'Bangkok private transfer service in Thailand',
   },
 };
