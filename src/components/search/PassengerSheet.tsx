@@ -148,16 +148,9 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
         </button>
       </div>
       {PassengerRows}
-      <div className="border-t border-gray-100 pt-5 mt-5 mb-5">
+      <div className="border-t border-gray-100 pt-5 mt-5">
         {ExtraBagsSection}
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="w-full bg-[#2534ff] hover:bg-[#1420cc] text-white font-bold text-base py-3.5 rounded-2xl transition-colors"
-      >
-        Done
-      </button>
     </div>
   );
 
