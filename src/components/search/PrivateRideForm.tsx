@@ -124,7 +124,8 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
   const [returnDate,   setReturnDate]   = useState('');
   const [returnTime,   setReturnTime]   = useState('09:00');
   const [pax, setPax] = useState<PassengerState>({ adults: 2, children: 0, extraBags: 0 });
-  const [showPax,      setShowPax]      = useState(false);
+  const [showPaxMob,   setShowPaxMob]   = useState(false);
+  const [showPaxDesk,  setShowPaxDesk]  = useState(false);
   const [showDepartMob,  setShowDepartMob]  = useState(false);
   const [showReturnMob,  setShowReturnMob]  = useState(false);
   const [showDepartDesk, setShowDepartDesk] = useState(false);
@@ -205,11 +206,11 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
     return () => clearInterval(iv);
   }, [initAC]);
 
-  /* Close pax dropdown on outside click */
+  /* Close desktop pax dropdown on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (paxRef.current && !paxRef.current.contains(e.target as Node)) {
-        setShowPax(false);
+        setShowPaxDesk(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -230,7 +231,8 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
     setShowDepartDesk(true);
     setShowReturnMob(false);
     setShowReturnDesk(false);
-    setShowPax(false);
+    setShowPaxMob(false);
+    setShowPaxDesk(false);
   }, [prefillRoute]);
 
   const swap = () => {
@@ -267,7 +269,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
       <div className="relative border-b border-gray-100">
         <button
           type="button"
-          onClick={() => { setShowPax(true); setShowDepartMob(false); setShowReturnMob(false); }}
+          onClick={() => { setShowPaxMob(true); setShowDepartMob(false); setShowReturnMob(false); }}
           className="flex items-center justify-between w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-4">
@@ -280,16 +282,16 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
               <span className="text-sm font-semibold text-gray-800">{pax.extraBags}</span>
             </div>
           </div>
-          <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', showPax && 'rotate-180')} />
+          <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', showPaxMob && 'rotate-180')} />
         </button>
       </div>
 
       {/* Mobile bottom sheet */}
-      {showPax && (
+      {showPaxMob && (
         <PassengerSheet
           value={pax}
           onChange={setPax}
-          onClose={() => setShowPax(false)}
+          onClose={() => setShowPaxMob(false)}
           mode="sheet"
         />
       )}
@@ -335,7 +337,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         <div ref={departTriggerMob} className="relative flex-1 border-r border-gray-100">
           <button
             type="button"
-            onClick={() => { setShowDepartMob(s => !s); setShowReturnMob(false); setShowPax(false); }}
+            onClick={() => { setShowDepartMob(s => !s); setShowReturnMob(false); setShowPaxMob(false); }}
             className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
           >
             <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
@@ -362,7 +364,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           {hasReturn ? (
             <button
               type="button"
-              onClick={() => { setShowReturnMob(s => !s); setShowDepartMob(false); setShowPax(false); }}
+              onClick={() => { setShowReturnMob(s => !s); setShowDepartMob(false); setShowPaxMob(false); }}
               className="flex items-center gap-2.5 w-full px-4 py-3.5 hover:bg-gray-50 transition-colors"
             >
               <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
@@ -480,7 +482,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         <div ref={departTrigger} className="relative flex items-center shrink-0">
           <button
             type="button"
-            onClick={() => { setShowDepartDesk(s => !s); setShowReturnDesk(false); setShowPax(false); }}
+            onClick={() => { setShowDepartDesk(s => !s); setShowReturnDesk(false); setShowPaxDesk(false); }}
             className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
           >
             <Calendar className="w-4 h-4 text-[#2534ff] shrink-0" />
@@ -513,7 +515,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
             {hasReturn ? (
               <button
                 type="button"
-                onClick={() => { setShowReturnDesk(s => !s); setShowDepartDesk(false); setShowPax(false); }}
+                onClick={() => { setShowReturnDesk(s => !s); setShowDepartDesk(false); setShowPaxDesk(false); }}
                 className="flex items-center gap-2.5 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors"
               >
                 <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
@@ -565,7 +567,7 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         {/* PASSENGERS + LUGGAGE */}
         <div className="relative flex items-center shrink-0" ref={paxRef}>
           <button type="button"
-            onClick={() => { setShowPax(!showPax); setShowDepartDesk(false); setShowReturnDesk(false); }}
+            onClick={() => { setShowPaxDesk(s => !s); setShowDepartDesk(false); setShowReturnDesk(false); }}
             className="flex items-center gap-3 px-4 h-full hover:bg-gray-50 rounded-xl transition-colors whitespace-nowrap">
             <div className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-[#2534ff]" />
@@ -576,14 +578,14 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
               <Luggage className="w-4 h-4 text-[#2534ff] -ml-2.5" />
               <span className="text-sm font-semibold text-gray-900">{pax.extraBags}</span>
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showPax ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showPaxDesk ? 'rotate-180' : ''}`} />
           </button>
 
-          {showPax && (
+          {showPaxDesk && (
             <PassengerSheet
               value={pax}
               onChange={setPax}
-              onClose={() => setShowPax(false)}
+              onClose={() => setShowPaxDesk(false)}
               mode="dropdown"
             />
           )}
