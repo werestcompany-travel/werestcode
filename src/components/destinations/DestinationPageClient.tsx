@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { formatTHB } from '@/lib/tours';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface Highlight { emoji: string; label: string }
@@ -46,7 +47,6 @@ interface Props {
   dest: DestinationConfig;
   tours: TourItem[];
   attractions: AttractionItem[];
-  formatTHB: (n: number) => string;
 }
 
 /* ── Tab definitions ────────────────────────────────────────────────────────── */
@@ -59,7 +59,7 @@ const TABS = [
 ];
 
 /* ════════════════════════════════════════════════════════════════════════════ */
-export default function DestinationPageClient({ dest, tours, attractions, formatTHB }: Props) {
+export default function DestinationPageClient({ dest, tours, attractions }: Props) {
   const [showSheet, setShowSheet]   = useState(false);
   const [activeTab, setActiveTab]   = useState('things-to-do');
   const tabBarRef                   = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ export default function DestinationPageClient({ dest, tours, attractions, format
   /* ── Render ─────────────────────────────────────────────────────────────── */
   return (
     <>
-      <Navbar />
+      <Navbar transparent />
 
       <main className="min-h-screen bg-white">
 

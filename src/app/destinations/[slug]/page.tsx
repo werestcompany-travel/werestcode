@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/db'
-import { getToursForDestination, formatTHB } from '@/lib/tours'
+import { getToursForDestination } from '@/lib/tours'
 import DestinationPageClient from '@/components/destinations/DestinationPageClient'
 
 // ─── Destination config ───────────────────────────────────────────────────────
@@ -206,7 +206,6 @@ export default async function DestinationPage({ params }: { params: { slug: stri
       dest={dest}
       tours={tours}
       attractions={shapedAttractions}
-      formatTHB={formatTHB}
     />
   )
 }
