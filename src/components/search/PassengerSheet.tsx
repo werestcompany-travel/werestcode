@@ -111,7 +111,6 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-gray-900">Suitcases</p>
-          <p className="text-xs text-gray-400">One checked bag + one carry on</p>
         </div>
         <Counter value={value.extraBags} min={0} max={10} onChange={v => set({ extraBags: v })} />
       </div>
