@@ -399,6 +399,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               {activeService === 'dinner'      && t('hero.dinner.title')}
               {activeService === 'group'       && t('hero.group.title')}
             </h1>
+            <p className="mt-2 text-sm text-white/70 font-medium tracking-wide">
+              gowerest.com &nbsp;·&nbsp; One travel company for your holiday needs.
+            </p>
 
             {/* Search container — desktop only */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
