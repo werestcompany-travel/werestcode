@@ -372,8 +372,8 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <div id="hero-search-anchor" className="relative z-10 w-full max-w-7xl mx-auto px-4 lg:px-6 pt-20 pb-2 lg:pt-24 lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
             {/* Title */}
-            <h1 className="text-[22px] leading-snug lg:text-5xl font-extrabold text-white tracking-tight">
-              {activeService === 'transfer'    && <><span className="block">Your Thailand Journey</span><span className="block">Starts Here</span></>}
+            <h1 className="text-[22px] leading-snug lg:text-[48px] font-extrabold text-white tracking-tight">
+              {activeService === 'transfer'    && <><span className="block mt-[15px]">Your Thailand Journey</span><span className="block">Starts Here</span></>}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
               {activeService === 'deals'       && 'Exclusive Deals & Offers'}
@@ -384,7 +384,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Search container — desktop only */}
             {(activeService === 'transfer' || activeService === 'tours' || activeService === 'attractions') ? (
-              <div className="hidden lg:block w-full my-3 lg:my-[30px]">
+              <div className="hidden lg:block w-[80%] mx-auto my-3 lg:my-[30px]">
                 <SearchTabs prefillRoute={prefillRoute} activeService={activeService} />
                 {/* Price-locked promise + payment logos */}
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
