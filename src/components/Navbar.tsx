@@ -371,10 +371,10 @@ export default function Navbar({
           </Link>
 
           {/* Primary nav links */}
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINK_KEYS.map(link => (
               <Link key={link.href} href={link.href}
-                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90' : 'text-gray-700'}`}>
+                className="text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap text-white/90 hover:text-white">
                 {t(link.labelKey)}
               </Link>
             ))}
@@ -382,7 +382,7 @@ export default function Navbar({
 
           <div className="hidden lg:block flex-1" />
 
-          <div className="hidden lg:flex items-center gap-0.5">
+          <div className="hidden lg:flex items-center gap-1.5">
 
             {/* Flag + lang | currency */}
             {(() => {
@@ -396,7 +396,7 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-                  className={`flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className="flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors text-white/90 hover:text-white hover:bg-white/10"
                 >
                   <img
                     src={flagUrl}
@@ -404,7 +404,7 @@ export default function Navbar({
                     className="w-4 h-4 rounded-full object-cover shrink-0"
                   />
                   <span>{lang}</span>
-                  <span className={`${useWhite ? 'text-white/30' : 'text-gray-300'}`}>|</span>
+                  <span className="text-white/30">|</span>
                   <span>{currency}</span>
                 </button>
               );
@@ -413,14 +413,14 @@ export default function Navbar({
 
             {/* Recently viewed / Bookings */}
             <Link href="/tracking"
-              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90' : 'text-gray-700'}`}>
+              className="text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap text-white/90 hover:text-white">
               {t('nav.bookings')}
             </Link>
 
             {user ? (
               <div className="relative ml-1" ref={userMenuRef}>
                 <button type="button" onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${useWhite ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
+                  className="flex items-center gap-1.5 text-sm font-medium transition-colors text-white/90 hover:text-white">
                   <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                     {user.name[0].toUpperCase()}
                   </div>
@@ -474,9 +474,7 @@ export default function Navbar({
               <div className="flex items-center gap-1.5 ml-1">
                 {/* Sign up — no border, text only */}
                 <button type="button" onClick={() => openModal('register')}
-                  className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
-                    useWhite ? 'text-white/90 hover:text-white' : 'text-[#2534ff] hover:text-[#1a27e0]'
-                  }`}>
+                  className="text-sm font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap text-white/90 hover:text-white">
                   {t('nav.register')}
                 </button>
                 {/* Login — filled #2534ff */}
