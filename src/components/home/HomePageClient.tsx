@@ -24,27 +24,27 @@ import {
 const SERVICE_TABS = [
   // § 1 — Core services
   {
-    id: 'transfer', icon: Car, label: 'Private Transfers', badge: null, badgeColor: '', href: undefined, s: 1,
+    id: 'transfer', icon: Car, labelKey: 'svc.transfer', badge: null, badgeColor: '', href: undefined, s: 1,
     children: [
-      { id: 'airport',       icon: Plane,          label: 'Airport Transfer', href: '/airport-transfers' },
-      { id: 'city-to-city',  icon: ArrowLeftRight, label: 'City-to-City',     href: '/transfers' },
-      { id: 'charter',       icon: Clock,          label: 'Charter Rental',   href: '#' },
+      { id: 'airport',       icon: Plane,          labelKey: 'svc.airport',    href: '/airport-transfers' },
+      { id: 'city-to-city',  icon: ArrowLeftRight, labelKey: 'svc.cityToCity', href: '/transfers' },
+      { id: 'charter',       icon: Clock,          labelKey: 'svc.charter',    href: '#' },
     ],
   },
-  { id: 'tours',       icon: Compass,     label: 'Tours & Experiences', badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
-  { id: 'attractions', icon: Ticket,      label: 'Attraction Tickets',  badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
-  { id: 'group',       icon: Users,       label: 'Group Tours',         badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
+  { id: 'tours',       icon: Compass,     labelKey: 'svc.tours',       badge: null,       badgeColor: '',     href: '/tours',        s: 1 },
+  { id: 'attractions', icon: Ticket,      labelKey: 'svc.attractions', badge: null,       badgeColor: '',     href: '/attractions',  s: 1 },
+  { id: 'group',       icon: Users,       labelKey: 'svc.group',       badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
   // § 3 — Planning tools
-  { id: 'deals',       icon: Tag,         label: 'Deals & Offers',      badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
+  { id: 'deals',       icon: Tag,         labelKey: 'svc.deals',       badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
   // § 4 — Account / loyalty
-  { id: 'rewards',     icon: Gift,        label: 'Werest Rewards',      badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
+  { id: 'rewards',     icon: Gift,        labelKey: 'svc.rewards',     badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
 /* ── SEO routes grouped by category tab ─────────────────────────────────── */
 const SEO_ROUTE_TABS = [
   {
-    label: 'Popular transfers',
+    labelKey: 'seo.tab.popular',
     routes: [
       'Bangkok Airport to Bangkok', 'Bangkok to Pattaya', 'Phuket Airport to Patong',
       'Don Mueang Airport to Bangkok', 'Bangkok to Hua Hin', 'Phuket to Krabi',
@@ -54,7 +54,7 @@ const SEO_ROUTE_TABS = [
     ],
   },
   {
-    label: 'Airport transfers',
+    labelKey: 'seo.tab.airport',
     routes: [
       'Bangkok Airport to Bangkok', 'Don Mueang Airport to Bangkok', 'Phuket Airport to Patong',
       'Phuket Airport to Kata Beach', 'Phuket Airport to Khao Lak', 'Phuket Airport to Karon',
@@ -68,7 +68,7 @@ const SEO_ROUTE_TABS = [
     ],
   },
   {
-    label: 'City to city',
+    labelKey: 'seo.tab.city',
     routes: [
       'Bangkok to Pattaya', 'Bangkok to Hua Hin', 'Bangkok to Chiang Mai',
       'Bangkok to Koh Chang', 'Bangkok to Khao Yai', 'Bangkok to Surat Thani',
@@ -82,7 +82,7 @@ const SEO_ROUTE_TABS = [
     ],
   },
   {
-    label: 'Beach destinations',
+    labelKey: 'seo.tab.beach',
     routes: [
       'Bangkok to Pattaya', 'Bangkok to Hua Hin', 'Bangkok to Koh Chang',
       'Phuket Airport to Patong', 'Phuket Airport to Kata Beach', 'Phuket Airport to Karon',
@@ -94,7 +94,7 @@ const SEO_ROUTE_TABS = [
     ],
   },
   {
-    label: 'Northern Thailand',
+    labelKey: 'seo.tab.northern',
     routes: [
       'Chiang Mai to Chiang Rai', 'Chiang Mai to Pai', 'Chiang Mai to Sukhothai',
       'Chiang Mai to Golden Triangle', 'Chiang Mai to Lampang', 'Chiang Mai to White Temple',
@@ -373,13 +373,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Title */}
             <h1 className="text-[22px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
-              {activeService === 'transfer'    && <><span className="block mt-[10px]">Your Thailand Journey</span><span className="block">Starts Here</span></>}
-              {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
-              {activeService === 'attractions' && 'Top Attraction Tickets'}
-              {activeService === 'deals'       && 'Exclusive Deals & Offers'}
-              {activeService === 'dinner'      && 'Unforgettable Cruises'}
-              {activeService === 'group'       && 'Group Adventures Await'}
-              {activeService === 'rewards'     && 'Earn Werest Rewards'}
+              {activeService === 'transfer'    && <><span className="block mt-[10px]">{t('hero.transfer.title1')}</span><span className="block">{t('hero.transfer.title2')}</span></>}
+              {activeService === 'tours'       && t('hero.tours.title')}
+              {activeService === 'attractions' && t('hero.attractions.title')}
+              {activeService === 'deals'       && t('hero.deals.title')}
+              {activeService === 'dinner'      && t('hero.dinner.title')}
+              {activeService === 'group'       && t('hero.group.title')}
+              {activeService === 'rewards'     && t('hero.rewards.title')}
             </h1>
 
             {/* Search container — desktop only */}
@@ -389,7 +389,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 {/* Price-locked promise + payment logos */}
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
                   <span className="flex items-center gap-1.5 text-white/80 text-xs font-medium">
-                    <Lock className="w-3.5 h-3.5 text-green-400" />Price locked at booking — no surprises
+                    <Lock className="w-3.5 h-3.5 text-green-400" />{t('hero.priceLocked')}
                   </span>
                   <span className="text-white/20">│</span>
                   <span className="flex items-center gap-2 text-white/70 text-xs font-medium">
@@ -407,22 +407,22 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                 {activeService === 'rewards' && <Gift     className="w-12 h-12 text-amber-400 mx-auto mb-4" />}
                 {activeService === 'deals'   && <Tag      className="w-12 h-12 text-white mx-auto mb-4" />}
                 <h2 className="text-2xl font-extrabold text-white mb-2">
-                  {activeService === 'dinner'  ? 'Cruises'          :
-                   activeService === 'group'   ? 'Group Tours'      :
-                   activeService === 'deals'   ? 'Hot Deals'        : 'Werest Rewards'}
+                  {activeService === 'dinner'  ? t('hero.card.cruises') :
+                   activeService === 'group'   ? t('hero.card.group')   :
+                   activeService === 'deals'   ? t('hero.card.deals')   : t('hero.card.rewards')}
                 </h2>
                 <p className="text-white/75 text-sm mb-6">
                   {activeService === 'rewards'
-                    ? 'Earn points on every booking and redeem for free trips.'
+                    ? t('hero.card.rewardsDesc')
                     : activeService === 'deals'
-                    ? 'Browse our latest exclusive discounts.'
-                    : 'Coming soon — be the first to know when it launches.'}
+                    ? t('hero.card.dealsDesc')
+                    : t('hero.card.comingSoon')}
                 </p>
                 <Link
                   href={activeService === 'deals' ? '/deals' : `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392'}`}
                   className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-brand-50 transition-colors"
                 >
-                  {activeService === 'rewards' ? 'Learn More' : activeService === 'deals' ? 'View Deals' : 'Notify Me'}
+                  {activeService === 'rewards' ? t('hero.card.learnMore') : activeService === 'deals' ? t('hero.card.viewDeals') : t('hero.card.notifyMe')}
                 </Link>
               </div>
             )}
@@ -449,7 +449,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">{tab.label}</p>
+                <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">{t(tab.labelKey)}</p>
               </Link>
             );
           })}
@@ -513,7 +513,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="New user exclusive" className="bg-white pt-[30px] pb-7 lg:pt-7">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">New user exclusive</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('home.newUser')}</h2>
           {/* Mobile: single-row horizontal scroll with snap; sm+: 2-col grid; lg+: 4-col grid */}
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 lg:grid lg:grid-cols-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {NEW_USER_CARDS.map((c) => {
@@ -571,7 +571,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Section header */}
-          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">Where to next?</h2>
+          <h2 id="inspired-heading" className="text-xl font-bold text-gray-900 mb-5">{t('home.whereNext')}</h2>
 
           {/* Portrait card row */}
           <div className="relative">
@@ -675,7 +675,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section aria-labelledby="fleet-heading" className="pt-0 pb-6 lg:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
           <div className="text-center mb-4 lg:mb-8">
-            <h2 id="fleet-heading" className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">Vehicle Options</h2>
+            <h2 id="fleet-heading" className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">{t('home.vehicleOpts')}</h2>
           </div>
 
           <div className="bg-white rounded-2xl px-3 py-0 lg:px-8 lg:py-3">
@@ -706,7 +706,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   <p className="text-lg sm:text-xl font-semibold text-gray-800">{cls.name}</p>
                   <div className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold text-brand-600">
                     <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    Up to {cls.maxPax} passengers
+                    {t('home.upTo')} {cls.maxPax} {t('home.passengers')}
                   </div>
                 </button>
               );
@@ -782,13 +782,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       ════════════════════════════════════════════════════════════ */}
       <section aria-label="All transfer routes in Thailand" className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-5">Top private transfers in Thailand</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-5">{t('seo.h2')}</h2>
 
           {/* ── Category tabs ── */}
           <div className="flex gap-2 mb-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
             {SEO_ROUTE_TABS.map((tab, i) => (
               <button
-                key={tab.label}
+                key={tab.labelKey}
                 type="button"
                 onClick={() => setSeoTabIdx(i)}
                 className={`shrink-0 px-4 py-1.5 rounded-md text-sm font-medium transition-colors border ${
@@ -797,7 +797,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     : 'bg-white text-gray-600 border-gray-300 hover:border-[#2534ff] hover:text-[#2534ff]'
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             ))}
           </div>

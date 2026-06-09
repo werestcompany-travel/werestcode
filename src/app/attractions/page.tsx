@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useLocale } from '@/context/LocaleContext';
 import { Search, Star, ChevronRight, ChevronLeft, Heart, MapPin, Tag } from 'lucide-react';
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -192,6 +193,7 @@ function ActivitySection({
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function AttractionsPage() {
   const { openModal } = useAuthModal();
+  const { t } = useLocale();
   const { addItem: addRecentlyViewed } = useRecentlyViewed();
   const [search,        setSearch]        = useState('');
   const [wishlistSlugs, setWishlistSlugs] = useState<Set<string>>(new Set());
@@ -257,18 +259,17 @@ export default function AttractionsPage() {
             <nav className="flex items-center gap-2 text-xs text-gray-400 mb-5">
               <Link href="/" className="hover:text-gray-600">Home</Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-gray-700 font-medium">Attractions Tickets</span>
+              <span className="text-gray-700 font-medium">{t('attr.breadcrumb')}</span>
             </nav>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-3">
-              Discover the best theme parks,<br className="hidden sm:block" />
-              museums and more must-sees
+              {t('attr.hero.title')}
             </h1>
-            <p className="text-gray-500 mb-6">Book skip-the-line tickets, tours and experiences across Thailand.</p>
+            <p className="text-gray-500 mb-6">{t('attr.hero.sub')}</p>
             <div className="relative max-w-xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text" value={search} onChange={e => { setSearch(e.target.value); setShowAll(true); }}
-                placeholder="Search attractions, destinations…"
+                placeholder={t('attr.searchPlaceholder')}
                 className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#2534ff] focus:outline-none text-sm bg-white shadow-sm transition-colors"
               />
               {search && (
@@ -351,7 +352,7 @@ export default function AttractionsPage() {
                   onClick={() => setShowAll(true)}
                   className="flex items-center gap-2 border-2 border-gray-800 text-gray-800 font-bold text-sm px-8 py-3 rounded-full hover:bg-gray-900 hover:text-white transition-colors"
                 >
-                  🌍 Explore all experiences
+                  {t('attr.exploreAll')}
                 </button>
               </div>
             )}
@@ -361,9 +362,9 @@ export default function AttractionsPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4 text-[#2534ff]" />
-                  <h2 className="text-base font-bold text-gray-900">Promo codes</h2>
+                  <h2 className="text-base font-bold text-gray-900">{t('attr.promos')}</h2>
                 </div>
-                <button className="text-sm font-semibold text-[#2534ff] hover:underline">View all</button>
+                <button className="text-sm font-semibold text-[#2534ff] hover:underline">{t('attr.promos.viewAll')}</button>
               </div>
               <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
                 {PROMO_CODES.map(p => (
@@ -379,7 +380,7 @@ export default function AttractionsPage() {
 
             {/* ── POPULAR DESTINATIONS ──────────────────────────────────── */}
             <section className="px-4 sm:px-6 lg:px-8 pb-4">
-              <h2 className="text-base font-bold text-gray-900 mb-3">Popular destinations in Thailand</h2>
+              <h2 className="text-base font-bold text-gray-900 mb-3">{t('attr.popularDests')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {DESTINATION_CHIPS.map(d => (
                   <button
@@ -392,7 +393,7 @@ export default function AttractionsPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
                       <p className="text-white font-bold text-sm leading-tight">{d.name}</p>
-                      <p className="text-white/70 text-[10px]">{d.count} activities</p>
+                      <p className="text-white/70 text-[10px]">{d.count} {t('attr.activities')}</p>
                     </div>
                   </button>
                 ))}
@@ -401,17 +402,17 @@ export default function AttractionsPage() {
 
             {/* ── WHY BOOK WITH US ──────────────────────────────────────── */}
             <section className="mx-4 sm:mx-6 lg:mx-8 bg-gray-50 rounded-3xl p-6 sm:p-8 mb-4">
-              <h2 className="text-lg font-extrabold text-gray-900 mb-5 text-center">Why book with Werest Travel?</h2>
+              <h2 className="text-lg font-extrabold text-gray-900 mb-5 text-center">{t('attr.whyBook')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {[
-                  { emoji: '⚡', title: 'Instant confirmation', desc: 'Get your voucher immediately after booking.' },
-                  { emoji: '📱', title: 'Mobile vouchers',      desc: 'Show your phone at the entrance — no printing.' },
-                  { emoji: '🔒', title: 'Secure & trusted',     desc: 'SSL-encrypted payments. Trusted by 10,000+ travellers.' },
+                  { emoji: '⚡', titleKey: 'attr.why.instant.title', descKey: 'attr.why.instant.desc' },
+                  { emoji: '📱', titleKey: 'attr.why.mobile.title',  descKey: 'attr.why.mobile.desc' },
+                  { emoji: '🔒', titleKey: 'attr.why.secure.title',  descKey: 'attr.why.secure.desc' },
                 ].map(item => (
-                  <div key={item.title} className="flex flex-col items-center text-center gap-2">
+                  <div key={item.titleKey} className="flex flex-col items-center text-center gap-2">
                     <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-2xl">{item.emoji}</div>
-                    <h3 className="font-bold text-gray-900 text-sm">{item.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                    <h3 className="font-bold text-gray-900 text-sm">{t(item.titleKey)}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{t(item.descKey)}</p>
                   </div>
                 ))}
               </div>
@@ -425,9 +426,9 @@ export default function AttractionsPage() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {activeChip ? `${activeChip} experiences` : search ? `Results for "${search}"` : 'All experiences'}
+                  {activeChip ? `${activeChip} ${t('attr.experiences')}` : search ? `${t('attr.results')} "${search}"` : t('attr.allExp')}
                 </h2>
-                <p className="text-sm text-gray-400 mt-0.5">{filtered.length} activities</p>
+                <p className="text-sm text-gray-400 mt-0.5">{filtered.length} {t('attr.activities')}</p>
               </div>
               {(showAll && !search) && (
                 <button
@@ -435,7 +436,7 @@ export default function AttractionsPage() {
                   onClick={() => { setShowAll(false); setActiveChip(null); }}
                   className="text-sm font-semibold text-[#2534ff] hover:underline flex items-center gap-1"
                 >
-                  ← Back
+                  {t('attr.back')}
                 </button>
               )}
             </div>
@@ -456,8 +457,8 @@ export default function AttractionsPage() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20 text-gray-400">
                 <p className="text-5xl mb-3">🔍</p>
-                <p className="font-semibold text-gray-600">No activities found</p>
-                <p className="text-sm mt-1">Try a different search or destination</p>
+                <p className="font-semibold text-gray-600">{t('attr.noActivities')}</p>
+                <p className="text-sm mt-1">{t('attr.noActivitiesSub')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

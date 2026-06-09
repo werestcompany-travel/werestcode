@@ -74,17 +74,17 @@ const TRENDING_DESTINATIONS = [
   { rank: 4, name: 'Pattaya',    desc: 'Beach getaway | Bucket list destination | Family fun', img: 'https://images.unsplash.com/photo-1595435934349-8d929fbb7bc5?w=80&q=80' },
 ];
 
-const MOBILE_TRAVEL_OPTIONS = [
-  { label: 'Private Transfers',   Icon: Car,     href: '/transfers'    },
-  { label: 'Tours & Experiences', Icon: Compass, href: '/tours'        },
-  { label: 'Attraction Tickets',  Icon: Ticket,  href: '/attractions'  },
-  { label: 'Group Tours',         Icon: Users,   href: '/group-booking'},
-  { label: 'Deals & Offers',      Icon: Tag,     href: '/deals'        },
+const MOBILE_TRAVEL_OPTION_KEYS = [
+  { labelKey: 'svc.transfer',    Icon: Car,     href: '/transfers'    },
+  { labelKey: 'svc.tours',       Icon: Compass, href: '/tours'        },
+  { labelKey: 'svc.attractions', Icon: Ticket,  href: '/attractions'  },
+  { labelKey: 'svc.group',       Icon: Users,   href: '/group-booking'},
+  { labelKey: 'svc.deals',       Icon: Tag,     href: '/deals'        },
 ];
 
-const NAV_LINKS = [
-  { label: 'Transfers',    href: '/transfers'   },
-  { label: 'Things to do', href: '/attractions' },
+const NAV_LINK_KEYS = [
+  { labelKey: 'nav.transfers',  href: '/transfers'   },
+  { labelKey: 'nav.thingsToDo', href: '/attractions' },
 ];
 
 export default function Navbar({
@@ -372,10 +372,10 @@ export default function Navbar({
 
           {/* Primary nav links */}
           <nav className="hidden lg:flex items-center gap-0.5">
-            {NAV_LINKS.map(link => (
+            {NAV_LINK_KEYS.map(link => (
               <Link key={link.href} href={link.href}
                 className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </nav>
@@ -414,7 +414,7 @@ export default function Navbar({
             {/* Recently viewed / Bookings */}
             <Link href="/tracking"
               className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
-              Bookings
+              {t('nav.bookings')}
             </Link>
 
             {user ? (
@@ -477,7 +477,7 @@ export default function Navbar({
                     ? 'bg-white/15 hover:bg-white/25 text-white border border-white/40 backdrop-blur-sm'
                     : 'bg-brand-600 hover:bg-brand-700 text-white'
                 }`}>
-                Log in / Sign up
+                {t('nav.login')} / {t('nav.register')}
               </button>
             )}
           </div>
@@ -505,7 +505,7 @@ export default function Navbar({
               className="flex-1 min-w-0 flex items-center gap-2 rounded-full px-4 h-[42px] bg-gray-100 border border-transparent"
               aria-label="Search">
               <Search className="w-[18px] h-[18px] shrink-0 text-gray-400" />
-              <span className="text-[15px] font-normal text-gray-400 truncate">Where to?</span>
+              <span className="text-[15px] font-normal text-gray-400 truncate">{t('nav.whereTo')}</span>
             </button>
             {user ? (
               <Link href="/account" onClick={closeMobileMenu} className="p-1.5 rounded-lg shrink-0">
@@ -533,21 +533,21 @@ export default function Navbar({
               {!user ? (
                 <div className="bg-[#eef2ff] rounded-2xl p-5">
                   <h3 className="font-bold text-gray-900 text-[15px] leading-snug mb-3">
-                    Access savings just for you – in only one step!
+                    {t('nav.accessSavings')}
                   </h3>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-gray-600 mb-4">
-                    <span className="flex items-center gap-1.5">💰 Extraordinary Savings</span>
+                    <span className="flex items-center gap-1.5">{t('nav.savingsPerks1')}</span>
                     <span className="text-gray-300 hidden xs:block">|</span>
-                    <span className="flex items-center gap-1.5">⭐ Rewards for booking</span>
+                    <span className="flex items-center gap-1.5">{t('nav.savingsPerks2')}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     <Link href="/tracking" onClick={closeMobileMenu}
                       className="flex items-center justify-center h-11 rounded-xl border-2 border-brand-600 text-brand-600 font-bold text-sm">
-                      Search Bookings
+                      {t('nav.searchBookings')}
                     </Link>
                     <button type="button" onClick={() => { openModal('register'); closeMobileMenu(); }}
                       className="flex items-center justify-center h-11 rounded-xl bg-brand-600 text-white font-bold text-sm hover:bg-brand-700 transition-colors">
-                      Sign in/register
+                      {t('nav.signInRegister')}
                     </button>
                   </div>
                 </div>
@@ -572,11 +572,11 @@ export default function Navbar({
                   <div className="grid grid-cols-2 gap-2.5">
                     <Link href="/account" onClick={closeMobileMenu}
                       className="flex items-center justify-center h-11 rounded-xl border-2 border-brand-600 text-brand-600 font-bold text-sm">
-                      My Account
+                      {t('nav.myAccount')}
                     </Link>
                     <Link href="/account?tab=bookings" onClick={closeMobileMenu}
                       className="flex items-center justify-center h-11 rounded-xl bg-brand-600 text-white font-bold text-sm hover:bg-brand-700 transition-colors">
-                      My Bookings
+                      {t('nav.myBookings')}
                     </Link>
                   </div>
                 </div>
@@ -585,7 +585,7 @@ export default function Navbar({
 
             {/* ── Settings ── */}
             <div className="px-4 mt-7">
-              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">Settings</p>
+              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">{t('nav.settings')}</p>
 
               {/* Language row */}
               <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }, 230); }}
@@ -612,12 +612,12 @@ export default function Navbar({
 
             {/* ── Travel options ── */}
             <div className="px-4 mt-7">
-              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">Travel options</p>
-              {MOBILE_TRAVEL_OPTIONS.map(({ label, Icon, href }) => (
-                <Link key={label} href={href} onClick={closeMobileMenu}
+              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">{t('nav.travelOptions')}</p>
+              {MOBILE_TRAVEL_OPTION_KEYS.map(({ labelKey, Icon, href }) => (
+                <Link key={href} href={href} onClick={closeMobileMenu}
                   className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                   <Icon className="w-5 h-5 text-gray-700 shrink-0" />
-                  <span className="flex-1 text-[15px] text-gray-800 font-medium">{label}</span>
+                  <span className="flex-1 text-[15px] text-gray-800 font-medium">{t(labelKey)}</span>
                   <ChevronRight className="w-4 h-4 text-gray-300" />
                 </Link>
               ))}
@@ -625,41 +625,41 @@ export default function Navbar({
 
             {/* ── More ── */}
             <div className="px-4 mt-7">
-              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">More</p>
+              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">{t('nav.more')}</p>
 
               <Link href="/deals" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shrink-0">
                   <Gift className="w-3 h-3 text-white" />
                 </div>
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Deals & Rewards</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">{t('nav.dealsRewards')}</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
               <Link href="/help-center" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <Search className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Help Center</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">{t('nav.helpCenter')}</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
               <Link href="/contact" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <Headphones className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Contact Us</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">{t('nav.contactUs')}</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
               <Link href="/tracking" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <BookOpen className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">Manage Bookings</span>
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">{t('nav.manageBookings')}</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
               <button type="button" className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
                 <Smartphone className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">Download the app</span>
+                <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{t('nav.downloadApp')}</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </button>
 
@@ -667,7 +667,7 @@ export default function Navbar({
                 <button type="button" onClick={async () => { closeMobileMenu(); await handleLogout(); }}
                   className="flex items-center gap-3 w-full py-4 active:bg-red-50">
                   <LogOut className="w-5 h-5 text-red-500 shrink-0" />
-                  <span className="flex-1 text-left text-[15px] text-red-500 font-medium">Sign out</span>
+                  <span className="flex-1 text-left text-[15px] text-red-500 font-medium">{t('nav.signOut')}</span>
                 </button>
               )}
             </div>

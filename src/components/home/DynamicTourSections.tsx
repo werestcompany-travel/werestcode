@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Star, ChevronRight } from 'lucide-react'
 import { tours as allTours, formatTHB } from '@/lib/tours'
+import { useLocale } from '@/context/LocaleContext'
 
 const BADGE_BG: Record<string, string> = {
   'Best Seller': 'bg-orange-500',
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function DynamicTourSections({ selectedDest, cityName }: Props) {
+  const { t } = useLocale()
   const cityFilter = DEST_CITY[selectedDest] ?? ''
 
   const visibleTours = (
@@ -74,18 +76,18 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
         <div className="flex items-end justify-between mb-5 px-4 sm:px-6 lg:px-8">
           <div>
             <h2 className="text-xl font-bold text-gray-900">
-              Things to do in{' '}
+              {t('tours.thingsToDo')}{' '}
               <span className="text-brand-600">{cityName}</span>
             </h2>
             <p className="text-gray-400 text-sm mt-0.5">
-              Handpicked experiences — book instantly
+              {t('tours.handpicked')}
             </p>
           </div>
           <Link
             href={toursHref}
             className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0"
           >
-            See all <ChevronRight className="w-4 h-4" />
+            {t('tours.seeAll')} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -147,14 +149,14 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
                     <p className="font-bold text-gray-900 text-[14px] leading-snug line-clamp-2 group-hover:text-brand-700 transition-colors">
                       {tour.title}
                     </p>
-                    <p className="text-[11px] text-green-600 font-semibold">Available now</p>
+                    <p className="text-[11px] text-green-600 font-semibold">{t('tours.availableNow')}</p>
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
                       <span className="text-[11px] font-bold text-gray-800">
                         {tour.rating.toFixed(1)}
                       </span>
                       {tour.reviewCount > 0 && (
-                        <span className="text-[11px] text-gray-400">Reviews</span>
+                        <span className="text-[11px] text-gray-400">{t('tours.reviews')}</span>
                       )}
                     </div>
                     {minPrice > 0 && (
@@ -181,17 +183,16 @@ export default function DynamicTourSections({ selectedDest, cityName }: Props) {
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
             <p className="text-5xl mb-4">🗺️</p>
             <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Coming soon to {cityName}
+              {t('tours.comingSoon')} {cityName}
             </h3>
             <p className="text-gray-600 text-sm max-w-xs mb-6">
-              We&apos;re curating the best experiences in {cityName}. In the
-              meantime, explore our Bangkok tours.
+              {t('tours.comingSoonDesc1')} {cityName}. {t('tours.comingSoonDesc2')}
             </p>
             <Link
               href="/tours"
               className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
             >
-              Browse all experiences <ChevronRight className="w-4 h-4" />
+              {t('tours.browseAll')} <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         )}
