@@ -468,7 +468,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">{t(tab.labelKey)}</p>
+                <p className="text-[12.5px] font-semibold text-gray-700 text-center leading-tight px-1">{t(tab.labelKey)}</p>
               </Link>
             );
           })}
@@ -477,7 +477,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <div className="w-14 h-14 rounded-full bg-brand-600 flex items-center justify-center">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">Blog</p>
+            <p className="text-[12.5px] font-semibold text-gray-700 text-center leading-tight px-1">Blog</p>
           </Link>
         </div>
       </div>
