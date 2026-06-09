@@ -190,7 +190,7 @@ export default function AirportTransfersClient() {
       <main className="min-h-screen bg-white">
 
         {/* ════════ HERO ════════════════════════════════════════════════════ */}
-        <section className="relative overflow-hidden bg-[#05091a]" style={{ minHeight: 560 }}>
+        <section className="relative overflow-hidden bg-[#05091a] min-h-[580px] lg:min-h-[560px]">
           {/* Background image */}
           <div className="absolute inset-0">
             <Image
