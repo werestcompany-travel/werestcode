@@ -661,7 +661,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   onClick={() => setActiveVehicle(open ? null : cls.id)}
                   onMouseEnter={() => setActiveVehicle(cls.id)}
                   onMouseLeave={() => setActiveVehicle(null)}
-                  className="shrink-0 w-[78vw] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-3 px-4 rounded-2xl focus:outline-none"
+                  className="shrink-0 w-[73vw] snap-start lg:w-auto lg:max-w-none flex flex-col items-center text-center py-3 px-4 rounded-2xl focus:outline-none"
                   aria-label={`${cls.name} — up to ${cls.maxPax} passengers`}
                 >
                   <div className="relative w-full mb-3" style={{ height: 'clamp(182px, 29vw, 305px)' }}>
