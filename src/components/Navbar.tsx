@@ -374,7 +374,7 @@ export default function Navbar({
           <nav className="hidden lg:flex items-center gap-0.5">
             {NAV_LINK_KEYS.map(link => (
               <Link key={link.href} href={link.href}
-                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90' : 'text-gray-700'}`}>
                 {t(link.labelKey)}
               </Link>
             ))}
@@ -413,7 +413,7 @@ export default function Navbar({
 
             {/* Recently viewed / Bookings */}
             <Link href="/tracking"
-              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-brand-600 hover:bg-gray-50'}`}>
+              className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${useWhite ? 'text-white/90' : 'text-gray-700'}`}>
               {t('nav.bookings')}
             </Link>
 
@@ -471,14 +471,24 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <button type="button" onClick={() => openModal()}
-                className={`ml-1 text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap shadow-sm ${
-                  useWhite
-                    ? 'bg-white/15 hover:bg-white/25 text-white border border-white/40 backdrop-blur-sm'
-                    : 'bg-brand-600 hover:bg-brand-700 text-white'
-                }`}>
-                {t('nav.login')} / {t('nav.register')}
-              </button>
+              <div className="flex items-center gap-1.5 ml-1">
+                {/* Sign up — no border, text only */}
+                <button type="button" onClick={() => openModal('register')}
+                  className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                    useWhite ? 'text-white/90 hover:text-white' : 'text-[#2534ff] hover:text-[#1a27e0]'
+                  }`}>
+                  {t('nav.register')}
+                </button>
+                {/* Login — filled #2534ff */}
+                <button type="button" onClick={() => openModal('email')}
+                  className={`text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                    useWhite
+                      ? 'bg-white/20 hover:bg-white/30 text-white border border-white/40 backdrop-blur-sm'
+                      : 'bg-[#2534ff] hover:bg-[#1a27e0] text-white'
+                  }`}>
+                  {t('nav.login')}
+                </button>
+              </div>
             )}
           </div>
 

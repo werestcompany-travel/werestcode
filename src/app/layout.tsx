@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import { Plus_Jakarta_Sans, Noto_Sans_Thai } from 'next/font/google';
+import { Plus_Jakarta_Sans, Noto_Sans_Thai, Sarabun } from 'next/font/google';
 import './globals.css';
 
 // Plus Jakarta Sans — Uber Move-style geometric grotesque
@@ -17,6 +17,12 @@ const notoSansThai = Noto_Sans_Thai({
   variable: '--font-noto-thai',
   display: 'swap',
 });
+const sarabun = Sarabun({
+  subsets: ['thai', 'latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sarabun',
+  display: 'swap',
+});
 // Noto Sans SC loaded via <link> in metadata (next/font doesn't support chinese-simplified subset)
 const notoSansSCVariable = '--font-noto-sc';
 import { Toaster } from 'react-hot-toast';
@@ -25,6 +31,7 @@ import { LocaleProvider } from '@/context/LocaleContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
+import FontSwitcher from '@/components/FontSwitcher';
 import CookieConsent from '@/components/CookieConsent';
 import { ChatProvider } from '@/context/ChatContext';
 
@@ -90,7 +97,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const nonce = headersList.get('x-nonce') ?? ''
 
   return (
-    <html lang="en" className={`${inter.variable} ${notoSansThai.variable} ${notoSansSCVariable}`}>
+    <html lang="en" className={`${inter.variable} ${notoSansThai.variable} ${sarabun.variable} ${notoSansSCVariable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="color-scheme" content="light" />
@@ -139,6 +146,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Skip to main content
         </a>
         <LocaleProvider>
+          <FontSwitcher />
           <WishlistProvider>
             <AuthModalProvider>
               <ChatProvider>

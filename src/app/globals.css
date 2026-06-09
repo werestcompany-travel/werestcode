@@ -126,3 +126,10 @@
 .chat-prose p  { margin: 0.35em 0; }
 .chat-prose p:first-child { margin-top: 0; }
 .chat-prose p:last-child  { margin-bottom: 0; }
+
+
+/* ─── Thai language: switch to Sarabun font ─────────────────────────────── */
+html[data-lang="TH"] body,
+html[data-lang="TH"] * {
+  font-family: var(--font-sarabun), 'Sarabun', sans-serif !important;
+}
