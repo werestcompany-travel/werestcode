@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db'
 import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
 import { sendBookingConfirmationEmail, sendTourBookingConfirmationEmail } from '@/lib/email'
 import { sendCustomerBookingConfirmation, sendPostBookingUpsell } from '@/lib/whatsapp'
-import { awardPoints, calcPointsEarned } from '@/lib/loyalty'
 
 /** Map Payso/internal raw method strings to our canonical values. */
 const PAYMENT_METHOD_MAP: Record<string, string> = {
@@ -156,16 +155,6 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Award loyalty points (20 THB = 1 point) if user has an account
-        if (booking.userId) {
-          const pts = calcPointsEarned(booking.totalPrice)
-          if (pts > 0) {
-            awardPoints(booking.userId, pts, 'EARN',
-              `Earned ${pts} pts from transfer booking`,
-              booking.bookingRef,
-            ).catch(console.error)
-          }
-        }
       }
     }
 
@@ -190,17 +179,6 @@ export async function POST(req: NextRequest) {
 
         if (paymentStatus === 'PAID') {
           await recordPaymentPreference(tourBooking.customerEmail, tourBooking.paymentMethod)
-
-          // Award loyalty points
-          if (tourBooking.userId) {
-            const pts = calcPointsEarned(tourBooking.totalPrice)
-            if (pts > 0) {
-              awardPoints(tourBooking.userId, pts, 'EARN',
-                `Earned ${pts} pts from tour booking`,
-                tourBooking.bookingRef,
-              ).catch(console.error)
-            }
-          }
 
           // Send customer confirmation email + WhatsApp
           sendTourBookingConfirmationEmail({
@@ -246,16 +224,6 @@ export async function POST(req: NextRequest) {
       if (paymentStatus === 'PAID') {
         await recordPaymentPreference(attractionBooking.customerEmail, attractionBooking.paymentMethod)
 
-        // Award loyalty points
-        if (attractionBooking.userId) {
-          const pts = calcPointsEarned(attractionBooking.totalPrice)
-          if (pts > 0) {
-            awardPoints(attractionBooking.userId, pts, 'EARN',
-              `Earned ${pts} pts from attraction booking`,
-              attractionBooking.bookingRef,
-            ).catch(console.error)
-          }
-        }
       }
 
       console.log(`[payment/webhook] AttractionBooking ${attractionBooking.bookingRef} → ${paymentStatus}`)
