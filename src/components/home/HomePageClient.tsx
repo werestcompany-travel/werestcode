@@ -518,7 +518,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             <img
               src="/images/trustpilot-logo.png"
               alt="Trustpilot"
-              className="h-12 w-auto object-contain"
+              className="h-5 w-auto object-contain"
             />
           </div>
 
