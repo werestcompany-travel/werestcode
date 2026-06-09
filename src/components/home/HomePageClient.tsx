@@ -350,7 +350,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section aria-label="Hero" className="-mt-16 mb-0 lg:mb-[30px]">
 
         {/* ── Hero card ── */}
-        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '370px' }}>
+        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '320px' }}>
           {/* Background — Wat Rong Suea Ten (Blue Temple), Chiang Rai at blue hour */}
           <div className="absolute inset-0">
             <Image
@@ -581,7 +581,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                       src={dest.img}
                       alt={dest.name}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover transition-transform duration-500 lg:group-hover:scale-105"
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
                       unoptimized
                     />
