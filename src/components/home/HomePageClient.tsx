@@ -368,7 +368,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <section aria-label="Hero" className="-mt-16 lg:-mt-24 mb-0 lg:mb-[30px]">
 
         {/* ── Hero card ── */}
-        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '405px' }}>
+        <div className="flex flex-col items-center justify-start lg:justify-center relative lg:min-h-[680px]" style={{ minHeight: '395px' }}>
           {/* Background — Wat Rong Suea Ten (Blue Temple), Chiang Rai at blue hour */}
           <div className="absolute inset-0">
             <Image
