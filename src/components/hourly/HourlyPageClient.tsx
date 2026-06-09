@@ -251,7 +251,7 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
         {/* Content — desktop: floats to bottom via justify-end. Mobile: starts right after spacer. */}
         <div className="relative z-10 flex-1 flex flex-col justify-start lg:justify-end pb-10 lg:pb-14 w-full max-w-5xl mx-auto px-6">
           <div className="mb-5 lg:mb-8 text-left">
-            <h1 className="text-[33px] lg:text-5xl font-extrabold text-white leading-tight mb-3 max-w-2xl drop-shadow-md">
+            <h1 className="text-3xl lg:text-5xl font-extrabold text-white leading-tight mb-3 max-w-2xl drop-shadow-md">
               {hero.title}
             </h1>
             <p className="hidden lg:block text-white/85 text-base lg:text-lg max-w-xl leading-relaxed">
