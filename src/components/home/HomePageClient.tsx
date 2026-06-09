@@ -585,9 +585,9 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
                       unoptimized
                     />
-                    {/* #2534ff overlay — 30% opacity when selected */}
+                    {/* #2534ff overlay — 30% opacity when selected, desktop only */}
                     <div
-                      className="absolute inset-0 transition-opacity duration-300 pointer-events-none"
+                      className="absolute inset-0 transition-opacity duration-300 pointer-events-none hidden lg:block"
                       style={{ backgroundColor: '#2534ff', opacity: isSelected ? 0.3 : 0 }}
                     />
                   </div>
