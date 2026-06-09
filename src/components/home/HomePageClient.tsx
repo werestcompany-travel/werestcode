@@ -896,9 +896,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Werest logo */}
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#2534ff] flex items-center justify-center shadow-lg overflow-hidden p-2">
-                <Image src="/images/logo.png" alt="Werest" width={52} height={52} className="object-contain brightness-0 invert" unoptimized />
-              </div>
+              <Image src="/images/logo.png" alt="Werest" width={100} height={36} className="object-contain" unoptimized />
             </div>
 
             <h3 className="text-center text-lg font-extrabold text-gray-900 mb-1">Your exclusive discounts await!</h3>
