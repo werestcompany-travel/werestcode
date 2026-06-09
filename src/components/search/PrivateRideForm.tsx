@@ -455,13 +455,6 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
           </div>
         </div>
 
-        {/* SWAP */}
-        <div className="flex items-center shrink-0 -mx-1 z-10">
-          <button type="button" onClick={swap}
-            className="w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:border-[#2534ff] hover:text-[#2534ff] transition-colors text-gray-400 shadow-sm">
-            <ArrowLeftRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
         {/* TO */}
         <div className="flex items-center gap-2.5 flex-[2] min-w-0 px-[21px]">
