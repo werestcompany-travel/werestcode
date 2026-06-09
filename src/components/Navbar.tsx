@@ -143,8 +143,7 @@ export default function Navbar({
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 10);
-      if (y > lastScrollY.current && y > 80) setNavHidden(true);
-      else setNavHidden(false);
+      setNavHidden(false);
       lastScrollY.current = y;
     };
     onScroll();
