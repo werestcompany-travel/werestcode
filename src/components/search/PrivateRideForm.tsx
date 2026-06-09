@@ -397,12 +397,15 @@ export default function PrivateRideForm({ prefillRoute }: { prefillRoute?: Prefi
         </div>
       </div>
 
-      {/* Multi-city pill */}
+      {/* Multi-city inquiry link */}
       <div className="px-4 py-3 border-b border-gray-100">
-        <button type="button"
-          className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1.5 rounded-full transition-colors">
-          {t('form.multiCity')}
-        </button>
+        <a
+          href="/contact"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2534ff] hover:underline"
+        >
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/><path strokeLinecap="round" strokeLinejoin="round" d="M7 8H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h2"/></svg>
+          Travel many cities? Send us inquiry
+        </a>
       </div>
 
       {/* Error */}

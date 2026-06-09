@@ -18,7 +18,7 @@ import {
   Car, Plane, Users, ArrowRight,
   ArrowLeftRight, Luggage,
   Compass, Ticket, Ship, Gift, ChevronRight, Tag,
-  Clock, Lock, Shield,
+  Clock, Lock, Shield, X, Sparkles,
 } from 'lucide-react';
 
 /* ── Service sidebar tabs (with section groupings) ────────────────────────── */
@@ -250,6 +250,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
   const { openModal } = useAuthModal();
   const [blogTab,   setBlogTab]   = useState(0);
   const [seoTabIdx, setSeoTabIdx] = useState(0);
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
   const [prefillRoute, setPrefillRoute] = useState<{ from: string; to: string } | null>(null);
   const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
   const [activeService, setActiveService] = useState('transfer');
@@ -300,6 +301,21 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       })
       .catch(() => { /* silently use mock data */ });
   }, []);
+
+  /* ── Promo popup: show once per session ── */
+  useEffect(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    const dismissed = sessionStorage.getItem('werest_promo_dismissed');
+    if (!dismissed) {
+      const timer = setTimeout(() => setShowPromoPopup(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const dismissPromoPopup = () => {
+    setShowPromoPopup(false);
+    sessionStorage.setItem('werest_promo_dismissed', '1');
+  };
 
   /* ── Inspired slider arrows ── */
   useEffect(() => {
@@ -453,6 +469,13 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               </Link>
             );
           })}
+          {/* Blog — fills the 6th slot */}
+          <Link href="/blog" className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 rounded-full bg-brand-600 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-white" />
+            </div>
+            <p className="text-[11px] font-semibold text-gray-700 text-center leading-tight px-1">Blog</p>
+          </Link>
         </div>
       </div>
       </div>
@@ -517,6 +540,56 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
       <RecentlyViewedSection />
 
 
+
+      {/* ════════════════════════════════════════════════════════════
+          NEW USER EXCLUSIVE — coupon banner (desktop inline)
+      ════════════════════════════════════════════════════════════ */}
+      <section className="hidden lg:block bg-white pt-6 pb-2">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-[#2534ff]" />
+            <h2 className="text-xl font-bold text-gray-900">New user exclusive</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Coupon 1 */}
+            <div className="relative flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
+              style={{ boxShadow: '0 0 0 1.5px #e5e7eb' }}>
+              {/* dashed divider */}
+              <div className="absolute right-[120px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
+              {/* notch top */}
+              <div className="absolute right-[108px] -top-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
+              <div className="absolute right-[108px] -bottom-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
+              <div className="flex-1 pr-6">
+                <p className="text-lg font-extrabold text-gray-900">15% off</p>
+                <p className="text-sm text-gray-500 mt-0.5">Airport Transfers</p>
+                <Link href="/transfers" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                  Use
+                </Link>
+              </div>
+              <div className="w-[100px] flex items-center justify-center">
+                <Car className="w-12 h-12 text-red-400" />
+              </div>
+            </div>
+            {/* Coupon 2 */}
+            <div className="relative flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-5 overflow-hidden"
+              style={{ boxShadow: '0 0 0 1.5px #e5e7eb' }}>
+              <div className="absolute right-[120px] top-0 bottom-0 border-l-2 border-dashed border-gray-200 pointer-events-none" />
+              <div className="absolute right-[108px] -top-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
+              <div className="absolute right-[108px] -bottom-3 w-6 h-6 rounded-full bg-gray-100 border border-gray-200" />
+              <div className="flex-1 pr-6">
+                <p className="text-lg font-extrabold text-gray-900">10% off</p>
+                <p className="text-sm text-gray-500 mt-0.5">Tours &amp; Experiences</p>
+                <Link href="/tours" className="mt-3 inline-flex items-center justify-center px-5 py-1.5 bg-[#2534ff] hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                  Use
+                </Link>
+              </div>
+              <div className="w-[100px] flex items-center justify-center">
+                <Compass className="w-12 h-12 text-red-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ════════════════════════════════════════════════════════════
           WHERE TO NEXT — portrait city card row
@@ -800,6 +873,78 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
         <Footer />
         </main>
       </div>
+
+      {/* ════════════════════════════════════════════════════════════
+          NEW USER EXCLUSIVE — mobile popup (shows once per session)
+      ════════════════════════════════════════════════════════════ */}
+      {showPromoPopup && (
+        <div className="lg:hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
+          {/* backdrop */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissPromoPopup} />
+          {/* sheet */}
+          <div className="relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl px-5 pt-6 pb-8 z-10">
+            {/* close */}
+            <button
+              onClick={dismissPromoPopup}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+
+            {/* icon */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#2534ff] flex items-center justify-center shadow-lg">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+            </div>
+
+            <h3 className="text-center text-lg font-extrabold text-gray-900 mb-1">Your exclusive discounts await!</h3>
+            <p className="text-center text-sm text-gray-500 mb-5">New user offers just for you 🎉</p>
+
+            <div className="space-y-3 mb-5">
+              {/* Offer 1 */}
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                  <Car className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600">Airport transfer promo code</p>
+                  <p className="text-base font-extrabold text-gray-900">15% off</p>
+                </div>
+              </div>
+              {/* Offer 2 */}
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                  <Compass className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600">Tours &amp; Experiences promo code</p>
+                  <p className="text-base font-extrabold text-gray-900">10% off</p>
+                </div>
+              </div>
+              {/* Offer 3 */}
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                  <Ticket className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600">Attraction tickets promo code</p>
+                  <p className="text-base font-extrabold text-gray-900">10% off</p>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/contact"
+              onClick={dismissPromoPopup}
+              className="block w-full text-center bg-[#2534ff] hover:bg-blue-700 text-white font-extrabold text-base py-3.5 rounded-2xl transition-colors"
+            >
+              Claim My Discounts
+            </Link>
+          </div>
+        </div>
+      )}
 
     </Fragment>
   );
