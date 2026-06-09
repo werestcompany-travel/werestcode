@@ -878,11 +878,11 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           NEW USER EXCLUSIVE — mobile popup (shows once per session)
       ════════════════════════════════════════════════════════════ */}
       {showPromoPopup && (
-        <div className="lg:hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
+        <div className="lg:hidden fixed inset-0 z-[9999] flex items-center justify-center px-4">
           {/* backdrop */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissPromoPopup} />
-          {/* sheet */}
-          <div className="relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl px-5 pt-6 pb-8 z-10">
+          {/* card — centered on all mobile sizes */}
+          <div className="relative bg-white w-full max-w-sm rounded-3xl shadow-2xl px-5 pt-6 pb-8 z-10">
             {/* close */}
             <button
               onClick={dismissPromoPopup}
@@ -892,10 +892,10 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               <X className="w-4 h-4 text-gray-600" />
             </button>
 
-            {/* icon */}
+            {/* Werest logo */}
             <div className="flex items-center justify-center mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#2534ff] flex items-center justify-center shadow-lg">
-                <Sparkles className="w-7 h-7 text-white" />
+              <div className="w-16 h-16 rounded-2xl bg-[#2534ff] flex items-center justify-center shadow-lg overflow-hidden">
+                <Image src="/images/logo.png" alt="Werest" width={48} height={48} className="object-contain" unoptimized />
               </div>
             </div>
 
