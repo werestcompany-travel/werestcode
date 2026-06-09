@@ -471,16 +471,11 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 ml-1">
-                {/* Sign up — no border, text only */}
-                <button type="button" onClick={() => openModal('register')}
-                  className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${useWhite ? 'text-white/90 hover:text-white' : 'text-gray-800 hover:text-gray-900'}`}>
-                  {t('nav.register')}
-                </button>
-                {/* Login — filled #2534ff */}
+              <div className="flex items-center ml-1">
+                {/* Combined Sign up / Log in button */}
                 <button type="button" onClick={() => openModal('email')}
                   className="text-sm font-bold px-5 py-1.5 rounded-full transition-colors whitespace-nowrap bg-[#2534ff] hover:bg-[#1a27e0] text-white">
-                  {t('nav.login')}
+                  Sign up / Log in
                 </button>
               </div>
             )}
