@@ -373,7 +373,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
 
             {/* Title */}
             <h1 className="text-[22px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
-              {activeService === 'transfer'    && <><span className="block">Your Thailand Journey</span><span className="block">Starts Here</span></>}
+              {activeService === 'transfer'    && <><span className="block mt-[10px]">Your Thailand Journey</span><span className="block">Starts Here</span></>}
               {activeService === 'tours'       && 'Tours & Experiences in Thailand'}
               {activeService === 'attractions' && 'Top Attraction Tickets'}
               {activeService === 'deals'       && 'Exclusive Deals & Offers'}
