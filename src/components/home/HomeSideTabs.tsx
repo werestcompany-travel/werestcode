@@ -9,7 +9,7 @@ import {
   Plane, Utensils, Globe,
 } from 'lucide-react';
 
-type SideTabId = 'transfers' | 'tours' | 'attractions' | 'dinner-cruise' | 'group-tours' | 'rewards';
+type SideTabId = 'transfers' | 'tours' | 'attractions' | 'dinner-cruise' | 'group-tours';
 
 /* ─── Sidebar tab definition ─────────────────────────────────────────────── */
 interface SideTab {
@@ -27,9 +27,6 @@ const GROUPS: SideTab[][] = [
     { id: 'attractions',   label: 'Attractions',       icon: <Ticket className="w-[18px] h-[18px]" /> },
     { id: 'dinner-cruise', label: 'Dinner Cruise',     icon: <Utensils className="w-[18px] h-[18px]" />, badge: 'New', badgeColor: 'bg-emerald-500' },
     { id: 'group-tours',   label: 'Group Tours',       icon: <Users  className="w-[18px] h-[18px]" /> },
-  ],
-  [
-    { id: 'rewards',       label: 'Werest Rewards',   icon: <Gift   className="w-[18px] h-[18px]" />, badge: 'Earn Points', badgeColor: 'bg-[#2534ff]' },
   ],
 ];
 
@@ -185,54 +182,6 @@ function ComingSoonPanel({ emoji, title, desc, href, cta }: { emoji: string; tit
   );
 }
 
-function RewardsPanel() {
-  return (
-    <div>
-      <PanelHeader title="Werest Rewards" href="/account?tab=rewards" cta="My rewards" />
-
-      {/* Earn rates */}
-      <div className="px-5 py-4 border-b border-gray-50">
-        <p className="text-xs text-gray-500 mb-3">Earn points on every booking and unlock exclusive perks.</p>
-        <div className="flex gap-3">
-          {[
-            { emoji: '🚗', label: 'Transfer',    pts: '+100 pts' },
-            { emoji: '🎟️', label: 'Attraction',  pts: '+50 pts'  },
-            { emoji: '⭐', label: 'Review',      pts: '+25 pts'  },
-            { emoji: '🎁', label: 'First booking', pts: '+200 pts' },
-          ].map(e => (
-            <div key={e.label} className="flex-1 bg-gray-50 rounded-xl p-2.5 text-center">
-              <p className="text-lg">{e.emoji}</p>
-              <p className="text-[10px] text-gray-500 leading-tight mt-0.5">{e.label}</p>
-              <p className="text-xs font-extrabold text-[#2534ff] mt-0.5">{e.pts}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tier ladder */}
-      <div className="divide-y divide-gray-50">
-        {TIER_ROWS.map(t => (
-          <div key={t.label} className="flex items-center gap-3 px-5 py-2.5">
-            <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${t.g} flex items-center justify-center text-base shrink-0`}>
-              {t.emoji}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">{t.label}</p>
-              <p className="text-xs text-gray-400">{t.pts}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="px-5 py-4">
-        <Link href="/auth/register"
-          className="flex items-center justify-center gap-2 w-full bg-[#2534ff] hover:bg-[#1a27e0] text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
-          Join & start earning <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    </div>
-  );
-}
 
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 export default function HomeSideTabs() {
@@ -323,7 +272,6 @@ export default function HomeSideTabs() {
                 cta="Browse tours"
               />
             )}
-            {active === 'rewards' && <RewardsPanel />}
           </div>
         </div>
       </div>

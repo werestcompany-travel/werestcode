@@ -37,8 +37,6 @@ const SERVICE_TABS = [
   { id: 'group',       icon: Users,       labelKey: 'svc.group',       badge: null,       badgeColor: '',     href: '/group-booking',   s: 1 },
   // § 3 — Planning tools
   { id: 'deals',       icon: Tag,         labelKey: 'svc.deals',       badge: 'Hot',      badgeColor: 'red',  href: '/deals',     s: 3 },
-  // § 4 — Account / loyalty
-  { id: 'rewards',     icon: Gift,        labelKey: 'svc.rewards',     badge: 'Earn pts', badgeColor: 'amber',href: '/deals',     s: 4 },
 ];
 
 /* ── SEO route link grid ──────────────────────────────────────────────────── */
@@ -384,7 +382,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
               {activeService === 'deals'       && t('hero.deals.title')}
               {activeService === 'dinner'      && t('hero.dinner.title')}
               {activeService === 'group'       && t('hero.group.title')}
-              {activeService === 'rewards'     && t('hero.rewards.title')}
             </h1>
 
             {/* Search container — desktop only */}
