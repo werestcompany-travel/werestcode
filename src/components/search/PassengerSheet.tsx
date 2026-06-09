@@ -58,23 +58,9 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
     }
   }, [mode]);
 
-  const content = (
-    <div className={cn(
-      'bg-white',
-      mode === 'sheet'
-        ? 'rounded-t-3xl px-6 pt-5 pb-8 w-full'
-        : 'rounded-2xl border border-gray-200 shadow-2xl px-6 pt-5 pb-6 w-[360px]',
-    )}>
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-bold text-gray-900">Passengers</h3>
-        <button type="button" onClick={onClose}
-          className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
+  /* ── Shared sections ── */
+  const PassengerRows = (
+    <>
       {/* Adults */}
       <div className="flex items-center justify-between py-3 border-b border-gray-100">
         <div>
@@ -83,19 +69,17 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
         </div>
         <Counter value={value.adults} min={1} max={20} onChange={v => set({ adults: v })} />
       </div>
-
       {/* Children */}
-      <div className="flex items-center justify-between py-3 border-b border-gray-100 mb-5">
+      <div className="flex items-center justify-between py-3 border-b border-gray-100 mb-4">
         <div>
           <p className="text-sm font-semibold text-gray-900">Children</p>
           <p className="text-xs text-gray-400">Age 0–12</p>
         </div>
         <Counter value={value.children} min={0} max={10} onChange={v => set({ children: v })} />
       </div>
-
       {/* Bag allowance */}
       <p className="text-sm font-bold text-gray-900 mb-3">Each passenger is allowed</p>
-      <div className="space-y-3 mb-5">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-sm text-gray-700">
             <Luggage className="w-4 h-4 text-gray-500 shrink-0" />
@@ -115,23 +99,68 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
           </span>
         </div>
       </div>
+    </>
+  );
 
-      {/* Extra bags */}
-      <div className="border-t border-gray-100 pt-5 mb-5">
-        <p className="text-sm font-bold text-gray-900 mb-1">Need more space?</p>
-        <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-          You can add extra suitcases at no extra cost, but you might need a bigger vehicle.
-        </p>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold text-gray-900">Suitcases</p>
-            <p className="text-xs text-gray-400">One checked bag + one carry on</p>
+  const ExtraBagsSection = (
+    <>
+      <p className="text-sm font-bold text-gray-900 mb-1">Need more space?</p>
+      <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+        You can add extra suitcases at no extra cost, but you might need a bigger vehicle.
+      </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">Suitcases</p>
+          <p className="text-xs text-gray-400">One checked bag + one carry on</p>
+        </div>
+        <Counter value={value.extraBags} min={0} max={10} onChange={v => set({ extraBags: v })} />
+      </div>
+    </>
+  );
+
+  if (mode === 'dropdown') {
+    return (
+      <div className="absolute top-full right-0 mt-2 z-50">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
+          <div className="flex divide-x divide-gray-100">
+            {/* Left: passengers + bag allowance */}
+            <div className="px-5 pt-5 pb-6 w-[300px]">
+              {PassengerRows}
+            </div>
+            {/* Right: extra bags */}
+            <div className="px-5 pt-5 pb-6 w-[240px]">
+              {ExtraBagsSection}
+            </div>
           </div>
-          <Counter value={value.extraBags} min={0} max={10} onChange={v => set({ extraBags: v })} />
+          <div className="px-5 pb-5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full bg-[#2534ff] hover:bg-[#1420cc] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Done */}
+  /* ── Mobile single-column sheet ── */
+  const content = (
+    <div className="bg-white rounded-t-3xl px-6 pt-5 pb-8 w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-lg font-bold text-gray-900">Passengers</h3>
+        <button type="button" onClick={onClose}
+          className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      {PassengerRows}
+      <div className="border-t border-gray-100 pt-5 mt-5 mb-5">
+        {ExtraBagsSection}
+      </div>
       <button
         type="button"
         onClick={onClose}
@@ -141,14 +170,6 @@ export default function PassengerSheet({ value, onChange, onClose, mode = 'sheet
       </button>
     </div>
   );
-
-  if (mode === 'dropdown') {
-    return (
-      <div className="absolute top-full right-0 mt-2 z-50">
-        {content}
-      </div>
-    );
-  }
 
   /* Bottom sheet with backdrop */
   return (
