@@ -207,7 +207,7 @@ const T: Record<Lang, Strings> = {
     'wa.label': 'Chat on WhatsApp',
     /* hero service titles */
     'hero.transfer.title1': 'Your Thailand Journey',
-    'hero.transfer.title2': 'Starts Here',
+    'hero.transfer.title2': 'Starts Here!',
     'hero.tours.title':       'Tours & Experiences in Thailand',
     'hero.attractions.title': 'Top Attraction Tickets',
     'hero.deals.title':       'Exclusive Deals & Offers',
