@@ -373,7 +373,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <div id="hero-search-anchor" className="relative z-10 w-full max-w-7xl mx-auto px-4 lg:px-6 pt-20 pb-[140px] lg:pt-[141px] lg:pb-12 flex flex-col items-center gap-3 lg:gap-5 text-center self-start lg:self-center">
 
             {/* Title */}
-            <h1 className="text-[22px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
+            <h1 className="text-[42px] leading-snug lg:text-[34px] font-extrabold text-white tracking-tight">
               {activeService === 'transfer'    && <><span className="block mt-[10px]">{t('hero.transfer.title1')}</span><span className="block">{t('hero.transfer.title2')}</span></>}
               {activeService === 'tours'       && t('hero.tours.title')}
               {activeService === 'attractions' && t('hero.attractions.title')}
