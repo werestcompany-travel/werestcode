@@ -230,7 +230,7 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
       <Navbar transparent />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative -mt-16 min-h-[640px] lg:min-h-[650px] flex flex-col overflow-hidden">
+      <section className="relative -mt-16 min-h-[650px] lg:min-h-[650px] flex flex-col overflow-hidden">
         <Image
           src={hero.img}
           alt={hero.imgAlt}
