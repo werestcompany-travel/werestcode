@@ -10,9 +10,11 @@ import { useLocale } from '@/context/LocaleContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { type BlogPostSummary } from '@/lib/blog';
-import DynamicTourSections from '@/components/home/DynamicTourSections'
-import RecentlyViewedSection from '@/components/RecentlyViewedSection'
-import GoogleReviewsWidget from '@/components/GoogleReviewsWidget'
+import dynamic from 'next/dynamic'
+// Below-the-fold sections — lazy-loaded so they don't block the hero/search TTI
+const DynamicTourSections   = dynamic(() => import('@/components/home/DynamicTourSections'),   { ssr: false })
+const RecentlyViewedSection = dynamic(() => import('@/components/RecentlyViewedSection'),       { ssr: false })
+const GoogleReviewsWidget   = dynamic(() => import('@/components/GoogleReviewsWidget'),         { ssr: false })
 import {
   Star, CheckCircle2, BookOpen, Heart,
   Car, Plane, Users, ArrowRight,

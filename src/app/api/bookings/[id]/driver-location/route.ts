@@ -6,13 +6,17 @@ interface Params {
 }
 
 // ─── GET /api/bookings/[id]/driver-location ───────────────────────────────────
-// Public endpoint: customers poll this to see their driver's latest position.
+// Capability-URL endpoint (unguessable cuid): customers poll this to see their
+// driver's position. Location is only exposed while the trip is actually
+// active — never before the pickup window or after completion/cancellation.
+
+const ACTIVE_STATUSES = ['DRIVER_CONFIRMED', 'DRIVER_STANDBY', 'DRIVER_PICKED_UP'];
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const booking = await prisma.booking.findUnique({
       where: { id: params.id },
-      select: { driverId: true, currentStatus: true },
+      select: { driverId: true, currentStatus: true, pickupDate: true, pickupTime: true },
     });
 
     if (!booking) {
@@ -20,6 +24,22 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
 
     if (!booking.driverId) {
+      return NextResponse.json({ success: true, data: { available: false } });
+    }
+
+    // Only share location during an active trip…
+    if (!ACTIVE_STATUSES.includes(booking.currentStatus)) {
+      return NextResponse.json({ success: true, data: { available: false } });
+    }
+
+    // …and only within the trip window (3h before pickup → 24h after)
+    const [h, m] = (booking.pickupTime ?? '00:00').split(':').map(Number);
+    const pickupAt = new Date(booking.pickupDate);
+    pickupAt.setHours(h || 0, m || 0, 0, 0);
+    const now = Date.now();
+    const threeHoursBefore = pickupAt.getTime() - 3 * 60 * 60 * 1000;
+    const dayAfter         = pickupAt.getTime() + 24 * 60 * 60 * 1000;
+    if (now < threeHoursBefore || now > dayAfter) {
       return NextResponse.json({ success: true, data: { available: false } });
     }
 

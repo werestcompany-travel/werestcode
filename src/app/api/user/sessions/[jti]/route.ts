@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/user-auth';
+import { denylistJti } from '@/lib/session-denylist';
 
 // DELETE /api/user/sessions/[jti] — revoke a specific session
 export async function DELETE(
@@ -38,6 +39,8 @@ export async function DELETE(
       where: { jti },
       data: { revokedAt: new Date() },
     });
+    // Also denylist in Redis so Edge middleware blocks the token immediately
+    denylistJti(jti).catch(() => {});
 
     const res = NextResponse.json({ success: true });
 

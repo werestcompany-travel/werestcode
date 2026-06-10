@@ -5,7 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import BlogEditor, { BlogPost, BlogPostFormData } from '@/components/admin/BlogEditor';
+import dynamic from 'next/dynamic';
+import { BlogPost, BlogPostFormData } from '@/components/admin/BlogEditor';
+const BlogEditor = dynamic(() => import('@/components/admin/BlogEditor'), { ssr: false, loading: () => <div className="p-8 text-gray-400">Loading editor…</div> });
 
 export default function EditBlogPostPage() {
   const router   = useRouter();

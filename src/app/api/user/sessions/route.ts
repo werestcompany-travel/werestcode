@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/user-auth';
+import { denylistJti } from '@/lib/session-denylist';
 
 // GET /api/user/sessions — list all active sessions for the current user
 export async function GET(req: NextRequest) {
@@ -49,10 +50,18 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
+    // Collect active jtis first so we can denylist them in Redis (Edge middleware)
+    const active = await prisma.userSession.findMany({
+      where: { userId: user.id, revokedAt: null },
+      select: { jti: true },
+    });
+
     await prisma.userSession.updateMany({
       where: { userId: user.id },
       data: { revokedAt: new Date() },
     });
+
+    for (const s of active) denylistJti(s.jti).catch(() => {});
 
     const res = NextResponse.json({ success: true });
     // Clear the current session cookie

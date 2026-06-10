@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminToken } from '@/lib/auth'
 import { verifyUserTokenEdge } from '@/lib/user-auth'
+import { isJtiDenylisted } from '@/lib/session-denylist'
 
 // Paths that are exempt from CSRF validation even when they receive mutation requests
 const CSRF_EXEMPT = [
@@ -93,6 +94,14 @@ export async function middleware(req: NextRequest) {
         new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, req.url)
       )
     }
+    // Revocation check via Redis denylist (no-op when Upstash not configured)
+    if (await isJtiDenylisted(payload.jti as string | undefined)) {
+      const res = NextResponse.redirect(
+        new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, req.url)
+      )
+      res.cookies.set('user_token', '', { maxAge: 0, path: '/' })
+      return res
+    }
   }
 
   // ── CSRF validation for mutation API requests ─────────────────────────────
@@ -112,18 +121,27 @@ export async function middleware(req: NextRequest) {
     }
 
     // Edge-runtime safe constant-time comparison (no Node.js Buffer/crypto)
-    const enc = new TextEncoder()
-    const a = enc.encode(cookieToken)
-    const b = enc.encode(headerToken)
-    let diff = a.length === b.length ? 0 : 1
-    const len = Math.min(a.length, b.length)
-    for (let i = 0; i < len; i++) diff |= a[i] ^ b[i]
-    const valid = diff === 0
+    const valid = constantTimeEqual(cookieToken, headerToken)
     if (!valid) {
       return new NextResponse(JSON.stringify({ error: 'CSRF token invalid' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
       })
+    }
+
+    // HMAC binding: a signed token is "value.signature" — verify the signature
+    // so a non-browser client can't simply mint a matching cookie/header pair.
+    // Legacy unsigned tokens (no dot) are accepted during the 24h cookie
+    // rollover window; the response below reissues a signed one.
+    if (cookieToken.includes('.')) {
+      const [value, sig] = cookieToken.split('.')
+      const expected = await hmacHex(value)
+      if (!sig || !constantTimeEqual(sig, expected)) {
+        return new NextResponse(JSON.stringify({ error: 'CSRF token invalid' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
     }
   }
 
@@ -134,9 +152,11 @@ export async function middleware(req: NextRequest) {
   response.headers.set('Content-Security-Policy', cspHeader)
   response.headers.set('x-request-id', requestId)
 
-  // Set CSRF cookie if not already present
-  if (!req.cookies.get('csrf_token')) {
-    const csrfToken = crypto.randomUUID()
+  // Set CSRF cookie if not already present or not yet HMAC-signed
+  const existingCsrf = req.cookies.get('csrf_token')?.value
+  if (!existingCsrf || !existingCsrf.includes('.')) {
+    const value = crypto.randomUUID()
+    const csrfToken = `${value}.${await hmacHex(value)}`
     response.cookies.set('csrf_token', csrfToken, {
       httpOnly: false, // JS must read this for AJAX headers
       secure: process.env.NODE_ENV === 'production',
@@ -147,6 +167,35 @@ export async function middleware(req: NextRequest) {
   }
 
   return response
+}
+
+/** Edge-safe constant-time string comparison. */
+function constantTimeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder()
+  const ab = enc.encode(a)
+  const bb = enc.encode(b)
+  let diff = ab.length === bb.length ? 0 : 1
+  const len = Math.min(ab.length, bb.length)
+  for (let i = 0; i < len; i++) diff |= ab[i] ^ bb[i]
+  return diff === 0
+}
+
+/** HMAC-SHA256 of value with JWT_SECRET, hex-encoded (Web Crypto — Edge-compatible). */
+let hmacKeyPromise: Promise<CryptoKey> | null = null
+function getHmacKey(): Promise<CryptoKey> {
+  if (!hmacKeyPromise) {
+    const secret = process.env.JWT_SECRET ?? 'dev-only-secret'
+    hmacKeyPromise = crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    )
+  }
+  return hmacKeyPromise
+}
+async function hmacHex(value: string): Promise<string> {
+  const key = await getHmacKey()
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 export const config = {

@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import BlogEditor, { BlogPostFormData } from '@/components/admin/BlogEditor';
+import dynamic from 'next/dynamic';
+import { BlogPostFormData } from '@/components/admin/BlogEditor';
+const BlogEditor = dynamic(() => import('@/components/admin/BlogEditor'), { ssr: false, loading: () => <div className="p-8 text-gray-400">Loading editor…</div> });
 
 export default function NewBlogPostPage() {
   const router  = useRouter();
