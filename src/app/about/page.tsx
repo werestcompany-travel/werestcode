@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'About Us',
   description:
     "Learn about Werest Travel — Thailand's trusted private transfer and tour company. 5,000+ happy travelers, verified drivers, fixed prices across all of Thailand.",
-  alternates: { canonical: 'https://www.werest.com/about' },
+  alternates: { canonical: 'https://gowerest.com/about' },
 }
 
 const PILLARS = [

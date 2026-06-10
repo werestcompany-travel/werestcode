@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: 'Host Agencies | Werest Travel Partner Program',
   description:
     'The #1 preferred partner for host agencies in Thailand. Offer your clients private car transfers with sightseeing stops. Competitive commissions, dedicated support, and easy onboarding.',
-  alternates: { canonical: 'https://www.werest.com/host-agencies' },
+  alternates: { canonical: 'https://gowerest.com/host-agencies' },
 }
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */

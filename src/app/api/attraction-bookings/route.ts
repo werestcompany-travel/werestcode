@@ -5,7 +5,7 @@ import { getUserFromCookies } from '@/lib/user-auth';
 import { sendAttractionConfirmationEmail, sendAttractionBookingConfirmationEmail } from '@/lib/email';
 import { sendAttractionBookingToAdmin } from '@/lib/whatsapp';
 import { createAttractionBookingSchema } from '@/lib/validation/attraction';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 /**
  * Generates a unique attraction ticket booking reference.
@@ -35,7 +35,7 @@ async function generateAttractionRef(visitDate: Date, visitors: number): Promise
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`attraction-booking:${ip}`, LIMITS.booking);
+  const rl = await rateLimitAsync(`attraction-booking:${ip}`, LIMITS.booking);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many booking requests. Please try again later.' },

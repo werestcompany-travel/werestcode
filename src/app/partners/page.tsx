@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: 'Affiliate & Partner Program | Werest Travel',
   description:
     'Join the Werest Travel partner program. Earn commission on every transfer and tour booking you refer. Up to 8% commission, real-time tracking, monthly payouts.',
-  alternates: { canonical: 'https://www.werest.com/partners' },
+  alternates: { canonical: 'https://gowerest.com/partners' },
 };
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */

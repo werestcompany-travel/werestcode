@@ -4,11 +4,11 @@ export const metadata: Metadata = {
   title: 'Help Center | Werest Travel',
   description:
     'Find answers to common questions about private transfers, airport pickups, tours, payments, cancellations, and more. Search our help articles or contact our support team.',
-  alternates: { canonical: 'https://www.werest.com/help-center' },
+  alternates: { canonical: 'https://gowerest.com/help-center' },
   openGraph: {
     title: 'Help Center | Werest Travel',
     description: 'Find answers to your questions about Werest Travel services in Thailand.',
-    url: 'https://www.werest.com/help-center',
+    url: 'https://gowerest.com/help-center',
     siteName: 'Werest Travel',
     locale: 'en_US',
     type: 'website',

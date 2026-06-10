@@ -19,7 +19,7 @@ function toICalDate(date: Date): string {
 }
 
 export function generateICalFile(b: ICalBooking): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const vehicleLabel = (VEHICLE_LABELS as Record<string, string>)[b.vehicleType] ?? b.vehicleType;
   const dateStr = formatDate(typeof b.pickupDate === 'string' ? b.pickupDate : b.pickupDate.toISOString());
 
@@ -32,7 +32,7 @@ export function generateICalFile(b: ICalBooking): string {
   const now = toICalDate(new Date());
   const start = toICalDate(startDate);
   const end = toICalDate(endDate);
-  const uid = `${b.bookingRef}@werest.com`;
+  const uid = `${b.bookingRef}@gowerest.com`;
 
   return [
     'BEGIN:VCALENDAR',
@@ -57,7 +57,7 @@ export function generateICalFile(b: ICalBooking): string {
 
 export function buildGoogleCalendarUrl(b: ICalBooking): string {
   const vehicleLabel = (VEHICLE_LABELS as Record<string, string>)[b.vehicleType] ?? b.vehicleType;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
   const [hours, minutes] = b.pickupTime.split(':').map(Number);
   const baseDate = typeof b.pickupDate === 'string' ? new Date(b.pickupDate) : new Date(b.pickupDate);
@@ -81,7 +81,7 @@ export function buildGoogleCalendarUrl(b: ICalBooking): string {
 
 export function buildOutlookCalendarUrl(b: ICalBooking): string {
   const vehicleLabel = (VEHICLE_LABELS as Record<string, string>)[b.vehicleType] ?? b.vehicleType;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
   const [hours, minutes] = b.pickupTime.split(':').map(Number);
   const baseDate = typeof b.pickupDate === 'string' ? new Date(b.pickupDate) : new Date(b.pickupDate);

@@ -372,7 +372,7 @@ export async function sendPostBookingUpsell(params: {
   const tour = getUpsellTour(params.destination);
   if (!tour) return;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const tourUrl = `${appUrl}/tours/${tour.slug}?ref=${params.bookingRef}`;
 
   const message =

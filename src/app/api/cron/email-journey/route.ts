@@ -24,8 +24,8 @@ import {
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const FROM    = `${process.env.NEXT_PUBLIC_COMPANY_NAME ?? 'Werest Travel'} <noreply@${process.env.NEXT_PUBLIC_EMAIL_DOMAIN ?? 'werest.com'}>`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+const FROM    = `${process.env.NEXT_PUBLIC_COMPANY_NAME ?? 'Werest Travel'} <noreply@${process.env.NEXT_PUBLIC_EMAIL_DOMAIN ?? 'gowerest.com'}>`;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
 const MAX_PER_RUN = 50;
 

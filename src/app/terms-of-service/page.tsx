@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Terms of Service | Werest Travel',
   description:
     'Read the Terms of Service for Werest Travel — covering bookings, payments, cancellations, and your responsibilities when using our travel services in Thailand.',
-  alternates: { canonical: 'https://www.werest.com/terms-of-service' },
+  alternates: { canonical: 'https://gowerest.com/terms-of-service' },
 }
 
 // ─── Section heading helper ────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export default function TermsOfServicePage() {
           {/* Intro */}
           <p className="text-gray-700 leading-relaxed text-[15px] mb-10">
             These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the Werest Travel website at{' '}
-            <strong>werest.com</strong> and all travel services offered through it. By accessing our website
+            <strong>gowerest.com</strong> and all travel services offered through it. By accessing our website
             or making a booking, you agree to be bound by these Terms. Please read them carefully before
             proceeding.
           </p>

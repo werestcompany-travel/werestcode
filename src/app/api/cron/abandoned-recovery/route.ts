@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendAbandonedBookingEmail } from '@/lib/email';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
 // ─── GET /api/cron/abandoned-recovery ────────────────────────────────────────
 // Vercel Cron: runs every hour ("0 * * * *").

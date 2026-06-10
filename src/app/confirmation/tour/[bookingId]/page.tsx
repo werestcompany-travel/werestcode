@@ -31,7 +31,7 @@ export default async function TourConfirmationPage({ params }: Props) {
 
   const tour = await getTourBySlug(booking.tourSlug);
 
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const verifyUrl = `${appUrl}/confirmation/tour/${booking.id}`;
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
     width: 180, margin: 1,

@@ -12,11 +12,11 @@ export const metadata: Metadata = {
     'Thailand travel agency', 'custom tour package Thailand',
   ],
   alternates: {
-    canonical: 'https://www.werest.com/inquiry',
+    canonical: 'https://gowerest.com/inquiry',
   },
   openGraph: {
     type: 'website',
-    url: 'https://www.werest.com/inquiry',
+    url: 'https://gowerest.com/inquiry',
     title: 'Group Tour Inquiry — Custom Thailand Tours | Werest Travel',
     description:
       'Plan your perfect group tour across Thailand. Tell us your dream itinerary — our local experts craft a personalised trip within 24 hours.',
@@ -53,10 +53,10 @@ export default function InquiryPage() {
     '@graph': [
       {
         '@type': 'TravelAgency',
-        '@id': 'https://www.werest.com/#organization',
+        '@id': 'https://gowerest.com/#organization',
         name: 'Werest Travel',
-        url: 'https://www.werest.com',
-        logo: 'https://www.werest.com/images/logo.png',
+        url: 'https://gowerest.com',
+        logo: 'https://gowerest.com/images/logo.png',
         description:
           'Premium travel agency in Thailand specialising in private transfers and custom group tours.',
         address: {
@@ -69,13 +69,13 @@ export default function InquiryPage() {
           contactType: 'customer service',
           availableLanguage: ['English', 'Thai', 'Chinese'],
         },
-        sameAs: ['https://www.werest.com'],
+        sameAs: ['https://gowerest.com'],
       },
       {
         '@type': 'Service',
-        '@id': 'https://www.werest.com/inquiry#service',
+        '@id': 'https://gowerest.com/inquiry#service',
         name: 'Custom Group Tour Planning',
-        provider: { '@id': 'https://www.werest.com/#organization' },
+        provider: { '@id': 'https://gowerest.com/#organization' },
         serviceType: 'Group Tour',
         areaServed: {
           '@type': 'Country',
@@ -89,21 +89,21 @@ export default function InquiryPage() {
           priceCurrency: 'USD',
           description: 'Custom pricing based on group size, duration, and selected activities.',
         },
-        url: 'https://www.werest.com/inquiry',
+        url: 'https://gowerest.com/inquiry',
       },
       {
         '@type': 'WebPage',
-        '@id': 'https://www.werest.com/inquiry#webpage',
-        url: 'https://www.werest.com/inquiry',
+        '@id': 'https://gowerest.com/inquiry#webpage',
+        url: 'https://gowerest.com/inquiry',
         name: 'Group Tour Inquiry — Custom Thailand Tours | Werest Travel',
         description:
           'Plan your perfect group tour across Thailand. Tell us your dream itinerary — our local experts craft a personalised trip within 24 hours.',
-        isPartOf: { '@id': 'https://www.werest.com/#organization' },
+        isPartOf: { '@id': 'https://gowerest.com/#organization' },
         breadcrumb: {
           '@type': 'BreadcrumbList',
           itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.werest.com' },
-            { '@type': 'ListItem', position: 2, name: 'Group Tour Inquiry', item: 'https://www.werest.com/inquiry' },
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://gowerest.com' },
+            { '@type': 'ListItem', position: 2, name: 'Group Tour Inquiry', item: 'https://gowerest.com/inquiry' },
           ],
         },
       },

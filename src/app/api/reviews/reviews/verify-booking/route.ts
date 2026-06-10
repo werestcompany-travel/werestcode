@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import { rateLimit, getIP } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP } from '@/lib/rate-limit';
 
 // 10 attempts per 15 minutes per IP
 const VERIFY_LIMIT = { limit: 10, windowSec: 60 * 15 };
@@ -25,7 +25,7 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest) {
   // Rate-limit by IP
   const ip = getIP(req);
-  const rl = rateLimit(`verify-booking:${ip}`, VERIFY_LIMIT);
+  const rl = await rateLimitAsync(`verify-booking:${ip}`, VERIFY_LIMIT);
   if (!rl.allowed) {
     return NextResponse.json({ verified: false, error: 'Too many attempts. Please try again later.' }, { status: 429 });
   }

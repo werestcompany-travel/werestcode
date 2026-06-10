@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 import { getUserFromCookies } from '@/lib/user-auth';
 
 const createReviewSchema = z.object({
@@ -24,7 +24,7 @@ const createReviewSchema = z.object({
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
   // Reuse booking rate limit: max 20 per hour per IP (reviews are rare)
-  const rl = rateLimit(`review:${ip}`, LIMITS.booking);
+  const rl = await rateLimitAsync(`review:${ip}`, LIMITS.booking);
   if (!rl.allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

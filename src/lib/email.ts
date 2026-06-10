@@ -3,8 +3,8 @@ import { formatCurrency, formatDate, VEHICLE_LABELS } from './utils';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const FROM = `${process.env.NEXT_PUBLIC_COMPANY_NAME ?? 'Werest Travel'} <noreply@${process.env.NEXT_PUBLIC_EMAIL_DOMAIN ?? 'werest.com'}>`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+const FROM = `${process.env.NEXT_PUBLIC_COMPANY_NAME ?? 'Werest Travel'} <noreply@${process.env.NEXT_PUBLIC_EMAIL_DOMAIN ?? 'gowerest.com'}>`;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
 function escapeHtml(s: string): string {
   return s
@@ -75,7 +75,7 @@ function baseLayout(title: string, body: string): string {
       <tr>
         <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;padding:20px 36px;text-align:center;">
           <p style="margin:0 0 6px;color:#9ca3af;font-size:12px;">
-            <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;font-weight:600;">werest.com</a>
+            <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;font-weight:600;">gowerest.com</a>
             &nbsp;·&nbsp; Bangkok, Thailand
             &nbsp;·&nbsp; <a href="mailto:werestcompany@gmail.com" style="color:#9ca3af;text-decoration:none;">werestcompany@gmail.com</a>
           </p>
@@ -97,7 +97,7 @@ function baseLayout(title: string, body: string): string {
 export async function sendVerificationEmail(params: {
   to:        string;
   name:      string;
-  verifyUrl: string; // full URL, e.g. https://www.werest.com/api/user/verify-email?token=xxx
+  verifyUrl: string; // full URL, e.g. https://gowerest.com/api/user/verify-email?token=xxx
 }): Promise<void> {
   if (!resend) {
     console.warn('[email] Resend not configured — verification email not sent');
@@ -716,7 +716,7 @@ export async function sendTourBookingConfirmationEmail(booking: TourBookingConfi
     </p>
     <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
       You're receiving this email because you made a booking with Werest Travel.<br/>
-      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+      <a href="https://gowerest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
     </p>
   `;
 
@@ -812,7 +812,7 @@ export async function sendAttractionBookingConfirmationEmail(booking: Attraction
     </p>
     <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;">
       You're receiving this email because you made a booking with Werest Travel.<br/>
-      <a href="https://www.werest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
+      <a href="https://gowerest.com/unsubscribe?email=${encodeURIComponent(booking.customerEmail)}" style="color:#9ca3af;">Unsubscribe</a>
     </p>
   `;
 
@@ -1188,7 +1188,7 @@ export async function sendAbandonedBookingEmail(params: {
       <a href="${resumeUrl}" style="display:inline-block;background:#2534ff;color:#ffffff;font-weight:800;font-size:16px;padding:16px 44px;border-radius:14px;text-decoration:none;letter-spacing:-0.3px;">Complete Your Booking →</a>
     </div>
 
-    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:12px 0 0;">This link expires in 24 hours. After that, you can start a new booking at <a href="${APP_URL}" style="color:#2534ff;">werest.com</a></p>
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin:12px 0 0;">This link expires in 24 hours. After that, you can start a new booking at <a href="${APP_URL}" style="color:#2534ff;">gowerest.com</a></p>
   `;
 
   try {

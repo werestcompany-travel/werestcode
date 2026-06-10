@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 import { sendInquiryConfirmationEmail } from '@/lib/email';
 
 const InquirySchema = z.object({
@@ -72,7 +72,7 @@ function buildInquiryMessage(data: z.infer<typeof InquirySchema>, ref: string): 
 export async function POST(req: NextRequest) {
   // Rate limiting
   const ip = getIP(req);
-  const rl = rateLimit(`inquiry:${ip}`, LIMITS.inquiry);
+  const rl = await rateLimitAsync(`inquiry:${ip}`, LIMITS.inquiry);
   if (!rl.allowed) {
     return NextResponse.json(
       { success: false, error: 'Too many requests. Please try again later.' },

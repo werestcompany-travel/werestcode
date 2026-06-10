@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import PrivateTransferClient from '@/components/home/PrivateTransferClient';
 
-const SITE_URL = 'https://www.werest.com';
+const SITE_URL = 'https://gowerest.com';
 
 export const metadata: Metadata = {
   title: 'Private Transfer Thailand — Airport & City Transfers | Werest Travel',

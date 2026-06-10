@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Cancellation Policy | Werest Travel',
   description:
     'Werest Travel cancellation and refund policy. Free cancellation up to 24 hours before your transfer or tour.',
-  alternates: { canonical: 'https://www.werest.com/cancellation-policy' },
+  alternates: { canonical: 'https://gowerest.com/cancellation-policy' },
 }
 
 // ─── Section helper ────────────────────────────────────────────────────────────

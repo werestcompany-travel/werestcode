@@ -17,12 +17,12 @@ export const metadata: Metadata = {
   title: 'Thailand Travel Blog — Tips, Guides & Transfer Advice | Werest',
   description:
     'Discover expert travel guides for Bangkok, Pattaya, Phuket, Krabi and beyond. Practical tips, transfer advice and destination inspiration from the Werest Travel team.',
-  alternates: { canonical: 'https://www.werest.com/blog' },
+  alternates: { canonical: 'https://gowerest.com/blog' },
   openGraph: {
     type: 'website',
     title: 'Thailand Travel Blog — Tips, Guides & Transfer Advice | Werest',
     description: 'Expert travel guides for Bangkok, Pattaya, Phuket, Krabi and beyond.',
-    url: 'https://www.werest.com/blog',
+    url: 'https://gowerest.com/blog',
   },
 }
 

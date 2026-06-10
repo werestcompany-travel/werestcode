@@ -36,7 +36,10 @@ export function generateBookingRef(): string {
   const year = now.getFullYear().toString().slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  const rand = Math.floor(Math.random() * 9000) + 1000;
+  // Crypto-strength randomness (Web Crypto — works in Node, Edge and browser)
+  const buf = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(buf);
+  const rand = 1000 + (buf[0] % 9000);
   return `WR-${year}${month}${day}-${rand}`;
 }
 

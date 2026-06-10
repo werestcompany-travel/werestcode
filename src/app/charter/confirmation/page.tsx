@@ -100,8 +100,8 @@ function CharterConfirmationInner() {
           {/* Footer note */}
           <p className="text-center text-xs text-gray-400 mt-6">
             Questions? Email us at{' '}
-            <a href="mailto:info@werest.com" className="text-brand-600 hover:underline">
-              info@werest.com
+            <a href="mailto:info@gowerest.com" className="text-brand-600 hover:underline">
+              info@gowerest.com
             </a>
           </p>
         </div>

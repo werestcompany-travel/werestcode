@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
 import { sendBookingConfirmationEmail, sendTourBookingConfirmationEmail } from '@/lib/email'
 import { sendCustomerBookingConfirmation, sendPostBookingUpsell } from '@/lib/whatsapp'
+import { fireAndForget } from '@/lib/fire-and-forget'
 
 /** Map Payso/internal raw method strings to our canonical values. */
 const PAYMENT_METHOD_MAP: Record<string, string> = {
@@ -131,9 +132,9 @@ export async function POST(req: NextRequest) {
             totalPrice:     fullBooking.totalPrice,
             specialNotes:   fullBooking.specialNotes,
           }
-          sendBookingConfirmationEmail(emailData).catch(console.error)
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com'
-          sendCustomerBookingConfirmation(
+          fireAndForget(sendBookingConfirmationEmail(emailData), 'payment-confirmation-email', { bookingRef: fullBooking.bookingRef })
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com'
+          fireAndForget(sendCustomerBookingConfirmation(
             fullBooking.customerPhone,
             fullBooking.customerName,
             fullBooking.bookingRef,
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
             fullBooking.pickupTime,
             fullBooking.pickupAddress,
             `${appUrl}/tracking`,
-          ).catch(console.error)
+          ), 'payment-confirmation-whatsapp', { bookingRef: fullBooking.bookingRef })
 
           // Fire-and-forget upsell message
           if (fullBooking.customerPhone && fullBooking.dropoffAddress) {
@@ -168,6 +169,15 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ success: true })
         }
 
+        // Amount verification: paid amount must match booking total (±1 THB tolerance)
+        if (paymentStatus === 'PAID' && Math.abs(Number(amount) - tourBooking.totalPrice) > 1) {
+          console.error(
+            `[payment/webhook] Amount mismatch TourBooking ${orderId}: ` +
+            `received ฿${amount}, expected ฿${tourBooking.totalPrice}`,
+          )
+          return NextResponse.json({ success: false, error: 'Amount mismatch' }, { status: 400 })
+        }
+
         await prisma.tourBooking.update({
           where: { id: tourBooking.id },
           data: {
@@ -181,7 +191,7 @@ export async function POST(req: NextRequest) {
           await recordPaymentPreference(tourBooking.customerEmail, tourBooking.paymentMethod)
 
           // Send customer confirmation email + WhatsApp
-          sendTourBookingConfirmationEmail({
+          fireAndForget(sendTourBookingConfirmationEmail({
             bookingRef:    tourBooking.bookingRef,
             customerName:  tourBooking.customerName,
             customerEmail: tourBooking.customerEmail,
@@ -195,7 +205,7 @@ export async function POST(req: NextRequest) {
             childPrice:    tourBooking.childPrice,
             totalPrice:    tourBooking.totalPrice,
             notes:         tourBooking.notes,
-          }).catch(err => console.error('[payment/webhook] TourBooking email error:', err))
+          }), 'tour-confirmation-email', { bookingRef: tourBooking.bookingRef })
         }
 
         console.log(`[payment/webhook] TourBooking ${orderId} → ${paymentStatus}`)
@@ -209,6 +219,15 @@ export async function POST(req: NextRequest) {
       if (attractionBooking.paymentStatus === 'PAID' && paymentStatus === 'PAID') {
         console.log(`[payment/webhook] AttractionBooking ${attractionBooking.bookingRef} already PAID — skipping (idempotent)`)
         return NextResponse.json({ success: true })
+      }
+
+      // Amount verification: paid amount must match booking total (±1 THB tolerance)
+      if (paymentStatus === 'PAID' && Math.abs(Number(amount) - attractionBooking.totalPrice) > 1) {
+        console.error(
+          `[payment/webhook] Amount mismatch AttractionBooking ${attractionBooking.bookingRef}: ` +
+          `received ฿${amount}, expected ฿${attractionBooking.totalPrice}`,
+        )
+        return NextResponse.json({ success: false, error: 'Amount mismatch' }, { status: 400 })
       }
 
       await prisma.attractionBooking.update({

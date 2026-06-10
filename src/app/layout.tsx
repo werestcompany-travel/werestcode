@@ -42,7 +42,7 @@ const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
 
 /* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.werest.com'),
+  metadataBase: new URL('https://gowerest.com'),
   title: {
     default:  'Werest Travel — Private Transfers & Day Trips in Thailand',
     template: '%s | Werest Travel',
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     'Phuket private transfer', 'Chiang Mai day trip', 'Thailand tour booking',
   ],
   applicationName: 'Werest Travel',
-  authors: [{ name: 'Werest Travel', url: 'https://www.werest.com' }],
+  authors: [{ name: 'Werest Travel', url: 'https://gowerest.com' }],
   creator: 'Werest Travel',
   publisher: 'Werest Travel',
   robots: {
@@ -114,9 +114,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               '@type': ['TravelAgency', 'LocalBusiness'],
               name: 'Werest Travel',
               description: 'Private transfers, day tours and attraction tickets across Thailand. Fixed prices, professional drivers, instant confirmation.',
-              url: 'https://www.werest.com',
-              logo: 'https://www.werest.com/icon-512.png',
-              image: 'https://www.werest.com/og-default.jpg',
+              url: 'https://gowerest.com',
+              logo: 'https://gowerest.com/icon-512.png',
+              image: 'https://gowerest.com/og-default.jpg',
               telephone: '+66621871392',
               email: 'werestcompany@gmail.com',
               address: { '@type': 'PostalAddress', addressCountry: 'TH', addressRegion: 'Bangkok' },

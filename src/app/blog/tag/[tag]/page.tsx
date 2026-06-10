@@ -8,7 +8,7 @@ import BlogCard from '@/components/blog/BlogCard'
 import { type BlogPostSummary } from '@/lib/blog'
 import { prisma } from '@/lib/db'
 
-const PUBLIC_SITE_URL = 'https://www.werest.com'
+const PUBLIC_SITE_URL = 'https://gowerest.com'
 
 export async function generateMetadata({
   params,

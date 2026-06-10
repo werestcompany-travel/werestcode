@@ -17,7 +17,7 @@ async function fetchLatestPosts(): Promise<BlogPostSummary[]> {
 }
 
 /* ── Site URL — update when domain is confirmed ── */
-const SITE_URL = 'https://www.werest.com';
+const SITE_URL = 'https://gowerest.com';
 
 /* ── Page-level metadata ──────────────────────────────────────────────────── */
 export const metadata: Metadata = {

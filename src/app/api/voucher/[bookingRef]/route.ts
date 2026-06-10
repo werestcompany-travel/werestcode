@@ -40,7 +40,7 @@ function not404Html(bookingRef: string): string {
   <div class="box">
     <h1>Voucher Not Found</h1>
     <p>No booking found for reference <strong>${bookingRef}</strong>.</p>
-    <p><a href="https://www.werest.com">Return to Werest Travel</a></p>
+    <p><a href="https://gowerest.com">Return to Werest Travel</a></p>
   </div>
 </body>
 </html>`
@@ -293,7 +293,7 @@ function buildVoucherHtml(v: VoucherData): string {
 
     <!-- Footer -->
     <div class="footer">
-      Valid only with booking reference &bull; Werest Travel &bull; werest.com
+      Valid only with booking reference &bull; Werest Travel &bull; gowerest.com
     </div>
 
   </div>

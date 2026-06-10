@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Airport Transfers Thailand — Fixed Price, No Surprises | Werest',
   description:
     'Book fixed-price private airport transfers across Thailand. Professional drivers, meet & greet at arrivals, free flight tracking, and free cancellation. Bangkok, Phuket, Pattaya, Chiang Mai & more.',
-  alternates: { canonical: 'https://www.werest.com/airport-transfers' },
+  alternates: { canonical: 'https://gowerest.com/airport-transfers' },
   keywords: [
     'airport transfer Thailand',
     'Bangkok airport transfer',
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     title: 'Airport Transfers Thailand — Fixed Price, No Surprises | Werest',
     description:
       'Fixed-price private airport transfers with verified drivers. Instant confirmation, free cancellation, 24/7 support.',
-    url: 'https://www.werest.com/airport-transfers',
+    url: 'https://gowerest.com/airport-transfers',
     images: [
       {
-        url: 'https://www.werest.com/images/og-airport-transfers.jpg',
+        url: 'https://gowerest.com/images/og-airport-transfers.jpg',
         width: 1200,
         height: 630,
         alt: 'Werest Private Airport Transfers Thailand',
@@ -51,7 +51,7 @@ export default function AirportTransfersPage() {
             '@context': 'https://schema.org',
             '@type': 'Service',
             name: 'Private Airport Transfer Thailand',
-            provider: { '@type': 'TravelAgency', name: 'Werest Travel', url: 'https://www.werest.com' },
+            provider: { '@type': 'TravelAgency', name: 'Werest Travel', url: 'https://gowerest.com' },
             serviceType: 'Private Transfer',
             areaServed: { '@type': 'Country', name: 'Thailand' },
             description: 'Fixed-price private airport transfers across Thailand. Professional drivers, instant confirmation, free cancellation.',

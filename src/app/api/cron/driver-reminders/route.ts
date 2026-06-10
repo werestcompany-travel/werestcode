@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
     for (const booking of candidates) {
       // Reconstruct pickup datetime from pickupDate + pickupTime "HH:MM"

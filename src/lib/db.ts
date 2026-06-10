@@ -3,6 +3,23 @@
 // serverless cold starts.
 import { PrismaClient } from '@prisma/client';
 
+// Startup guard: on serverless (Vercel) each lambda holds its own connection
+// pool. Without pgbouncer (port 6543) + connection_limit, concurrent lambdas
+// exhaust Supabase's ~60-connection cap and the site starts throwing P2024.
+// This logs loudly at boot instead of failing mysteriously under load.
+if (process.env.NODE_ENV === 'production') {
+  const url = process.env.DATABASE_URL ?? '';
+  const usesPooler = url.includes('pgbouncer=true') || url.includes(':6543');
+  const hasLimit   = url.includes('connection_limit=');
+  if (!usesPooler || !hasLimit) {
+    console.warn(
+      '[db] WARNING: DATABASE_URL is not configured for serverless. ' +
+      'Use the Supabase transaction pooler (port 6543) with ?pgbouncer=true&connection_limit=1 ' +
+      'to avoid connection exhaustion under load.',
+    );
+  }
+}
+
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 export const prisma =

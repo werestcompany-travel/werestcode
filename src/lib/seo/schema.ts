@@ -1,4 +1,4 @@
-const SITE = 'https://www.werest.com';
+const SITE = 'https://gowerest.com';
 
 // ─── Tour product ──────────────────────────────────────────────────────────────
 

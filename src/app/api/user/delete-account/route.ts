@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const anonEmail = `deleted-${session.id}@anonymized.werest.com`;
+  const anonEmail = `deleted-${session.id}@anonymized.gowerest.com`;
 
   try {
     await prisma.$transaction([

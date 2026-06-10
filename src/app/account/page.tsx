@@ -420,7 +420,7 @@ function AccountContent() {
 
   async function copyReferral() {
     if (!user) return;
-    await navigator.clipboard.writeText(`https://werest.com?ref=${user.id}`).catch(() => {});
+    await navigator.clipboard.writeText(`https://gogowerest.com?ref=${user.id}`).catch(() => {});
     setRefCopied(true);
     setTimeout(() => setRefCopied(false), 2000);
   }
@@ -899,7 +899,7 @@ function AccountContent() {
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Your referral link</p>
                     <div className="flex gap-3 items-center">
                       <code className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 truncate font-mono">
-                        https://werest.com?ref={user?.id}
+                        https://gogowerest.com?ref={user?.id}
                       </code>
                       <button
                         onClick={copyReferral}

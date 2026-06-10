@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const ref   = searchParams.get('ref');
   const token = searchParams.get('token');
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
   if (!ref || !token) {
     return NextResponse.redirect(new URL('/contact?error=invalid_link', APP_URL));

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Send email verification (non-blocking — don't fail registration if email fails)
     try {
       const rawToken  = await createEmailVerification(user.id);
-      const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+      const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
       const verifyUrl = `${appUrl}/api/user/verify-email?token=${rawToken}`;
       await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
     } catch (emailErr) {

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: 'Experiences & Day Trips in Thailand',
   description:
     'Discover the best day trips, cultural tours, food experiences and adventures across Thailand. Book with confidence — free cancellation, instant confirmation.',
-  alternates: { canonical: 'https://www.werest.com/tours' },
+  alternates: { canonical: 'https://gowerest.com/tours' },
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────

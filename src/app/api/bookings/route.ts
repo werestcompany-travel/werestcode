@@ -5,8 +5,9 @@ import { Prisma } from '@prisma/client';
 import { formatDate } from '@/lib/utils';
 import { sendBookingToAdmin, sendCustomerBookingConfirmation } from '@/lib/whatsapp';
 import { sendBookingConfirmationEmail } from '@/lib/email';
+import { fireAndForget } from '@/lib/fire-and-forget';
 import { createBookingSchema } from '@/lib/validation/booking';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 import { calculateSurcharges } from '@/lib/surcharges';
 import { VehicleType, type BookingDetail } from '@/types';
 import { getUserFromCookies } from '@/lib/user-auth';
@@ -46,7 +47,7 @@ async function generateTransferRef(
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`booking:${ip}`, LIMITS.booking);
+  const rl = await rateLimitAsync(`booking:${ip}`, LIMITS.booking);
   if (!rl.allowed) {
     return NextResponse.json(
       { success: false, error: 'Too many booking requests. Please try again later.' },
@@ -299,14 +300,14 @@ export async function POST(req: NextRequest) {
       return created;
     });
 
-    const trackingUrl   = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com'}/tracking`;
+    const trackingUrl   = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com'}/tracking`;
     const pickupDateStr = formatDate(booking.pickupDate);
 
-    // Fire-and-forget all notifications
+    // Fire-and-forget all notifications (failures captured to Sentry)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendBookingToAdmin(booking as unknown as BookingDetail).catch(console.error);
+    fireAndForget(sendBookingToAdmin(booking as unknown as BookingDetail), 'booking-admin-notify', { bookingRef: booking.bookingRef });
 
-    sendBookingConfirmationEmail({
+    fireAndForget(sendBookingConfirmationEmail({
       bookingRef:     booking.bookingRef,
       customerName:   booking.customerName,
       customerEmail:  booking.customerEmail,
@@ -321,9 +322,9 @@ export async function POST(req: NextRequest) {
       addOnsTotal:    booking.addOnsTotal,
       totalPrice:     booking.totalPrice,
       specialNotes:   booking.specialNotes,
-    }).catch(console.error);
+    }), 'booking-confirmation-email', { bookingRef: booking.bookingRef });
 
-    sendCustomerBookingConfirmation(
+    fireAndForget(sendCustomerBookingConfirmation(
       booking.customerPhone,
       booking.customerName,
       booking.bookingRef,
@@ -331,7 +332,7 @@ export async function POST(req: NextRequest) {
       booking.pickupTime,
       booking.pickupAddress,
       trackingUrl,
-    ).catch(console.error);
+    ), 'booking-confirmation-whatsapp', { bookingRef: booking.bookingRef });
 
     return NextResponse.json(
       { success: true, data: { id: booking.id, bookingRef: booking.bookingRef } },

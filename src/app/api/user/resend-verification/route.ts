@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     const rawToken = await createEmailVerification(dbUser.id);
-    const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+    const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
     const verifyUrl = `${appUrl}/api/user/verify-email?token=${rawToken}`;
 
     await sendVerificationEmail({

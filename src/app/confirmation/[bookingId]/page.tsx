@@ -77,7 +77,7 @@ function buildGoogleCalendarUrl(booking: {
     action: 'TEMPLATE',
     text: `Werest Transfer – ${booking.bookingRef}`,
     dates: `${fmt(start)}/${fmt(end)}`,
-    details: `Booking ref: ${booking.bookingRef}\nRoute: ${booking.pickupAddress} → ${booking.dropoffAddress}\nTrack at https://werest.com/tracking`,
+    details: `Booking ref: ${booking.bookingRef}\nRoute: ${booking.pickupAddress} → ${booking.dropoffAddress}\nTrack at https://gowerest.com/tracking`,
     location: booking.pickupAddress,
   });
   return `https://www.google.com/calendar/render?${params.toString()}`;
@@ -99,9 +99,9 @@ export default async function ConfirmationPage({ params }: Props) {
   const cityLabel = city.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
   const googleCalUrl = buildGoogleCalendarUrl(booking);
   const icsUrl = `/api/ics/${booking.id}`;
-  const confirmationUrl = `https://werest.com/confirmation/${booking.id}`;
+  const confirmationUrl = `https://gowerest.com/confirmation/${booking.id}`;
   const whatsappMsg = encodeURIComponent(
-    `My booking ref is ${booking.bookingRef} for ${booking.pickupAddress} to ${booking.dropoffAddress} on ${formatDate(booking.pickupDate.toISOString())}. Track at https://werest.com/tracking`
+    `My booking ref is ${booking.bookingRef} for ${booking.pickupAddress} to ${booking.dropoffAddress} on ${formatDate(booking.pickupDate.toISOString())}. Track at https://gowerest.com/tracking`
   );
 
   // Derive city names for social sharing

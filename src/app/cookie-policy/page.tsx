@@ -6,8 +6,8 @@ import Footer from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'Cookie Policy | Werest Travel',
   description:
-    'Werest Travel cookie policy — how we use cookies on werest.com and how to manage your preferences.',
-  alternates: { canonical: 'https://www.werest.com/cookie-policy' },
+    'Werest Travel cookie policy — how we use cookies on gowerest.com and how to manage your preferences.',
+  alternates: { canonical: 'https://gowerest.com/cookie-policy' },
 }
 
 // ─── Section helper ────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export default function CookiePolicyPage() {
             <p>
               Cookies are widely used across the internet to make websites work more efficiently and to
               provide useful information to website owners. This policy explains how Werest Travel uses
-              cookies on <strong>werest.com</strong>.
+              cookies on <strong>gowerest.com</strong>.
             </p>
           </Section>
 

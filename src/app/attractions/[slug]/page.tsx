@@ -103,9 +103,9 @@ export default async function AttractionDetailPage({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.werest.com' },
-      { '@type': 'ListItem', position: 2, name: 'Attractions', item: 'https://www.werest.com/attractions' },
-      { '@type': 'ListItem', position: 3, name: attraction.name, item: `https://www.werest.com/attractions/${params.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://gowerest.com' },
+      { '@type': 'ListItem', position: 2, name: 'Attractions', item: 'https://gowerest.com/attractions' },
+      { '@type': 'ListItem', position: 3, name: attraction.name, item: `https://gowerest.com/attractions/${params.slug}` },
     ],
   }
 

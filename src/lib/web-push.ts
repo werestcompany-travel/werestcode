@@ -7,7 +7,7 @@ function init() {
   if (_initialized) return;
   const pub  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
-  const subj = process.env.VAPID_SUBJECT ?? 'mailto:hello@werest.com';
+  const subj = process.env.VAPID_SUBJECT ?? 'mailto:hello@gowerest.com';
   if (!pub || !priv) {
     console.warn('[web-push] VAPID keys not configured — push disabled');
     return;

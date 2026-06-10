@@ -36,3 +36,9 @@ Thumbs.db
 # Local blog image uploads
 public/uploads/
 dev-server.log
+
+# Logs and build artifacts
+build_output.txt
+dev-server.log
+*.tsbuildinfo
+werestcode/

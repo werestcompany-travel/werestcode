@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       data: { userId: user.id, tokenHash, expiresAt },
     });
 
-    const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+    const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
     const resetUrl = `${appUrl}/auth/reset?token=${rawToken}`;
 
     await sendPasswordResetEmail(email, resetUrl);

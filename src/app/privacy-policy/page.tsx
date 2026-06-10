@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy | Werest Travel',
   description:
     'Learn how Werest Travel collects, uses, and protects your personal data in accordance with the Thailand Personal Data Protection Act (PDPA) B.E. 2562.',
-  alternates: { canonical: 'https://www.werest.com/privacy-policy' },
+  alternates: { canonical: 'https://gowerest.com/privacy-policy' },
 }
 
 // ─── Section heading helper ────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-gray-700 leading-relaxed text-[15px] mb-10">
             Werest Travel (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your personal data. This
             Privacy Policy explains how we collect, use, share, and protect information about you when you use
-            our website at <strong>werest.com</strong> and related services. By using our services you agree to
+            our website at <strong>gowerest.com</strong> and related services. By using our services you agree to
             the practices described in this policy.
           </p>
 

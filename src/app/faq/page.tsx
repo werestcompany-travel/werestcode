@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Frequently Asked Questions | Werest Travel',
   description:
     'Answers to the most common questions about Werest Travel — transfers, tours, payments, drivers, and cancellation policies.',
-  alternates: { canonical: 'https://www.werest.com/faq' },
+  alternates: { canonical: 'https://gowerest.com/faq' },
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@
  * metadata for this page (cannot export from 'use client'):
  * title: 'Contact Us | Werest Travel'
  * description: 'Get in touch with Werest Travel via WhatsApp, email, or LINE. Support available 7:00–22:00 ICT, 7 days a week.'
- * alternates: { canonical: 'https://www.werest.com/contact' }
+ * alternates: { canonical: 'https://gowerest.com/contact' }
  */
 'use client'
 
@@ -125,7 +125,7 @@ export default function ContactPage() {
 
   // ── handlers ───────────────────────────────────────────────────────────
   function handleCopy() {
-    navigator.clipboard.writeText('hello@werest.com')
+    navigator.clipboard.writeText('hello@gowerest.com')
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -264,7 +264,7 @@ export default function ContactPage() {
               {/* Email + copy button */}
               <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 mb-4">
                 <span className="flex-1 text-sm font-medium text-gray-800 truncate">
-                  hello@werest.com
+                  hello@gowerest.com
                 </span>
                 <button
                   onClick={handleCopy}
@@ -285,7 +285,7 @@ export default function ContactPage() {
               )}
 
               <a
-                href="mailto:hello@werest.com"
+                href="mailto:hello@gowerest.com"
                 className="mt-auto w-full inline-flex items-center justify-center gap-2 bg-[#2534ff] hover:bg-[#1a26cc] active:bg-[#1220b0] text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-sm"
               >
                 <Mail className="w-4 h-4" />

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { BookingStatus } from '@/types';
 import { STATUS_LABELS } from '@/lib/utils';
 import { sendStatusUpdate } from '@/lib/whatsapp';
+import { getAdminFromCookies } from '@/lib/auth';
 
 interface Params {
   params: { id: string };
@@ -14,6 +15,13 @@ const VALID_STATUSES: BookingStatus[] = [
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
+    // Status changes are an admin-only operation. Drivers use the
+    // token-authenticated /api/driver/bookings/[id]/status route instead.
+    const admin = await getAdminFromCookies();
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { status, note, updatedBy } = body as {
       status: BookingStatus;

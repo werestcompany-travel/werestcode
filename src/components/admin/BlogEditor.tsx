@@ -407,7 +407,7 @@ export default function BlogEditor({ initialData, onSubmit, loading, mode }: Blo
             {slug && (
               <p className="text-xs text-gray-400 mt-1">
                 Preview:{' '}
-                <span className="text-[#2534ff]">https://werest.com/blog/{slug}</span>
+                <span className="text-[#2534ff]">https://gowerest.com/blog/{slug}</span>
               </p>
             )}
           </div>

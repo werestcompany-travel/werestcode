@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
           : {}),
       },
       orderBy: { createdAt: 'desc' },
+      take: 500, // bound payload — newest 500; add pagination params when volume requires
     });
 
     return NextResponse.json({ success: true, inquiries });

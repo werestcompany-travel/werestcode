@@ -3,9 +3,11 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
-const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'fallback-secret-change-in-production',
-);
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET environment variable is not set. Set it before deploying.');
+}
+const SECRET = new TextEncoder().encode(jwtSecret ?? 'dev-only-secret');
 
 export interface UserTokenPayload {
   id: string;
@@ -55,7 +57,7 @@ export async function signUserToken(
  */
 export async function verifyUserTokenEdge(token: string): Promise<UserTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] });
     return payload as UserTokenPayload;
   } catch {
     return null;
@@ -67,7 +69,7 @@ export async function verifyUserTokenEdge(token: string): Promise<UserTokenPaylo
  */
 export async function verifyUserToken(token: string): Promise<UserTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] });
     const jti = payload.jti as string | undefined;
     if (jti) {
       // Check if session has been revoked

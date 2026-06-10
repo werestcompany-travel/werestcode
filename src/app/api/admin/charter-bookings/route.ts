@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     const bookings = await prisma.charterBooking.findMany({
       where: status ? { currentStatus: status } : undefined,
       orderBy: { createdAt: 'desc' },
+      take: 500, // bound payload — newest 500; add pagination params when volume requires
     });
 
     return NextResponse.json({ bookings });

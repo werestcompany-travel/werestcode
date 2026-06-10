@@ -25,7 +25,7 @@ import {
   generateFAQSchema,
 } from '@/lib/blog'
 
-const PUBLIC_SITE_URL = 'https://www.werest.com'
+const PUBLIC_SITE_URL = 'https://gowerest.com'
 
 const FALLBACK_BG: Record<string, string> = {
   BANGKOK:  'from-[#2534ff] to-indigo-600',

@@ -59,7 +59,7 @@ export async function sendReviewRequest(
   try {
     const firstName = customerName.split(' ')[0] || customerName;
     // Note: review/write page requires ?type=TRANSFER&bookingRef=XXX — use bookingRef as the key param
-    const reviewUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.werest.com'}/review/write?bookingRef=${bookingRef}&type=TRANSFER`;
+    const reviewUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com'}/review/write?bookingRef=${bookingRef}&type=TRANSFER`;
     const message =
       `Hi ${firstName}! 🌟 Thank you for traveling with Werest Travel. We hope you had a wonderful experience!\n\n` +
       `We'd love to hear your feedback — it takes just 1 minute:\n${reviewUrl}\n\n` +

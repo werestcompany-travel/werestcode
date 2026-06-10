@@ -17,7 +17,7 @@ export default async function VoucherPage({ params }: Props) {
 
   if (!booking) notFound();
 
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const verifyUrl = `${appUrl}/confirmation/${booking.id}`;
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 200, margin: 1, color: { dark: '#1e2065', light: '#ffffff' } });
 

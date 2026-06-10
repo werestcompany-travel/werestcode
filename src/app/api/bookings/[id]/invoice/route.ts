@@ -9,9 +9,10 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // Try transfer booking first, then tour booking
-  const booking = await prisma.booking.findUnique({ where: { id: params.id } })
-    ?? await prisma.booking.findUnique({ where: { bookingRef: params.id } });
+  // Look up by internal cuid ONLY. The cuid is unguessable and acts as a
+  // capability URL; bookingRef (WR-YYMMDD-####) is intentionally NOT accepted
+  // here because refs are enumerable and the invoice contains PII.
+  const booking = await prisma.booking.findUnique({ where: { id: params.id } });
 
   let invoiceData: InvoiceData | null = null;
 
@@ -44,9 +45,8 @@ export async function GET(
       currency:      'THB',
     };
   } else {
-    // Try tour booking
-    const tourBooking = await prisma.tourBooking.findUnique({ where: { id: params.id } })
-      ?? await prisma.tourBooking.findUnique({ where: { bookingRef: params.id } });
+    // Try tour booking — cuid only (see note above)
+    const tourBooking = await prisma.tourBooking.findUnique({ where: { id: params.id } });
 
     if (!tourBooking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });

@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const booking = await prisma.booking.findUnique({ where: { id: params.id }, select: { bookingRef: true } });
   if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const verifyUrl = `${appUrl}/confirmation/${params.id}`;
 
   const dataUrl = await QRCode.toDataURL(verifyUrl, {

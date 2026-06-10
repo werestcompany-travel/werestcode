@@ -5,7 +5,7 @@
  * They follow the same baseLayout() approach as src/lib/email.ts.
  */
 
-const APP_URL  = process.env.NEXT_PUBLIC_APP_URL  ?? 'https://werest.com';
+const APP_URL  = process.env.NEXT_PUBLIC_APP_URL  ?? 'https://gowerest.com';
 const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '66621871392';
 
 function escapeHtml(s: string): string {
@@ -76,7 +76,7 @@ function baseLayout(title: string, body: string): string {
       <tr>
         <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;padding:20px 36px;text-align:center;">
           <p style="margin:0 0 6px;color:#9ca3af;font-size:12px;">
-            <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;font-weight:600;">werest.com</a>
+            <a href="${APP_URL}" style="color:#2534ff;text-decoration:none;font-weight:600;">gowerest.com</a>
             &nbsp;·&nbsp; Bangkok, Thailand
             &nbsp;·&nbsp; <a href="mailto:werestcompany@gmail.com" style="color:#9ca3af;text-decoration:none;">werestcompany@gmail.com</a>
           </p>

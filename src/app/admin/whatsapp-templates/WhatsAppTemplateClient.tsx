@@ -31,7 +31,7 @@ const TEMPLATES: Template[] = [
 🏁 *Drop-off:* {{6}}
 🚗 *Vehicle:* {{7}}
 
-Payment is due on the day. Your driver will contact you before pickup. Track your booking: https://werest.com/tracking
+Payment is due on the day. Your driver will contact you before pickup. Track your booking: https://gowerest.com/tracking
 
 Reply if you have any questions! — Werest Team 🙏`,
   },

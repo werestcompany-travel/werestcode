@@ -59,7 +59,7 @@ export async function generateMetadata({
   return {
     title:       `Things to Do in ${label} | Werest Travel`,
     description: `Explore the best tours, day trips, and experiences in ${label}, Thailand. Book instantly with free cancellation.`,
-    alternates:  { canonical: `https://www.werest.com/tours/l/${params.location}` },
+    alternates:  { canonical: `https://gowerest.com/tours/l/${params.location}` },
   }
 }
 
@@ -80,7 +80,7 @@ export default async function LocationPage({
     '@type':      'TouristDestination',
     name:         label,
     description:  `Explore the best tours and experiences in ${label}, Thailand.`,
-    url:          `https://www.werest.com/tours/l/${location}`,
+    url:          `https://gowerest.com/tours/l/${location}`,
     containedInPlace: {
       '@type': 'Country',
       name:    'Thailand',

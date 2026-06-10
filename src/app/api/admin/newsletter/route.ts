@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const subscribers = await prisma.newsletterSubscriber.findMany({
     where: q ? { email: { contains: q, mode: 'insensitive' } } : undefined,
     orderBy: { createdAt: 'desc' },
+      take: 500, // bound payload — newest 500; add pagination params when volume requires
   });
 
   const total = await prisma.newsletterSubscriber.count();

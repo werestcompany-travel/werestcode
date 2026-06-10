@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const FROM    = process.env.EMAIL_FROM      ?? 'Werest Travel <noreply@werest.com>'
+const FROM    = process.env.EMAIL_FROM      ?? 'Werest Travel <noreply@gowerest.com>'
 const ADMIN   = process.env.EMAIL_ADMIN     ?? 'werestcompany@gmail.com'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com'
 
 interface PartnerApplication {
   partnerType:   string

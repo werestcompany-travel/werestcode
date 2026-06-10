@@ -114,7 +114,7 @@ export default function Footer() {
                 </span>
                 <div>
                   <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Email</p>
-                  <a href="mailto:support@werest.com" className="text-[13px] text-gray-800 hover:text-[#2534ff] font-medium">support@werest.com</a>
+                  <a href="mailto:support@gowerest.com" className="text-[13px] text-gray-800 hover:text-[#2534ff] font-medium">support@gowerest.com</a>
                 </div>
               </li>
 

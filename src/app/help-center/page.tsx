@@ -137,7 +137,7 @@ const FAQS: FaqItem[] = [
   {
     category: 'General',
     q: 'How do I contact Werest customer support?',
-    a: 'WhatsApp (fastest), email hello@werest.com, or LINE @werest. We respond within 1 hour during business hours.',
+    a: 'WhatsApp (fastest), email hello@gowerest.com, or LINE @werest. We respond within 1 hour during business hours.',
   },
   {
     category: 'General',
@@ -454,7 +454,7 @@ export default function HelpCenterPage() {
                 Chat on WhatsApp
               </a>
               <a
-                href="mailto:hello@werest.com"
+                href="mailto:hello@gowerest.com"
                 className="inline-flex items-center justify-center gap-2.5 border-2 border-white text-white font-bold px-6 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-sm"
               >
                 <Mail className="w-4 h-4" />

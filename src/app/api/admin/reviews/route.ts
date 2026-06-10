@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
       ...(entityType ? { entityType: entityType as 'TOUR' | 'ATTRACTION' | 'TRANSFER' } : {}),
     },
     orderBy: { createdAt: 'desc' },
+      take: 500, // bound payload — newest 500; add pagination params when volume requires
   });
 
   return NextResponse.json({ reviews });

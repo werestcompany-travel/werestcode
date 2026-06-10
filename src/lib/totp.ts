@@ -6,13 +6,25 @@ const ISSUER = 'Werest Travel Admin';
 const ALGORITHM = 'aes-256-cbc';
 
 // 32-byte key for AES-256 — set TOTP_ENCRYPT_KEY in env as a 64-char hex string
-function getEncryptKey(): Buffer {
+function getRawKey(): string {
   const raw = process.env.TOTP_ENCRYPT_KEY ?? '';
   if (!raw && process.env.NODE_ENV === 'production') {
     throw new Error('[totp] TOTP_ENCRYPT_KEY environment variable is not set.');
   }
-  // Pad/truncate to 32 bytes
-  const key = raw.padEnd(32, '0').slice(0, 32);
+  return raw;
+}
+
+/** Proper key derivation: full 256-bit key from the env value via SHA-256. */
+function getEncryptKey(): Buffer {
+  return crypto.createHash('sha256').update(getRawKey(), 'utf8').digest();
+}
+
+/**
+ * Legacy key derivation (pad/truncate to 32 ASCII chars) — kept ONLY so that
+ * secrets encrypted before the SHA-256 derivation can still be decrypted.
+ */
+function getLegacyEncryptKey(): Buffer {
+  const key = getRawKey().padEnd(32, '0').slice(0, 32);
   return Buffer.from(key, 'utf8');
 }
 
@@ -35,9 +47,16 @@ export function decryptSecret(encrypted: string): string {
   if (!ivHex || !cipherHex) throw new Error('[totp] Invalid encrypted secret format');
   const iv = Buffer.from(ivHex, 'hex');
   const ciphertext = Buffer.from(cipherHex, 'hex');
-  const decipher = crypto.createDecipheriv(ALGORITHM, getEncryptKey(), iv);
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return decrypted.toString('utf8');
+  try {
+    const decipher = crypto.createDecipheriv(ALGORITHM, getEncryptKey(), iv);
+    const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    return decrypted.toString('utf8');
+  } catch {
+    // Fall back to the legacy key for secrets enrolled before SHA-256 derivation
+    const decipher = crypto.createDecipheriv(ALGORITHM, getLegacyEncryptKey(), iv);
+    const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    return decrypted.toString('utf8');
+  }
 }
 
 /**

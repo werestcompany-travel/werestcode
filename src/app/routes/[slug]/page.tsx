@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ALL_ROUTES, getTransferRoute } from '@/lib/routes';
 
-const SITE_URL = 'https://www.werest.com';
+const SITE_URL = 'https://gowerest.com';
 
 // ─── Static generation ────────────────────────────────────────────────────────
 
@@ -96,7 +96,7 @@ export default function RouteSlugPage({ params }: { params: { slug: string } }) 
     provider: {
       '@type': 'TravelAgency',
       name: 'Werest Travel',
-      url: 'https://www.werest.com',
+      url: 'https://gowerest.com',
     },
     mainEntityOfPage: {
       '@type': 'FAQPage',

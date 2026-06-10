@@ -50,7 +50,7 @@ export async function POST(
   const secret = process.env.QUOTE_SECRET ?? 'werest-quote-secret';
   const token = createHash('sha256').update(inquiry.ref + secret).digest('hex');
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
   const acceptUrl = `${APP_URL}/api/inquiries/accept?ref=${encodeURIComponent(inquiry.ref)}&token=${token}`;
 
   // Store quote data in adminNotes as JSON (preserve any existing notes as prefix)

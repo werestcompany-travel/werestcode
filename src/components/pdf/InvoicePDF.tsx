@@ -89,7 +89,7 @@ export default function InvoicePDF({ data }: { data: InvoiceData }) {
             <Text style={S.meta}>Werest Travel Co., Ltd.</Text>
             <Text style={S.meta}>Bangkok, Thailand</Text>
             <Text style={S.meta}>TAT License: 00/00000  |  VAT Reg: 0000000000000</Text>
-            <Text style={S.meta}>info@werest.com  |  www.werest.com</Text>
+            <Text style={S.meta}>info@gowerest.com  |  www.gowerest.com</Text>
           </View>
           <View>
             <Text style={S.invoiceTitle}>TAX INVOICE</Text>
@@ -169,9 +169,9 @@ export default function InvoicePDF({ data }: { data: InvoiceData }) {
 
         {/* Footer */}
         <View style={S.footer}>
-          <Text style={S.footerText}>Werest Travel Co., Ltd.  |  Bangkok, Thailand  |  www.werest.com  |  info@werest.com</Text>
+          <Text style={S.footerText}>Werest Travel Co., Ltd.  |  Bangkok, Thailand  |  www.gowerest.com  |  info@gowerest.com</Text>
           <Text style={S.footerText}>Company Registration No: 0000000000000  |  TAT License: 00/00000</Text>
-          <Text style={S.footerText}>Thank you for choosing Werest Travel. For queries, please contact info@werest.com.</Text>
+          <Text style={S.footerText}>Thank you for choosing Werest Travel. For queries, please contact info@gowerest.com.</Text>
         </View>
 
       </Page>

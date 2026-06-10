@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
-import { rateLimit, getIP } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP } from '@/lib/rate-limit';
 
 interface Params {
   params: { id: string };
@@ -13,7 +13,7 @@ const MIN_HOURS_BEFORE = 24;
 // PATCH /api/tour-bookings/[id]/modify — customer modifies a tour booking
 export async function PATCH(req: NextRequest, { params }: Params) {
   const ip = getIP(req);
-  const rl = await rateLimit(`modify-tour:${ip}:${params.id}`, { limit: 5, windowSec: 60 * 60 });
+  const rl = await await rateLimitAsync(`modify-tour:${ip}:${params.id}`, { limit: 5, windowSec: 60 * 60 });
   if (!rl.allowed) return NextResponse.json({ error: 'Too many modification attempts. Try again later.' }, { status: 429 });
 
   const session = await getUserFromRequest(req);

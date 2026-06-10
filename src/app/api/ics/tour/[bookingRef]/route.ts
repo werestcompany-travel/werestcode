@@ -49,7 +49,7 @@ export async function GET(
     `Booking Ref: ${booking.bookingRef}\nOption: ${booking.optionLabel}\nGuests: ${guestDesc}\nPayment on arrival.`,
   );
   const now = toIcsDate(new Date());
-  const uid = `${booking.bookingRef}@werest.com`;
+  const uid = `${booking.bookingRef}@gowerest.com`;
 
   const ics = [
     'BEGIN:VCALENDAR',

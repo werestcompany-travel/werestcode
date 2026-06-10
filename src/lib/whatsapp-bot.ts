@@ -44,7 +44,7 @@ type VehicleKey = keyof typeof VEHICLE_CONFIG;
 
 // Admin phone for help link
 const ADMIN_PHONE = process.env.WHATSAPP_ADMIN_PHONE ?? '6620001111';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
 
 // Reset trigger words (case-insensitive)
 const RESET_WORDS = new Set(['restart', 'new', 'book', 'cancel', 'reset', 'start']);
@@ -425,7 +425,7 @@ async function createWhatsAppBooking(phone: string, data: SessionData): Promise<
       luggage:        0,
       vehicleType:    data.vehicle ?? 'SEDAN',
       customerName:   'WhatsApp Customer',
-      customerEmail:  `wa-${phone}@werest.com`,
+      customerEmail:  `wa-${phone}@gowerest.com`,
       customerPhone:  phone,
       specialNotes:   `Booked via WhatsApp. Phone: ${phone}`,
       basePrice,

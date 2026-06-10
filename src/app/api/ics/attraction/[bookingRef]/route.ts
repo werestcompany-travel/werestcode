@@ -53,7 +53,7 @@ export async function GET(
   );
   const location = escapeIcs(`${booking.attractionName}, Thailand`);
   const now      = toIcsDate(new Date());
-  const uid      = `${booking.bookingRef}@werest.com`;
+  const uid      = `${booking.bookingRef}@gowerest.com`;
 
   const ics = [
     'BEGIN:VCALENDAR',

@@ -59,7 +59,7 @@ export async function generateMetadata({
   return {
     title:       `${label} Tours in Thailand | Werest Travel`,
     description: `Discover the best ${label.toLowerCase()} experiences in Thailand. Book instantly with free cancellation.`,
-    alternates:  { canonical: `https://www.werest.com/tours/c/${params.category}` },
+    alternates:  { canonical: `https://gowerest.com/tours/c/${params.category}` },
   }
 }
 
@@ -84,13 +84,13 @@ export default async function CategoryPage({
     provider: {
       '@type': 'TravelAgency',
       name:    'Werest Travel',
-      url:     'https://www.werest.com',
+      url:     'https://gowerest.com',
     },
     areaServed: {
       '@type': 'Country',
       name:    'Thailand',
     },
-    url: `https://www.werest.com/tours/c/${category}`,
+    url: `https://gowerest.com/tours/c/${category}`,
   }
 
   return (

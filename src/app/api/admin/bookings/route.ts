@@ -12,6 +12,7 @@ export async function GET() {
   try {
     const bookings = await prisma.booking.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 500, // bound payload — newest 500; add pagination params when volume requires
       select: {
         id:             true,
         bookingRef:     true,

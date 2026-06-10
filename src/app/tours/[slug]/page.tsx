@@ -174,9 +174,9 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.werest.com' },
-      { '@type': 'ListItem', position: 2, name: 'Tours', item: 'https://www.werest.com/tours' },
-      { '@type': 'ListItem', position: 3, name: tour.title, item: `https://www.werest.com/tours/${params.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://gowerest.com' },
+      { '@type': 'ListItem', position: 2, name: 'Tours', item: 'https://gowerest.com/tours' },
+      { '@type': 'ListItem', position: 3, name: tour.title, item: `https://gowerest.com/tours/${params.slug}` },
     ],
   }
 
@@ -186,7 +186,7 @@ export default async function TourDetailPage({ params }: { params: { slug: strin
     name: tour.title,
     description: tour.description.slice(0, 160),
     touristType: 'Tourist',
-    url: `https://www.werest.com/tours/${params.slug}`,
+    url: `https://gowerest.com/tours/${params.slug}`,
     itinerary: {
       '@type': 'ItemList',
       numberOfItems: tour.itinerary.length,

@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
           bookingRef:  tb.bookingRef,
         });
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
         sendPostTripReviewRequest({
           customerPhone: tb.customerPhone,
           customerName:  tb.customerName,
@@ -110,7 +110,7 @@ export async function GET(req: NextRequest) {
           bookingRef:  booking.bookingRef,
         });
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://werest.com';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://gowerest.com';
         sendPostTripReviewRequest({
           customerPhone: booking.customerPhone,
           customerName:  booking.customerName,

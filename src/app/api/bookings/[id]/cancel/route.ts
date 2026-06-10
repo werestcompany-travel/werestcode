@@ -2,11 +2,11 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/user-auth';
 import { prisma } from '@/lib/db';
-import { rateLimit, getIP } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const ip = getIP(req);
-  const rl = rateLimit(`cancel:${ip}`, { limit: 5, windowSec: 60 * 60 });
+  const rl = await rateLimitAsync(`cancel:${ip}`, { limit: 5, windowSec: 60 * 60 });
   if (!rl.allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   const session = await getUserFromRequest(req);

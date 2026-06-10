@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { discountCodeSchema } from '@/lib/validation/booking';
-import { rateLimit, getIP, LIMITS } from '@/lib/rate-limit';
+import { rateLimitAsync, getIP, LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req);
-  const rl = rateLimit(`discount:${ip}`, LIMITS.discountCode);
+  const rl = await rateLimitAsync(`discount:${ip}`, LIMITS.discountCode);
   if (!rl.allowed) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }

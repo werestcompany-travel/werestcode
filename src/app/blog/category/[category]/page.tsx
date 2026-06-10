@@ -13,7 +13,7 @@ import {
 } from '@/lib/blog'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
-const PUBLIC_SITE_URL = 'https://www.werest.com'
+const PUBLIC_SITE_URL = 'https://gowerest.com'
 
 // ─── Static params ────────────────────────────────────────────────────────────
 

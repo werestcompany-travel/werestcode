@@ -54,7 +54,7 @@ export default function GoogleBusinessPage() {
     {
       icon: <Globe className="w-5 h-5 text-green-500" />,
       title: 'Verify site ownership in Google Search Console',
-      desc: 'Go to search.google.com/search-console. Add property https://www.werest.com. Copy the verification meta tag value and set it as NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION. Then submit your sitemap at /sitemap.xml.',
+      desc: 'Go to search.google.com/search-console. Add property https://gowerest.com. Copy the verification meta tag value and set it as NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION. Then submit your sitemap at /sitemap.xml.',
       link: { href: 'https://search.google.com/search-console', label: 'Open Search Console' },
     },
   ];
@@ -114,7 +114,7 @@ export default function GoogleBusinessPage() {
             <li><strong>Google Reviews Widget</strong> — displays live rating + 3 recent reviews on the homepage</li>
             <li><strong>Leave a Review buttons</strong> — shown on transfer and tour confirmation pages</li>
             <li><strong>Site verification meta tag</strong> — proves ownership to Google Search Console</li>
-            <li><strong>Sitemap submission</strong> — submit <span className="font-mono">https://www.werest.com/sitemap.xml</span> in Search Console</li>
+            <li><strong>Sitemap submission</strong> — submit <span className="font-mono">https://gowerest.com/sitemap.xml</span> in Search Console</li>
           </ul>
         </div>
 
