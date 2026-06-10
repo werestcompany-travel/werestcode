@@ -376,6 +376,7 @@ function AccountContent() {
 
   useEffect(() => {
     async function load() {
+      try {
       const [meRes, wlRes, bkRes, srRes, trRes] = await Promise.all([
         fetch('/api/user/me'),
         fetch('/api/user/wishlist'),
@@ -414,6 +415,9 @@ function AccountContent() {
       unified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setAllBookings(unified);
       setLoading(false);
+      } catch {
+        setLoading(false);
+      }
     }
     load();
   }, [router]);
@@ -446,13 +450,13 @@ function AccountContent() {
   }
 
   async function removeWishlist(attractionId: string) {
-    await fetch(`/api/user/wishlist?attractionId=${encodeURIComponent(attractionId)}`, { method: 'DELETE' });
-    setWishlist(prev => prev.filter(w => w.attractionId !== attractionId));
+    const res = await fetch(`/api/user/wishlist?attractionId=${encodeURIComponent(attractionId)}`, { method: 'DELETE' });
+    if (res.ok) setWishlist(prev => prev.filter(w => w.attractionId !== attractionId));
   }
 
   async function deleteSavedRoute(id: string) {
-    await fetch(`/api/user/saved-routes/${id}`, { method: 'DELETE' });
-    setSavedRoutes(prev => prev.filter(r => r.id !== id));
+    const res = await fetch(`/api/user/saved-routes/${id}`, { method: 'DELETE' });
+    if (res.ok) setSavedRoutes(prev => prev.filter(r => r.id !== id));
   }
 
   async function renameSavedRoute(id: string, label: string) {

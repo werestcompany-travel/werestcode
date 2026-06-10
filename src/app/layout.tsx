@@ -34,7 +34,6 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import FontSwitcher from '@/components/FontSwitcher';
 import CookieConsent from '@/components/CookieConsent';
-import { ChatProvider } from '@/context/ChatContext';
 
 const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -152,18 +151,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <RecentlyViewedProvider>
           <WishlistProvider>
             <AuthModalProvider>
-              <ChatProvider>
-                {children}
-                <FloatingWidgets />
-                <CookieConsent />
-                <Toaster
-                  position="top-center"
-                  toastOptions={{
-                    duration: 4000,
-                    style: { borderRadius: '12px', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px' },
-                  }}
-                />
-              </ChatProvider>
+              {children}
+              <FloatingWidgets />
+              <CookieConsent />
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  duration: 4000,
+                  style: { borderRadius: '12px', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px' },
+                }}
+              />
             </AuthModalProvider>
           </WishlistProvider>
           </RecentlyViewedProvider>

@@ -32,6 +32,30 @@ export async function GET(req: NextRequest) {
       })
     }
 
+    // ── Attraction bookings (AT- prefix) ─────────────────────────────────────
+    if (orderId.startsWith('AT-')) {
+      const attractionBooking = await prisma.attractionBooking.findUnique({
+        where:  { bookingRef: orderId },
+        select: { id: true, bookingRef: true, paymentStatus: true, status: true },
+      })
+
+      if (!attractionBooking) {
+        return NextResponse.json({ success: false, error: 'Attraction booking not found' }, { status: 404 })
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          bookingId:       attractionBooking.id,
+          bookingRef:      attractionBooking.bookingRef,
+          paymentStatus:   attractionBooking.paymentStatus,
+          bookingStatus:   attractionBooking.status,
+          confirmationUrl: `/confirmation/attraction/${attractionBooking.id}`,
+          bookingType:     'attraction',
+        },
+      })
+    }
+
     // ── Transfer bookings (WR- prefix) ────────────────────────────────────────
     const booking = await prisma.booking.findFirst({
       where:  { paysoOrderId: orderId },

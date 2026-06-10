@@ -16,9 +16,13 @@ export async function POST(req: NextRequest) {
 
   const { email, tourSlug } = parsed.data;
 
-  await prisma.tourNotifyRequest.create({
-    data: { email: email.toLowerCase().trim(), tourSlug },
-  });
+  try {
+    await prisma.tourNotifyRequest.create({
+      data: { email: email.toLowerCase().trim(), tourSlug },
+    });
+  } catch {
+    return NextResponse.json({ error: 'Failed to save notification request' }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

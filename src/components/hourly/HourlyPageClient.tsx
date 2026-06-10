@@ -230,7 +230,7 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
       <Navbar transparent />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative -mt-16 min-h-[610px] lg:min-h-[650px] flex flex-col overflow-hidden">
+      <section className="relative -mt-16 min-h-[580px] lg:min-h-[650px] flex flex-col overflow-hidden">
         <Image
           src={hero.img}
           alt={hero.imgAlt}
@@ -246,12 +246,12 @@ export default function HourlyPageClient({ defaultTab = 'hourly' }: { defaultTab
 
         {/* Spacer: h-32 on mobile clears the -mt-16 offset (-64px) + full navbar height (64px).
              On desktop h-16 is enough because justify-end floats content to the bottom anyway. */}
-        <div className="h-[168px] lg:h-16 shrink-0" />
+        <div className="h-[118px] lg:h-16 shrink-0" />
 
         {/* Content — desktop: floats to bottom via justify-end. Mobile: starts right after spacer. */}
         <div className="relative z-10 flex-1 flex flex-col justify-start lg:justify-end pb-10 lg:pb-14 w-full max-w-5xl mx-auto px-6">
           <div className="mb-5 lg:mb-8 text-left">
-            <h1 className="text-[31.5px] lg:text-5xl font-extrabold text-white leading-tight mb-3 max-w-2xl drop-shadow-md">
+            <h1 className="text-[28px] lg:text-5xl font-extrabold text-white leading-tight mb-3 max-w-2xl drop-shadow-md mt-[85px]">
               {hero.title}
             </h1>
             <p className="hidden lg:block text-white/85 text-base lg:text-lg max-w-xl leading-relaxed">

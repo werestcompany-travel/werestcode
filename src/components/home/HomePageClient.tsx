@@ -597,18 +597,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <div className="relative">
 
             {/* ── Left arrow ── */}
-            {inspiredShowLeft && (
-              <div className="absolute left-0 top-0 bottom-0 w-14 bg-gradient-to-r from-white via-white/70 to-transparent z-10 pointer-events-none flex items-center">
-                <button
-                  type="button"
-                  onClick={() => scrollInspired(-1)}
-                  className="pointer-events-auto ml-1 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
-                  aria-label="Scroll left"
-                >
-                  <ChevronRight className="w-4 h-4 rotate-180" />
-                </button>
-              </div>
-            )}
 
           <div
             ref={inspiredSliderRef}
@@ -666,18 +654,6 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
             {/* ── Right arrow ── */}
-            {inspiredShowRight && (
-              <div className="absolute right-0 top-0 bottom-0 w-14 bg-gradient-to-l from-white via-white/70 to-transparent z-10 pointer-events-none flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => scrollInspired(1)}
-                  className="pointer-events-auto mr-1 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-200"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
 
           </div>{/* end relative */}
 
@@ -927,7 +903,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
             </div>
 
             <Link
-              href="/contact"
+              href="/auth/login?redirect=/account/my-discount"
               onClick={dismissPromoPopup}
               className="block w-full text-center bg-[#2534ff] hover:bg-blue-700 text-white font-extrabold text-base py-3.5 rounded-2xl transition-colors"
             >

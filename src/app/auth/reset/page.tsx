@@ -3,25 +3,17 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 /* ── Shared page shell ────────────────────────────────────────────────────── */
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
+    <>
+    <Navbar />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 pt-24 pb-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex mb-6">
-            <Image
-              src="/images/logo.png"
-              alt="Werest Travel"
-              width={136}
-              height={37}
-              className="h-9 w-auto object-contain"
-              priority
-            />
-          </Link>
           <h1 className="text-2xl font-extrabold text-gray-900">Set new password</h1>
           <p className="text-gray-500 text-sm mt-1">Choose a strong password for your account.</p>
         </div>
@@ -38,6 +30,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
         </p>
       </div>
     </div>
+    </>
   );
 }
 

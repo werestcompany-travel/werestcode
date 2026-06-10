@@ -45,7 +45,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // Time check: pickup must be >24h away
   const pickupDateTime = new Date(booking.pickupDate);
-  const [hours, minutes] = booking.pickupTime.split(':').map(Number);
+  const timeParts = booking.pickupTime?.split(':').map(Number) ?? [];
+  const [hours = 0, minutes = 0] = timeParts;
+  if (isNaN(hours) || isNaN(minutes)) {
+    return NextResponse.json({ error: 'Invalid booking time format' }, { status: 400 });
+  }
   pickupDateTime.setHours(hours, minutes, 0, 0);
   const hoursUntilPickup = (pickupDateTime.getTime() - Date.now()) / 3_600_000;
 

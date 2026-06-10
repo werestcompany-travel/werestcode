@@ -190,7 +190,7 @@ export default function AirportTransfersClient() {
       <main className="min-h-screen bg-white">
 
         {/* ════════ HERO ════════════════════════════════════════════════════ */}
-        <section className="relative overflow-hidden bg-[#05091a] min-h-[580px] lg:min-h-[560px]">
+        <section className="relative overflow-hidden bg-[#05091a] min-h-[530px] lg:min-h-[560px]">
           {/* Background image */}
           <div className="absolute inset-0">
             <Image
@@ -221,13 +221,13 @@ export default function AirportTransfersClient() {
           </div>
 
           {/* Hero content */}
-          <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-14">
+          <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[46px] sm:pt-24 pb-14">
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span className="text-sm font-semibold text-emerald-400">Available 24/7 across Thailand</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3">
+              <h1 className="text-[35px] sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3 mt-[5px]">
                 Airport Transfers
               </h1>
               <p className="text-white/65 text-base sm:text-lg max-w-xl">

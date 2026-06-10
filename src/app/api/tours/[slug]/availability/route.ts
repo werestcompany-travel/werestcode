@@ -24,6 +24,7 @@ function computeStatus(booked: number, maxCapacity: number, isBlocked: boolean):
 
 // GET /api/tours/[slug]/availability?month=2025-06
 export async function GET(req: NextRequest, { params }: Params) {
+  try {
   const { searchParams } = new URL(req.url);
   const monthParam = searchParams.get('month'); // e.g. "2025-06"
 
@@ -105,4 +106,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 
   return NextResponse.json({ dates, month: `${year}-${String(month + 1).padStart(2, '0')}` });
+  } catch {
+    return NextResponse.json({ error: 'Failed to load availability' }, { status: 500 });
+  }
 }

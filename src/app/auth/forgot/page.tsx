@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, ArrowLeft } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 export default function ForgotPasswordPage() {
   const [email,     setEmail]     = useState('');
@@ -30,20 +30,12 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
+    <>
+    <Navbar />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 pt-24 pb-16">
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex mb-6">
-            <Image
-              src="/images/logo.png"
-              alt="Werest Travel"
-              width={136}
-              height={37}
-              className="h-9 w-auto object-contain"
-              priority
-            />
-          </Link>
           <h1 className="text-2xl font-extrabold text-gray-900">Forgot your password?</h1>
           <p className="text-gray-500 text-sm mt-1">
             {submitted
@@ -97,5 +89,6 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

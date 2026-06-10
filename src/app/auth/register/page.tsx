@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 function RegisterForm() {
   const router = useRouter();
@@ -40,7 +41,9 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <>
+    <Navbar />
+    <div className="min-h-screen flex pt-16">
       {/* ── Left panel: hero image (hidden on mobile) ── */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <Image
@@ -70,11 +73,7 @@ function RegisterForm() {
       <div className="flex-1 bg-white flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
 
-          {/* Logo (mobile only) */}
           <div className="text-center mb-8 lg:mb-10">
-            <Link href="/" className="inline-flex items-center mb-6 lg:hidden">
-              <Image src="/images/logo.png" alt="Werest Travel" height={36} width={119} className="object-contain" />
-            </Link>
             <h1 className="text-2xl font-extrabold text-gray-900">Create your account</h1>
             <p className="text-gray-500 text-sm mt-1">Save wishlists, track bookings and more</p>
           </div>
@@ -154,6 +153,7 @@ function RegisterForm() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

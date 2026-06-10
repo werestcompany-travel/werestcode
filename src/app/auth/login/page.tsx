@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, LogIn, Mail } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 function LoginForm() {
   const router = useRouter();
@@ -62,8 +63,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* ── Left panel: hero image (hidden on mobile) ── */}
+    <>
+      <Navbar />
+      <div className="min-h-screen flex pt-16">
+      {/* â”€â”€ Left panel: hero image (hidden on mobile) â”€â”€ */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80"
@@ -81,22 +84,18 @@ function LoginForm() {
           </Link>
           <div>
             <p className="text-white/90 text-xl font-semibold leading-snug mb-3">
-              &ldquo;Every journey begins with a single step — let us make yours unforgettable.&rdquo;
+              &ldquo;Every journey begins with a single step â€” let us make yours unforgettable.&rdquo;
             </p>
             <p className="text-white/60 text-sm">Discover Thailand with confidence</p>
           </div>
         </div>
       </div>
 
-      {/* ── Right panel: form ── */}
+      {/* â”€â”€ Right panel: form â”€â”€ */}
       <div className="flex-1 bg-white flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
 
-          {/* Logo (mobile only) */}
           <div className="text-center mb-8 lg:mb-10">
-            <Link href="/" className="inline-flex items-center mb-6 lg:hidden">
-              <Image src="/images/logo.png" alt="Werest Travel" height={36} width={119} className="object-contain" />
-            </Link>
             <h1 className="text-2xl font-extrabold text-gray-900">Welcome back</h1>
             <p className="text-gray-500 text-sm mt-1">Sign in to access your wishlist and bookings</p>
           </div>
@@ -124,7 +123,7 @@ function LoginForm() {
                   ) : (
                     <button type="button" onClick={handleResend} disabled={resendLoading}
                       className="text-xs font-semibold text-amber-800 underline hover:text-amber-900 disabled:opacity-50">
-                      {resendLoading ? 'Sending…' : 'Resend verification email'}
+                      {resendLoading ? 'Sendingâ€¦' : 'Resend verification email'}
                     </button>
                   )}
                 </div>
@@ -167,7 +166,7 @@ function LoginForm() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                 ) : <LogIn className="w-4 h-4" />}
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? 'Signing inâ€¦' : 'Sign in'}
               </button>
             </form>
           </div>
@@ -181,6 +180,7 @@ function LoginForm() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -191,3 +191,4 @@ export default function LoginPage() {
     </Suspense>
   );
 }
+

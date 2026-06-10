@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifyWebhookSignature, type PaysoWebhookPayload } from '@/lib/payso'
-import { sendBookingConfirmationEmail, sendTourBookingConfirmationEmail } from '@/lib/email'
+import { sendBookingConfirmationEmail, sendTourBookingConfirmationEmail, sendAttractionBookingConfirmationEmail } from '@/lib/email'
 import { sendCustomerBookingConfirmation, sendPostBookingUpsell } from '@/lib/whatsapp'
 import { fireAndForget } from '@/lib/fire-and-forget'
 
@@ -243,6 +243,25 @@ export async function POST(req: NextRequest) {
       if (paymentStatus === 'PAID') {
         await recordPaymentPreference(attractionBooking.customerEmail, attractionBooking.paymentMethod)
 
+        const attraction = await prisma.attraction.findUnique({
+          where:  { id: attractionBooking.attractionId },
+          select: { slug: true },
+        })
+        fireAndForget(sendAttractionBookingConfirmationEmail({
+          bookingRef:     attractionBooking.bookingRef,
+          customerName:   attractionBooking.customerName,
+          customerEmail:  attractionBooking.customerEmail,
+          attractionName: attractionBooking.attractionName,
+          attractionSlug: attraction?.slug ?? '',
+          packageName:    attractionBooking.packageName,
+          visitDate:      attractionBooking.visitDate,
+          adultQty:       attractionBooking.adultQty,
+          childQty:       attractionBooking.childQty,
+          adultPrice:     attractionBooking.adultPrice,
+          childPrice:     attractionBooking.childPrice,
+          totalPrice:     attractionBooking.totalPrice,
+          notes:          attractionBooking.notes,
+        }), 'attraction-confirmation-email', { bookingRef: attractionBooking.bookingRef })
       }
 
       console.log(`[payment/webhook] AttractionBooking ${attractionBooking.bookingRef} → ${paymentStatus}`)

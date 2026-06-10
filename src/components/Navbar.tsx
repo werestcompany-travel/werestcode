@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import {
   Menu, X, User, Heart, LogOut, ChevronDown, ChevronRight,
   BookOpen, Search, Headphones, Trash2, TrendingUp,
-  Car, Compass, Ticket, Ship, Users, Tag, Gift, Smartphone,
+  Car, Compass, Ticket, Ship, Users, Tag, Gift, Newspaper,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -373,14 +373,6 @@ export default function Navbar({
 
             {/* SPACER */}
             <div className="flex-1" />
-
-            {/* RIGHT: search (homepage only) + user */}
-            {pathname === '/' && (
-              <button type="button" onClick={() => router.push('/results')} aria-label="Search"
-                className={`p-2 rounded-lg transition-colors shrink-0 ${useWhite ? 'text-white hover:text-white' : 'text-gray-700 hover:text-brand-600'}`}>
-                <Search className="w-[22px] h-[22px]" strokeWidth={1.8} />
-              </button>
-            )}
             {user ? (
               <Link href="/account" className="p-2 rounded-lg shrink-0" aria-label="Account">
                 <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
@@ -628,12 +620,10 @@ export default function Navbar({
             <div className="px-4 mt-7">
               <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">{t('nav.more')}</p>
 
-              <Link href="/deals" onClick={closeMobileMenu}
+              <Link href="/blog" onClick={closeMobileMenu}
                 className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
-                <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shrink-0">
-                  <Gift className="w-3 h-3 text-white" />
-                </div>
-                <span className="flex-1 text-[15px] text-gray-800 font-medium">{t('nav.dealsRewards')}</span>
+                <Newspaper className="w-5 h-5 text-gray-700 shrink-0" />
+                <span className="flex-1 text-[15px] text-gray-800 font-medium">Blog</span>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
@@ -658,11 +648,6 @@ export default function Navbar({
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Link>
 
-              <button type="button" className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
-                <Smartphone className="w-5 h-5 text-gray-700 shrink-0" />
-                <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{t('nav.downloadApp')}</span>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-              </button>
 
               {user && (
                 <button type="button" onClick={async () => { closeMobileMenu(); await handleLogout(); }}
