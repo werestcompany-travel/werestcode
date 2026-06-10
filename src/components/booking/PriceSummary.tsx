@@ -5,6 +5,7 @@ import { formatCurrency, VEHICLE_LABELS } from '@/lib/utils';
 import { VehicleType, SelectedAddOn } from '@/types';
 import { ArrowRight, Tag, X, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { useLocale } from '@/context/LocaleContext';
 
 type VehicleCapacity = { maxPassengers: number; maxLuggage: number };
 
@@ -56,6 +57,7 @@ export default function PriceSummary({
   const [codeInput, setCodeInput]     = useState('');
   const [applyError, setApplyError]   = useState('');
   const [applyLoading, setApplyLoading] = useState(false);
+  const { currency, formatPrice } = useLocale();
 
   const handleApply = async () => {
     if (!codeInput.trim() || !onApplyDiscount) return;
@@ -153,8 +155,18 @@ export default function PriceSummary({
                   </p>
                 ) : null}
                 <span className="font-extrabold text-2xl text-gray-900">{formatCurrency(totalPrice)}</span>
+                {currency !== 'THB' && (
+                  <p className="text-xs font-semibold text-gray-500 mt-0.5">
+                    ≈ {formatPrice(totalPrice)} {currency}
+                  </p>
+                )}
               </div>
             </div>
+            {currency !== 'THB' && (
+              <p className="text-[10px] text-gray-400 leading-snug -mt-1">
+                Your card will be charged in Thai Baht (THB). The {currency} amount is an estimate based on today&apos;s exchange rate — your bank sets the final rate.
+              </p>
+            )}
 
             {/* What's included */}
             {vehicleData && (

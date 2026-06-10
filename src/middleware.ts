@@ -34,7 +34,7 @@ export async function middleware(req: NextRequest) {
     "default-src 'self'",
     // 'unsafe-eval' is required in dev for React Fast Refresh (webpack HMR uses eval())
     // It is intentionally omitted in production builds
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''} https://maps.googleapis.com https://maps.gstatic.com https://connect.facebook.net`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''} https://maps.googleapis.com https://maps.gstatic.com https://connect.facebook.net https://www.clarity.ms`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
@@ -49,6 +49,8 @@ export async function middleware(req: NextRequest) {
       "https://connect.facebook.net",
       "https://www.facebook.com",
       "https://*.ingest.sentry.io",
+      "https://www.clarity.ms",
+      "https://*.clarity.ms",
     ].join(' '),
     // frame-src omitted: X-Frame-Options: SAMEORIGIN is set in next.config.js headers — no conflict
     "object-src 'none'",

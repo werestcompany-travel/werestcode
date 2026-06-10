@@ -319,6 +319,12 @@ export default async function ConfirmationPage({ params }: Props) {
               Track My Booking <ArrowRight className="w-4 h-4" />
             </Link>
             <VoucherDownloadButton bookingRef={booking.bookingRef} className="flex-1" />
+            <a
+              href={`/api/bookings/${booking.id}/invoice`}
+              className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 rounded-xl py-3.5 font-semibold text-sm hover:bg-gray-50 transition-colors"
+            >
+              🧾 Download Invoice
+            </a>
             <Link
               href="/"
               className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 rounded-xl py-3.5 font-semibold text-sm hover:bg-gray-50 transition-colors"

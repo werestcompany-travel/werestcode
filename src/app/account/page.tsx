@@ -65,6 +65,19 @@ interface UnifiedBooking {
   status: string;
   price: number;
   viewUrl?: string;
+  pickupAddress?: string;
+  dropoffAddress?: string;
+}
+
+interface TransferBookingApi {
+  id: string;
+  bookingRef: string;
+  currentStatus: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickupDate: string;
+  pickupTime: string;
+  totalPrice: number;
 }
 
 // ─── Tab & filter types ───────────────────────────────────────────────────────
@@ -170,14 +183,32 @@ function BookingRow({ booking, onCancel }: { booking: UnifiedBooking; onCancel?:
             </span>
             <span className="font-semibold text-gray-700">฿{booking.price.toLocaleString()}</span>
           </div>
-          {canCancel && (
-            <div className="mt-2">
-              <button
-                onClick={handleCancel}
-                className="text-xs font-semibold text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                Cancel booking
-              </button>
+          {(canCancel || booking.serviceType === 'transfer') && (
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              {booking.serviceType === 'transfer' && booking.pickupAddress && booking.dropoffAddress && (
+                <a
+                  href={`/results?pickup_address=${encodeURIComponent(booking.pickupAddress)}&dropoff_address=${encodeURIComponent(booking.dropoffAddress)}`}
+                  className="text-xs font-semibold text-[#2534ff] border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  Book again
+                </a>
+              )}
+              {booking.serviceType === 'transfer' && (
+                <a
+                  href={`/api/bookings/${booking.id}/invoice`}
+                  className="text-xs font-semibold text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Invoice (PDF)
+                </a>
+              )}
+              {canCancel && (
+                <button
+                  onClick={handleCancel}
+                  className="text-xs font-semibold text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Cancel booking
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -345,11 +376,12 @@ function AccountContent() {
 
   useEffect(() => {
     async function load() {
-      const [meRes, wlRes, bkRes, srRes] = await Promise.all([
+      const [meRes, wlRes, bkRes, srRes, trRes] = await Promise.all([
         fetch('/api/user/me'),
         fetch('/api/user/wishlist'),
         fetch('/api/user/bookings'),
         fetch('/api/user/saved-routes'),
+        fetch('/api/user/transfer-bookings'),
       ]);
       const meData = await meRes.json();
       if (!meData.user) { router.push('/auth/login'); return; }
@@ -357,6 +389,7 @@ function AccountContent() {
       setWishlist((await wlRes.json()).items ?? []);
       setSavedRoutes((await srRes.json()).routes ?? []);
       const attrBookings: AttractionBooking[] = (await bkRes.json()).bookings ?? [];
+      const transferBookings: TransferBookingApi[] = (await trRes.json()).bookings ?? [];
       const unified: UnifiedBooking[] = attrBookings.map(b => ({
         id:          b.id,
         bookingRef:  b.bookingRef,
@@ -366,6 +399,18 @@ function AccountContent() {
         status:      b.status,
         price:       b.totalPrice,
       }));
+      unified.push(...transferBookings.map(b => ({
+        id:             b.id,
+        bookingRef:     b.bookingRef,
+        serviceType:    'transfer' as const,
+        serviceName:    `${b.pickupAddress.split(',')[0]} → ${b.dropoffAddress.split(',')[0]}`,
+        date:           b.pickupDate,
+        status:         b.currentStatus,
+        price:          b.totalPrice,
+        viewUrl:        `/confirmation/${b.id}`,
+        pickupAddress:  b.pickupAddress,
+        dropoffAddress: b.dropoffAddress,
+      })));
       unified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setAllBookings(unified);
       setLoading(false);
@@ -378,6 +423,26 @@ function AccountContent() {
     await navigator.clipboard.writeText(`https://werest.com?ref=${user.id}`).catch(() => {});
     setRefCopied(true);
     setTimeout(() => setRefCopied(false), 2000);
+  }
+
+  async function handleDeleteAccount() {
+    const typed = prompt(
+      'This permanently deletes your account, loyalty points, saved routes and wishlist. ' +
+      'Booking records are anonymized.\n\nType DELETE to confirm:'
+    );
+    if (typed !== 'DELETE') return;
+    const res = await fetch('/api/user/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: 'DELETE' }),
+    });
+    if (res.ok) {
+      alert('Your account has been deleted.');
+      router.push('/');
+    } else {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error ?? 'Failed to delete account. Please contact support.');
+    }
   }
 
   async function removeWishlist(attractionId: string) {
@@ -789,6 +854,31 @@ function AccountContent() {
                   <div className="bg-white rounded-xl border border-gray-100 p-5">
                     <h2 className="font-bold text-gray-900 mb-3">Notifications</h2>
                     <PushNotificationBell />
+                  </div>
+
+                  {/* Privacy & data (GDPR) */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-5">
+                    <h2 className="font-bold text-gray-900 mb-1">Privacy &amp; data</h2>
+                    <p className="text-xs text-gray-400 mb-4">
+                      You control your personal data. Download a copy of everything we hold about you, or permanently delete your account.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <a
+                        href="/api/user/data-export"
+                        className="flex-1 text-center text-sm font-semibold text-[#2534ff] border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-colors"
+                      >
+                        Download my data (JSON)
+                      </a>
+                      <button
+                        onClick={handleDeleteAccount}
+                        className="flex-1 text-sm font-semibold text-red-600 border border-red-200 px-4 py-2.5 rounded-xl hover:bg-red-50 transition-colors"
+                      >
+                        Delete my account
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-3 leading-snug">
+                      Deleting your account is permanent. Booking records are anonymized and retained only as required for accounting purposes.
+                    </p>
                   </div>
                 </div>
               )}

@@ -1197,6 +1197,12 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setCurrencyState(c);
   }, []);
 
+  /* ── Keep <html lang> in sync for accessibility, SEO and font rendering ── */
+  useEffect(() => {
+    const HTML_LANG: Record<Lang, string> = { EN: 'en', TH: 'th', ZH: 'zh-CN' };
+    document.documentElement.lang = HTML_LANG[lang] ?? 'en';
+  }, [lang]);
+
   /* ── Fetch live exchange rates on mount, refresh every 4 hours ── */
   useEffect(() => {
     async function fetchRates() {

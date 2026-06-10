@@ -36,8 +36,9 @@ import FontSwitcher from '@/components/FontSwitcher';
 import CookieConsent from '@/components/CookieConsent';
 import { ChatProvider } from '@/context/ChatContext';
 
-const GA_ID    = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
 
 /* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
@@ -210,6 +211,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
             </noscript>
           </>
+        )}
+
+        {/* Microsoft Clarity heatmaps & session recording — only when NEXT_PUBLIC_CLARITY_ID is set */}
+        {CLARITY_ID && (
+          <Script id="ms-clarity" nonce={nonce} strategy="afterInteractive">
+            {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
+          </Script>
         )}
       </body>
     </html>
