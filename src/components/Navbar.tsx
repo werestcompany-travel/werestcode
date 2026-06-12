@@ -578,28 +578,32 @@ export default function Navbar({
 
             {/* ── Settings ── */}
             <div className="px-4 mt-7">
-              <p className="text-[13px] font-medium text-gray-400 mb-1 px-1">{t('nav.settings')}</p>
+              <p className="text-[13px] font-medium text-gray-400 mb-3 px-1">{t('nav.settings')}</p>
 
-              {/* Language row */}
-              <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }, 230); }}
-                className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
-                <img src={activeLang.flagSrc} alt={activeLang.label} className="w-7 h-5 object-cover rounded shrink-0" />
-                <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{activeLang.native} (Thailand)</span>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Language icon */}
+                <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }, 230); }}
+                  className="flex flex-col items-center gap-2 active:opacity-70">
+                  <div className="w-14 h-14 rounded-full bg-[#2534ff] flex items-center justify-center overflow-hidden shadow-sm">
+                    <img src={activeLang.flagSrc} alt={activeLang.label} className="w-8 h-6 object-cover rounded" />
+                  </div>
+                  <p className="text-[12.5px] font-semibold text-gray-700 text-center leading-tight">{activeLang.native}</p>
+                </button>
 
-              {/* Currency row */}
-              {(() => {
-                const activeCurr = CURRENCIES.find(c => c.code === currency) ?? CURRENCIES[0];
-                return (
-                  <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('currency'); }, 230); }}
-                    className="flex items-center gap-3 w-full py-4 border-b border-gray-100 active:bg-gray-50">
-                    <span className="text-2xl leading-none shrink-0">{activeCurr.flag}</span>
-                    <span className="flex-1 text-left text-[15px] text-gray-800 font-medium">{currency} — {activeCurr.name}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </button>
-                );
-              })()}
+                {/* Currency icon */}
+                {(() => {
+                  const activeCurr = CURRENCIES.find(c => c.code === currency) ?? CURRENCIES[0];
+                  return (
+                    <button type="button" onClick={() => { closeMobileMenu(); setTimeout(() => { setLocaleModalOpen(true); setLocaleModalTab('currency'); }, 230); }}
+                      className="flex flex-col items-center gap-2 active:opacity-70">
+                      <div className="w-14 h-14 rounded-full bg-[#2534ff] flex items-center justify-center shadow-sm">
+                        <span className="text-2xl leading-none">{activeCurr.flag}</span>
+                      </div>
+                      <p className="text-[12.5px] font-semibold text-gray-700 text-center leading-tight">{currency}</p>
+                    </button>
+                  );
+                })()}
+              </div>
 
             </div>
 
