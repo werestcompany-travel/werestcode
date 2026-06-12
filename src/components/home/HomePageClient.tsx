@@ -597,6 +597,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           <div className="relative">
 
             {/* ── Left arrow ── */}
+            {inspiredShowLeft && (
+              <button
+                type="button"
+                onClick={() => scrollInspired(-1)}
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-10 hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                aria-label="Scroll left"
+              >
+                <ChevronDown className="w-5 h-5 text-gray-700 rotate-90" />
+              </button>
+            )}
 
           <div
             ref={inspiredSliderRef}
@@ -625,7 +635,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                   key={dest.id}
                   type="button"
                   onClick={() => setSelectedDest(dest.id)}
-                  className="relative rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none shrink-0 w-[42vw] max-w-[200px] sm:w-[30vw] sm:max-w-[210px] lg:w-[17vw] lg:max-w-[220px] aspect-square lg:h-[260px] lg:aspect-auto transition-all duration-200"
+                  className="relative rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none shrink-0 w-[42vw] max-w-[200px] sm:w-[30vw] sm:max-w-[210px] lg:flex-1 lg:w-0 lg:max-w-none aspect-square lg:h-[240px] lg:aspect-auto transition-all duration-200"
                 >
                   {/* Photo + selected overlay — clipped to card corners */}
                   <div className="absolute inset-0 rounded-2xl overflow-hidden">
@@ -634,7 +644,7 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
                       alt={dest.name}
                       fill
                       className="object-cover transition-transform duration-500 lg:group-hover:scale-105"
-                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 17vw"
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
                       unoptimized
                     />
                     {/* #2534ff overlay — 30% opacity when selected, desktop only */}
@@ -654,6 +664,16 @@ export default function HomePageClient({ latestPosts = [] }: { latestPosts?: Blo
           </div>
 
             {/* ── Right arrow ── */}
+            {inspiredShowRight && (
+              <button
+                type="button"
+                onClick={() => scrollInspired(1)}
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-10 hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                aria-label="Scroll right"
+              >
+                <ChevronDown className="w-5 h-5 text-gray-700 -rotate-90" />
+              </button>
+            )}
 
           </div>{/* end relative */}
 
