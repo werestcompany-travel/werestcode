@@ -174,10 +174,31 @@ export default function AuthModal({ open, onClose, onSuccess, initialStep = 'ema
                 Apple
               </button>
 
-              <button type="button" onClick={() => setStep('email')}
-                className="w-full text-sm text-gray-500 underline underline-offset-2 hover:text-gray-700 transition-colors">
-                More options
-              </button>
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400 font-medium">or continue with email</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* Inline email form */}
+              <form onSubmit={handleContinueEmail} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2534ff] bg-white"
+                  />
+                </div>
+                <button type="submit"
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-[#2534ff] hover:bg-[#1a27e0] transition-colors">
+                  Continue with Email
+                </button>
+              </form>
             </>
           )}
 
