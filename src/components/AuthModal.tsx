@@ -321,7 +321,7 @@ export default function AuthModal({ open, onClose, onSuccess, initialStep = 'ema
       </div>
 
       {/* Backdrop for desktop */}
-      <div className="hidden sm:block absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="hidden sm:block absolute inset-0 -z-10 bg-black/50" onClick={onClose} />
     </div>
   );
 }
