@@ -34,10 +34,7 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import FloatingWidgets from '@/components/FloatingWidgets';
 import FontSwitcher from '@/components/FontSwitcher';
 import CookieConsent from '@/components/CookieConsent';
-
-const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+import ConsentAwareTracking from '@/components/ConsentAwareTracking';
 
 /* ── Base metadata — page-level exports override these ───────────────────── */
 export const metadata: Metadata = {
@@ -183,39 +180,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   `}
         </Script>
 
-        {/* GA4 — only loaded when NEXT_PUBLIC_GA_MEASUREMENT_ID is set */}
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-              nonce={nonce}
-            />
-            <Script id="ga4-init" strategy="afterInteractive" nonce={nonce}>
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
-            </Script>
-          </>
-        )}
-
-        {/* Meta Pixel — only loaded when NEXT_PUBLIC_META_PIXEL_ID is set */}
-        {PIXEL_ID && (
-          <>
-            <Script id="meta-pixel" nonce={nonce} strategy="afterInteractive">
-              {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${PIXEL_ID}');fbq('track','PageView');`}
-            </Script>
-            <noscript>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
-            </noscript>
-          </>
-        )}
-
-        {/* Microsoft Clarity heatmaps & session recording — only when NEXT_PUBLIC_CLARITY_ID is set */}
-        {CLARITY_ID && (
-          <Script id="ms-clarity" nonce={nonce} strategy="afterInteractive">
-            {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
-          </Script>
-        )}
+        {/* Tracking scripts — loaded only after user grants consent via CookieConsent banner */}
+        <ConsentAwareTracking />
       </body>
     </html>
   );

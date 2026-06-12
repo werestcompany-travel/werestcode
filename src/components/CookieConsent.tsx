@@ -31,6 +31,7 @@ export default function CookieConsent() {
     } catch {
       // ignore
     }
+    window.dispatchEvent(new CustomEvent('werest:consent-updated', { detail: choices }))
     setVisible(false)
   }
 

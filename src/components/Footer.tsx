@@ -219,6 +219,65 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* ══ eBrochures ══ */}
+      <div className="border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <p className="font-semibold text-[14px] text-gray-900 mb-4">eBrochures</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                title: 'Thailand Highlights',
+                sub: 'Private Transfers',
+                bg: 'from-blue-900 to-blue-700',
+                img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80',
+              },
+              {
+                title: 'Island Escapes',
+                sub: 'Tours & Experiences',
+                bg: 'from-cyan-700 to-teal-500',
+                img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&q=80',
+              },
+              {
+                title: 'Northern Adventure',
+                sub: 'Chiang Mai & Beyond',
+                bg: 'from-green-800 to-emerald-600',
+                img: 'https://images.unsplash.com/photo-1599576838688-8a6c11263108?w=400&q=80',
+              },
+              {
+                title: 'Bangkok City Guide',
+                sub: 'Attractions & Tickets',
+                bg: 'from-orange-700 to-amber-500',
+                img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400&q=80',
+              },
+            ].map((b) => (
+              <a
+                key={b.title}
+                href="#"
+                className="group relative rounded-xl overflow-hidden aspect-[4/3] block shadow-sm hover:shadow-md transition-shadow"
+              >
+                {/* Background image */}
+                <img
+                  src={b.img}
+                  alt={b.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {/* Gradient overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${b.bg} opacity-70`} />
+                {/* Werest logo badge */}
+                <div className="absolute top-2 right-2 bg-[#2534ff] rounded-full w-7 h-7 flex items-center justify-center shadow">
+                  <span className="text-white text-[8px] font-black tracking-tight leading-none text-center">W</span>
+                </div>
+                {/* Text */}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <p className="text-white font-bold text-[13px] leading-tight drop-shadow">{b.title}</p>
+                  <p className="text-white/80 text-[10px] mt-0.5">{b.sub}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ══ Middle strip: payment • awards • social ══ */}
       <div className="border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
