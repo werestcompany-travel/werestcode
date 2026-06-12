@@ -521,30 +521,9 @@ export default function Navbar({
           {/* ── Scrollable body ── */}
           <div className="flex-1 overflow-y-auto overscroll-contain pb-10">
 
-            {/* ── Savings / Account card ── */}
-            <div className="mx-4 mt-5">
-              {!user ? (
-                <div className="bg-[#eef2ff] rounded-2xl p-5">
-                  <h3 className="font-bold text-gray-900 text-[15px] leading-snug mb-3">
-                    {t('nav.accessSavings')}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-gray-600 mb-4">
-                    <span className="flex items-center gap-1.5">{t('nav.savingsPerks1')}</span>
-                    <span className="text-gray-300 hidden xs:block">|</span>
-                    <span className="flex items-center gap-1.5">{t('nav.savingsPerks2')}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <Link href="/tracking" onClick={closeMobileMenu}
-                      className="flex items-center justify-center h-11 rounded-xl border-2 border-brand-600 text-brand-600 font-bold text-sm">
-                      {t('nav.searchBookings')}
-                    </Link>
-                    <button type="button" onClick={() => { openModal('register'); closeMobileMenu(); }}
-                      className="flex items-center justify-center h-11 rounded-xl bg-brand-600 text-white font-bold text-sm hover:bg-brand-700 transition-colors">
-                      {t('nav.signInRegister')}
-                    </button>
-                  </div>
-                </div>
-              ) : (
+            {/* ── Account card (logged-in only) ── */}
+            {user && (
+              <div className="mx-4 mt-5">
                 <div className="bg-[#eef2ff] rounded-2xl p-5">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-11 h-11 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
@@ -573,8 +552,8 @@ export default function Navbar({
                     </Link>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* ── Settings ── */}
             <div className="px-4 mt-7">
