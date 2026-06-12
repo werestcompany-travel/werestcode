@@ -19,7 +19,7 @@ import {
   Star, CheckCircle2, BookOpen, Heart,
   Car, Plane, Users, ArrowRight,
   ArrowLeftRight, Luggage,
-  Compass, Ticket, Ship, Gift, ChevronRight, Tag,
+  Compass, Ticket, Ship, Gift, ChevronRight, ChevronDown, Tag,
   Clock, Lock, Shield, X, Sparkles,
 } from 'lucide-react';
 
