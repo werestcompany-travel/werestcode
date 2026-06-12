@@ -330,13 +330,13 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => { setLocaleModalOpen(true); setLocaleModalTab('language'); }}
-                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 transition-colors text-white text-xs font-medium"
                 >
-                  <img src={FLAG_MAP[lang] ?? FLAG_MAP['EN']} alt={lang} className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+                  <img src={FLAG_MAP[lang] ?? FLAG_MAP['EN']} alt={lang} className="w-4 h-4 rounded-full object-cover shrink-0" />
                   <span>{lang}</span>
-                  <span className="text-white/30">|</span>
+                  <span className="text-white/40">|</span>
                   <span>{currency}</span>
-                  <ChevronDown className="w-3 h-3 opacity-60" />
+                  <ChevronDown className="w-3 h-3 opacity-70" />
                 </button>
               );
             })()}
