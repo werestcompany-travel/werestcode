@@ -48,7 +48,8 @@ export async function POST(req: NextRequest) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const { bookingRef, bookingType, bookingId, amount, reason } = body;
 
   if (!bookingRef || !bookingType || !bookingId || !amount || !reason) {

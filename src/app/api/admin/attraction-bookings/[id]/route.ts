@@ -8,7 +8,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { status } = await req.json();
+  let body: { status?: string };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const { status } = body;
   const booking = await prisma.attractionBooking.update({
     where: { id: params.id },
     data: { status },

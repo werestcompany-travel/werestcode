@@ -26,7 +26,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { userId, points, description } = await req.json();
+  let body: { userId?: string; points?: number; description?: string };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const { userId, points, description } = body;
   if (!userId || !points || !description) {
     return NextResponse.json({ error: 'userId, points, description required' }, { status: 400 });
   }

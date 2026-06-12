@@ -7,7 +7,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const b = await req.json();
+  let b: Record<string, unknown>;
+  try { b = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const { name, adultPrice, childPrice, infantPrice, isActive, sortOrder,
           description, adultOriginal, childOriginal, popular, badge, includes } = b;
   if (!name || adultPrice == null)

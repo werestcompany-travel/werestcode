@@ -10,12 +10,16 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const driver = await prisma.driver.findUnique({
-    where: { id: params.id },
-    include: { vehicles: true, bookings: { orderBy: { createdAt: 'desc' }, take: 20 } },
-  });
-  if (!driver) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ driver });
+  try {
+    const driver = await prisma.driver.findUnique({
+      where: { id: params.id },
+      include: { vehicles: true, bookings: { orderBy: { createdAt: 'desc' }, take: 20 } },
+    });
+    if (!driver) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ driver });
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch driver' }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {

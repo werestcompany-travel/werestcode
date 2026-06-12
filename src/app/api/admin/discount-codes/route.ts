@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { code, type, value, description, minOrderAmount, maxUses, expiresAt, isActive, newUserOnly, perUserLimit } = await req.json();
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const { code, type, value, description, minOrderAmount, maxUses, expiresAt, isActive, newUserOnly, perUserLimit } = body;
   if (!code || !type || value == null)
     return NextResponse.json({ error: 'Code, type and value are required' }, { status: 400 });
 

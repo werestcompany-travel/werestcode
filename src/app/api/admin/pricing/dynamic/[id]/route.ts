@@ -12,7 +12,8 @@ export async function PUT(
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = params;
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const existing = await prisma.dynamicPricingRule.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: 'Rule not found' }, { status: 404 });

@@ -22,7 +22,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const admin = await getAdminFromCookies();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { value, recipientName, recipientEmail, purchaserEmail, message, expiresAt } = await req.json();
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const { value, recipientName, recipientEmail, purchaserEmail, message, expiresAt } = body;
   if (!value) return NextResponse.json({ error: 'value required' }, { status: 400 });
   const code = genCode();
   const voucher = await prisma.giftVoucher.create({
